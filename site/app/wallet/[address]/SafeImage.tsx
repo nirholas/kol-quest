@@ -1,6 +1,6 @@
 "use client";
 
-export function AvatarImage({ src, fallbackChar }: { src: string; fallbackChar: string }) {
+export function AvatarImage({ src }: { src: string }) {
   return (
     <img
       src={src}
