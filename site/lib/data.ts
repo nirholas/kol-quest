@@ -212,7 +212,7 @@ function gmgnToUnified(wallets: GmgnWallet[]): UnifiedWallet[] {
 }
 
 export async function getAllSolanaWallets(): Promise<UnifiedWallet[]> {
-  const [kolscan, gmgn] = await Promise.all([getData(), getSolGmgnData()]);
+  const [kolscan, gmgn, xProfiles] = await Promise.all([getData(), getSolGmgnData(), getXProfiles()]);
   const kolUnified = kolscanToUnified(kolscan);
   const gmgnUnified = gmgnToUnified(gmgn);
 
@@ -221,8 +221,6 @@ export async function getAllSolanaWallets(): Promise<UnifiedWallet[]> {
   for (const w of kolUnified) map.set(w.wallet_address, w);
   for (const w of gmgnUnified) {
     if (map.has(w.wallet_address)) {
-      // Merge: keep GMGN data but add kolscan tag
-      const existing = map.get(w.wallet_address)!;
       map.set(w.wallet_address, {
         ...w,
         tags: [...new Set([...w.tags, "kolscan"])],
@@ -231,12 +229,28 @@ export async function getAllSolanaWallets(): Promise<UnifiedWallet[]> {
       map.set(w.wallet_address, w);
     }
   }
+
+  // Enrich avatars from X profiles where missing
+  for (const w of map.values()) {
+    if (!w.avatar && w.twitter) {
+      const xp = getXProfile(xProfiles, w.twitter);
+      if (xp?.avatar) w.avatar = xp.avatar;
+    }
+  }
+
   return Array.from(map.values());
 }
 
 export async function getBscWallets(): Promise<UnifiedWallet[]> {
-  const bsc = await getBscGmgnData();
-  return gmgnToUnified(bsc);
+  const [bsc, xProfiles] = await Promise.all([getBscGmgnData(), getXProfiles()]);
+  const wallets = gmgnToUnified(bsc);
+  for (const w of wallets) {
+    if (!w.avatar && w.twitter) {
+      const xp = getXProfile(xProfiles, w.twitter);
+      if (xp?.avatar) w.avatar = xp.avatar;
+    }
+  }
+  return wallets;
 }
 
 // --- X Profile Data ---

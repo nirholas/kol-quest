@@ -8,29 +8,34 @@ const NAV_SECTIONS = [
   {
     heading: "KolScan",
     items: [
-      { href: "/leaderboard", label: "Leaderboard", desc: "All KOLs ranked by profit" },
-      { href: "/top-performers", label: "Top Win Rate", desc: "Best win rate KOLs" },
-      { href: "/most-profitable", label: "Most Profitable", desc: "Highest profit KOLs" },
+      { href: "/leaderboard", label: "Leaderboard", desc: "All KOLs ranked by profit", live: false },
+      { href: "/top-performers", label: "Top Win Rate", desc: "Best win rate KOLs", live: false },
+      { href: "/most-profitable", label: "Most Profitable", desc: "Highest profit KOLs", live: false },
     ],
   },
   {
     heading: "GMGN",
     items: [
-      { href: "/gmgn-sol", label: "Solana Wallets", desc: "Smart money on Solana" },
-      { href: "/bsc", label: "BSC Wallets", desc: "Smart money on BNB Chain" },
+      { href: "/gmgn-sol", label: "Solana Wallets", desc: "Smart money on Solana", live: false },
+      { href: "/bsc", label: "BSC Wallets", desc: "Smart money on BNB Chain", live: false },
+    ],
+  },
+  {
+    heading: "Tools",
+    items: [
+      { href: "/feed", label: "Feed", desc: "Live wallet activity", live: true },
+      { href: "/monitor", label: "Monitor", desc: "GMGN-style live wallet monitor", live: true },
+      { href: "/track", label: "Track", desc: "New tokens from tracked wallets", live: false },
+      { href: "/tracker", label: "Wallet Tracker", desc: "Your tracked wallet portfolio", live: false },
+      { href: "/all-solana", label: "All Solana", desc: "Combined deduplicated wallets", live: false },
     ],
   },
   {
     heading: null,
     items: [
-      { href: "/track", label: "Track", desc: "New tokens from tracked wallets" },
-      { href: "/tracker", label: "Wallet Tracker", desc: "Your tracked wallet portfolio" },
-      { href: "/all-solana", label: "All Solana", desc: "Combined deduplicated wallets" },
-      { href: "/monitor", label: "Monitor", desc: "GMGN-style live wallet monitor" },
-      { href: "/feed", label: "Feed", desc: "Live wallet activity" },
-      { href: "/docs", label: "Docs", desc: "API & data documentation" },
-      { href: "/community", label: "Community", desc: "" },
-      { href: "/submit", label: "Submit Wallet", desc: "Add a wallet to track" },
+      { href: "/docs", label: "Docs", desc: "API & data documentation", live: false },
+      { href: "/community", label: "Community", desc: "", live: false },
+      { href: "/submit", label: "Submit Wallet", desc: "Add a wallet to track", live: false },
     ],
   },
 ];
@@ -108,7 +113,10 @@ export default function MobileNav({ userLabel }: Props) {
                         : "text-zinc-400 hover:text-white hover:bg-bg-hover"
                     }`}
                   >
-                    <span className="text-sm font-medium">{item.label}</span>
+                    <span className="flex items-center gap-2 text-sm font-medium">
+                      {item.label}
+                      {item.live && <span className="w-1.5 h-1.5 rounded-full bg-buy animate-pulse" />}
+                    </span>
                     {item.desc && (
                       <span className="text-[11px] text-zinc-600 text-right max-w-[140px] leading-tight">
                         {item.desc}

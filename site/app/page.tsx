@@ -24,15 +24,13 @@ export default async function Home() {
   const topGmgnSol = [...solGmgn].sort((a, b) => b.realized_profit_7d - a.realized_profit_7d).slice(0, 5);
   const topGmgnBsc = [...bscGmgn].sort((a, b) => b.realized_profit_7d - a.realized_profit_7d).slice(0, 5);
 
-  // Combined unique Solana wallets
   const allSolAddresses = new Set([
     ...kolscanData.map((e) => e.wallet_address),
     ...solGmgn.map((w) => w.wallet_address),
   ]);
 
   return (
-    <main className="animate-fade-in">
-      {/* JSON-LD structured data for SEO */}
+    <main>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
@@ -41,186 +39,104 @@ export default async function Home() {
             "@type": "WebApplication",
             name: "KolQuest",
             url: "https://kol.quest",
-            description:
-              "Track the smartest crypto wallets — KolScan KOLs, GMGN smart money, Solana & BSC. Leaderboards, analytics, and copy-trade tools.",
+            description: "Track the smartest crypto wallets — KolScan KOLs, GMGN smart money, Solana & BSC. Leaderboards, analytics, and copy-trade tools.",
             applicationCategory: "FinanceApplication",
             operatingSystem: "Web",
-            offers: {
-              "@type": "Offer",
-              price: "0",
-              priceCurrency: "USD",
-            },
+            offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
           }),
         }}
       />
-      {/* Hero — full viewport */}
-      <div className="relative min-h-[calc(100vh-4rem)] flex items-center overflow-hidden">
-        {/* Ambient glow */}
-        <div className="absolute top-1/2 right-[10%] -translate-y-1/2 w-[500px] h-[500px] rounded-full bg-accent/[0.07] blur-[120px] pointer-events-none" />
-        <div className="absolute bottom-0 left-1/4 w-[400px] h-[300px] rounded-full bg-buy/[0.04] blur-[100px] pointer-events-none" />
 
-        <div className="max-w-7xl mx-auto px-6 w-full grid lg:grid-cols-2 gap-16 items-center py-20">
-          {/* Left — copy */}
-          <div>
-            <h1 className="text-5xl sm:text-[4rem] lg:text-[4.5rem] font-extrabold text-white tracking-tight leading-[1.05] mb-6">
-              Track the<br />
-              smartest wallets.
-            </h1>
-            <p className="text-zinc-500 text-lg sm:text-xl max-w-lg mb-10 leading-relaxed">
-              {allSolAddresses.size.toLocaleString()} Solana + {bscGmgn.length.toLocaleString()} BSC wallets tracked.
-              KolScan KOLs, GMGN smart money, snipers &amp; degens.
-            </p>
-            <div className="flex items-center gap-3 flex-wrap">
-              <Link
-                href="/all-solana"
-                className="inline-flex items-center gap-2 bg-white hover:bg-zinc-200 text-black font-semibold px-7 py-3 rounded-xl transition-colors text-sm"
-              >
-                Explore Wallets
-              </Link>
-              <Link
-                href="/bsc"
-                className="inline-flex items-center gap-2 border border-border hover:border-zinc-600 text-zinc-300 hover:text-white font-medium px-6 py-3 rounded-xl transition-colors text-sm"
-              >
-                BSC Wallets
-              </Link>
-              <a
-                href="https://gmgn.ai/r/nichxbt"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 border border-border hover:border-zinc-600 text-zinc-300 hover:text-white font-medium px-6 py-3 rounded-xl transition-colors text-sm"
-              >
-                Track on GMGN
-              </a>
-            </div>
-          </div>
-
-          {/* Right — 3D cube with iridescent glow (Framer-style) */}
-          <div className="hidden lg:flex items-center justify-center relative">
-            {/* Color pool on surface below */}
-            <div className="absolute bottom-[2rem] left-1/2 -translate-x-1/2 w-[340px] h-[160px] iridescent-pool opacity-50 blur-[60px] rounded-full" />
-            <div className="absolute bottom-[3rem] left-1/2 -translate-x-1/2 w-[260px] h-[100px] iridescent-pool opacity-70 blur-[30px] rounded-full" />
-
-            <div className="relative hero-cube" style={{ perspective: '800px' }}>
-              {/* 3D cube container */}
-              <div className="relative w-[280px] h-[320px]">
-                {/* Iridescent edge — wraps the bottom of the cube */}
-                <div className="absolute bottom-0 left-0 right-0 h-[120px] rounded-b-[2rem] overflow-hidden">
-                  <div className="absolute inset-0 iridescent-edge opacity-80" />
-                  {/* Dark overlay to make it look like light bleeding from under */}
-                  <div className="absolute inset-0 bg-gradient-to-b from-black/90 via-black/40 to-transparent" />
-                </div>
-
-                {/* Thin iridescent line at top edge */}
-                <div className="absolute top-[2px] left-6 right-6 h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-
-                {/* Top face — dark keycap */}
-                <div className="absolute top-0 left-0 right-0 h-[220px] rounded-[2rem] bg-gradient-to-b from-[#2a2a2e] via-[#1c1c20] to-[#151518] border border-zinc-700/40 shadow-[0_30px_80px_rgba(0,0,0,0.9),inset_0_1px_0_rgba(255,255,255,0.06)]">
-                  {/* Inner dish */}
-                  <div className="absolute inset-4 rounded-[1.25rem] bg-gradient-to-br from-[#1a1a1e] via-[#0e0e10] to-[#080809] border border-zinc-800/50 flex items-center justify-center overflow-hidden">
-                    {/* Chart SVG */}
-                    <svg viewBox="0 0 120 80" className="w-40 h-28" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <line x1="0" y1="20" x2="120" y2="20" stroke="#1a1a1a" strokeWidth="0.5" />
-                      <line x1="0" y1="40" x2="120" y2="40" stroke="#1a1a1a" strokeWidth="0.5" />
-                      <line x1="0" y1="60" x2="120" y2="60" stroke="#1a1a1a" strokeWidth="0.5" />
-                      <defs>
-                        <linearGradient id="chartGrad" x1="0" y1="0" x2="120" y2="0">
-                          <stop offset="0%" stopColor="#22c55e" stopOpacity="0.5" />
-                          <stop offset="100%" stopColor="#4ade80" stopOpacity="1" />
-                        </linearGradient>
-                        <linearGradient id="fillGrad" x1="60" y1="10" x2="60" y2="75" gradientUnits="userSpaceOnUse">
-                          <stop offset="0%" stopColor="#22c55e" stopOpacity="0.25" />
-                          <stop offset="100%" stopColor="#22c55e" stopOpacity="0" />
-                        </linearGradient>
-                      </defs>
-                      <path d="M10 65 L25 58 L40 62 L55 50 L65 45 L75 38 L85 25 L95 18 L110 8 L110 75 L10 75 Z" fill="url(#fillGrad)" />
-                      <polyline
-                        points="10,65 25,58 40,62 55,50 65,45 75,38 85,25 95,18 110,8"
-                        stroke="url(#chartGrad)"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        className="chart-line"
-                      />
-                      <circle cx="110" cy="8" r="2.5" fill="#4ade80">
-                        <animate attributeName="opacity" values="1;0.4;1" dur="2s" repeatCount="indefinite" />
-                      </circle>
-                      <circle cx="110" cy="8" r="5" fill="#22c55e" opacity="0.15">
-                        <animate attributeName="r" values="5;9;5" dur="2s" repeatCount="indefinite" />
-                        <animate attributeName="opacity" values="0.15;0;0.15" dur="2s" repeatCount="indefinite" />
-                      </circle>
-                      <text x="14" y="20" fill="#4ade80" fontSize="12" fontWeight="bold" opacity="0.4" fontFamily="Inter, sans-serif">$</text>
-                    </svg>
-                  </div>
-                </div>
-
-                {/* Side face — gives 3D depth */}
-                <div className="absolute bottom-0 left-0 right-0 h-[120px] rounded-b-[2rem] bg-gradient-to-b from-[#111114] to-[#0a0a0c] border-x border-b border-zinc-800/30" />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Scroll hint */}
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-zinc-600 animate-bounce">
-          <span className="text-[11px] uppercase tracking-widest">Scroll</span>
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path d="m19 14-7 7-7-7"/></svg>
-        </div>
-      </div>
-
-      {/* Divider */}
-      <div className="border-b border-border" />
-
-      {/* Stats bar */}
-      <div className="border-b border-border">
-        <div className="max-w-7xl mx-auto px-6 py-6 flex items-center gap-8 sm:gap-16 overflow-x-auto">
+      {/* Stats ticker bar */}
+      <div className="border-b border-border bg-bg-secondary">
+        <div className="max-w-7xl mx-auto px-6 h-10 flex items-center gap-8 overflow-x-auto">
           {[
             { value: kolscanWallets.toString(), label: "KolScan KOLs" },
             { value: solGmgn.length.toLocaleString(), label: "GMGN Solana" },
             { value: bscGmgn.length.toLocaleString(), label: "GMGN BSC" },
-            { value: allSolAddresses.size.toLocaleString(), label: "Total Solana" },
-          ].map((s) => (
-            <div key={s.label} className="shrink-0">
-              <div className="text-2xl font-bold text-white tabular-nums">{s.value}</div>
-              <div className="text-xs text-zinc-600 mt-0.5">{s.label}</div>
+            { value: allSolAddresses.size.toLocaleString(), label: "Total Wallets" },
+          ].map((s, i) => (
+            <div key={s.label} className="shrink-0 flex items-center gap-2">
+              {i > 0 && <span className="text-zinc-800 select-none">|</span>}
+              <span className="font-mono text-sm font-semibold text-white tabular-nums">{s.value}</span>
+              <span className="text-xs text-zinc-600">{s.label}</span>
             </div>
           ))}
+          <div className="shrink-0 flex items-center gap-1.5 ml-auto">
+            <span className="w-1.5 h-1.5 rounded-full bg-buy animate-pulse" />
+            <span className="text-[11px] text-zinc-600 font-mono">LIVE</span>
+          </div>
         </div>
       </div>
 
-      {/* Live trade feed preview */}
+      {/* Hero — compact, copy + CTAs only */}
+      <div className="border-b border-border">
+        <div className="max-w-7xl mx-auto px-6 py-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight leading-tight">
+              Smart wallet intelligence.<br />
+              <span className="text-zinc-500 font-normal text-xl">KolScan · GMGN · Solana · BSC</span>
+            </h1>
+          </div>
+          <div className="flex items-center gap-2 flex-wrap">
+            <Link
+              href="/all-solana"
+              className="inline-flex items-center gap-1.5 bg-white text-black font-semibold px-4 py-2 rounded-md text-sm hover:bg-zinc-200 transition-colors"
+            >
+              Explore Wallets
+            </Link>
+            <Link
+              href="/leaderboard"
+              className="inline-flex items-center gap-1.5 border border-border hover:border-zinc-600 text-zinc-400 hover:text-white font-medium px-4 py-2 rounded-md text-sm transition-colors"
+            >
+              Leaderboard
+            </Link>
+            <Link
+              href="/monitor"
+              className="inline-flex items-center gap-1.5 border border-border hover:border-zinc-600 text-zinc-400 hover:text-white font-medium px-4 py-2 rounded-md text-sm transition-colors"
+            >
+              Monitor
+              <span className="w-1.5 h-1.5 rounded-full bg-buy animate-pulse" />
+            </Link>
+          </div>
+        </div>
+      </div>
+
+      {/* Live trade feed */}
       <RecentTradesPreview />
 
-      {/* Three-column preview tables */}
-      <div className="max-w-7xl mx-auto px-6 py-16">
-        <div className="grid lg:grid-cols-3 gap-8">
+      {/* Three-column leaderboard tables */}
+      <div className="max-w-7xl mx-auto px-6 py-8">
+        <div className="grid lg:grid-cols-3 gap-6">
+
           {/* KolScan Top Profit */}
           <div>
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h2 className="text-sm font-semibold text-white uppercase tracking-wider">KolScan KOLs</h2>
-                <p className="text-[11px] text-zinc-600 mt-0.5">Top profit today</p>
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-mono px-1.5 py-0.5 bg-zinc-900 text-zinc-500 border border-zinc-800 rounded">SOL</span>
+                <h2 className="text-xs font-semibold text-white uppercase tracking-wider">KolScan — Top Profit</h2>
               </div>
-              <Link href="/leaderboard" className="text-xs text-zinc-600 hover:text-white transition-colors">View all →</Link>
+              <Link href="/leaderboard" className="text-[11px] text-zinc-600 hover:text-white transition-colors font-mono">all →</Link>
             </div>
-            <div className="border border-border rounded-lg overflow-hidden">
+            <div className="border border-border rounded overflow-hidden">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-border">
-                    <th className="px-3 py-2.5 text-left text-[11px] font-medium text-zinc-600 uppercase tracking-wider">#</th>
-                    <th className="px-3 py-2.5 text-left text-[11px] font-medium text-zinc-600 uppercase tracking-wider">Name</th>
-                    <th className="px-3 py-2.5 text-right text-[11px] font-medium text-zinc-600 uppercase tracking-wider">PnL</th>
+                  <tr className="border-b border-border bg-bg-secondary">
+                    <th className="px-3 py-2 text-left text-[10px] font-mono text-zinc-600 uppercase">#</th>
+                    <th className="px-3 py-2 text-left text-[10px] font-mono text-zinc-600 uppercase">Name</th>
+                    <th className="px-3 py-2 text-right text-[10px] font-mono text-zinc-600 uppercase">PnL</th>
                   </tr>
                 </thead>
                 <tbody>
                   {topByProfit.map((e, i) => (
-                    <tr key={e.wallet_address} className="border-b border-border/50 last:border-b-0 hover:bg-bg-card transition-colors">
-                      <td className="px-3 py-2.5 text-xs text-zinc-600 tabular-nums">{i + 1}</td>
-                      <td className="px-3 py-2.5">
-                        <Link href={`/wallet/${e.wallet_address}`} className="text-sm text-white hover:text-accent transition-colors">
+                    <tr key={e.wallet_address} className="border-b border-zinc-900 last:border-b-0 hover:bg-bg-card transition-colors">
+                      <td className="px-3 py-2 text-[11px] text-zinc-700 font-mono tabular-nums">{i + 1}</td>
+                      <td className="px-3 py-2">
+                        <Link href={`/wallet/${e.wallet_address}`} className="text-xs text-zinc-300 hover:text-white transition-colors">
                           {e.name}
                         </Link>
                       </td>
-                      <td className={`px-3 py-2.5 text-sm text-right tabular-nums font-medium ${e.profit > 0 ? "text-buy" : "text-sell"}`}>
+                      <td className={`px-3 py-2 text-xs text-right tabular-nums font-mono font-semibold ${e.profit > 0 ? "text-buy" : "text-sell"}`}>
                         {e.profit > 0 ? "+" : ""}{e.profit.toFixed(2)}
                       </td>
                     </tr>
@@ -230,34 +146,34 @@ export default async function Home() {
             </div>
           </div>
 
-          {/* GMGN Solana Top */}
+          {/* GMGN Solana */}
           <div>
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h2 className="text-sm font-semibold text-white uppercase tracking-wider">GMGN Solana</h2>
-                <p className="text-[11px] text-zinc-600 mt-0.5">Top profit 7D</p>
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-mono px-1.5 py-0.5 bg-zinc-900 text-zinc-500 border border-zinc-800 rounded">SOL</span>
+                <h2 className="text-xs font-semibold text-white uppercase tracking-wider">GMGN Solana — 7D</h2>
               </div>
-              <Link href="/gmgn-sol" className="text-xs text-zinc-600 hover:text-white transition-colors">View all →</Link>
+              <Link href="/gmgn-sol" className="text-[11px] text-zinc-600 hover:text-white transition-colors font-mono">all →</Link>
             </div>
-            <div className="border border-border rounded-lg overflow-hidden">
+            <div className="border border-border rounded overflow-hidden">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-border">
-                    <th className="px-3 py-2.5 text-left text-[11px] font-medium text-zinc-600 uppercase tracking-wider">#</th>
-                    <th className="px-3 py-2.5 text-left text-[11px] font-medium text-zinc-600 uppercase tracking-wider">Name</th>
-                    <th className="px-3 py-2.5 text-right text-[11px] font-medium text-zinc-600 uppercase tracking-wider">7D PnL</th>
+                  <tr className="border-b border-border bg-bg-secondary">
+                    <th className="px-3 py-2 text-left text-[10px] font-mono text-zinc-600 uppercase">#</th>
+                    <th className="px-3 py-2 text-left text-[10px] font-mono text-zinc-600 uppercase">Name</th>
+                    <th className="px-3 py-2 text-right text-[10px] font-mono text-zinc-600 uppercase">7D PnL</th>
                   </tr>
                 </thead>
                 <tbody>
                   {topGmgnSol.map((w, i) => (
-                    <tr key={w.wallet_address} className="border-b border-border/50 last:border-b-0 hover:bg-bg-card transition-colors">
-                      <td className="px-3 py-2.5 text-xs text-zinc-600 tabular-nums">{i + 1}</td>
-                      <td className="px-3 py-2.5">
-                        <Link href={`/gmgn-wallet/${w.wallet_address}?chain=sol`} className="text-sm text-white hover:text-accent transition-colors">
+                    <tr key={w.wallet_address} className="border-b border-zinc-900 last:border-b-0 hover:bg-bg-card transition-colors">
+                      <td className="px-3 py-2 text-[11px] text-zinc-700 font-mono tabular-nums">{i + 1}</td>
+                      <td className="px-3 py-2">
+                        <Link href={`/gmgn-wallet/${w.wallet_address}?chain=sol`} className="text-xs text-zinc-300 hover:text-white transition-colors">
                           {w.name}
                         </Link>
                       </td>
-                      <td className={`px-3 py-2.5 text-sm text-right tabular-nums font-medium ${w.realized_profit_7d > 0 ? "text-buy" : "text-sell"}`}>
+                      <td className={`px-3 py-2 text-xs text-right tabular-nums font-mono font-semibold ${w.realized_profit_7d > 0 ? "text-buy" : "text-sell"}`}>
                         {w.realized_profit_7d > 0 ? "+" : ""}{w.realized_profit_7d >= 1000 ? `${(w.realized_profit_7d / 1000).toFixed(1)}k` : w.realized_profit_7d.toFixed(2)}
                       </td>
                     </tr>
@@ -267,34 +183,34 @@ export default async function Home() {
             </div>
           </div>
 
-          {/* GMGN BSC Top */}
+          {/* GMGN BSC */}
           <div>
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h2 className="text-sm font-semibold text-white uppercase tracking-wider">GMGN BSC</h2>
-                <p className="text-[11px] text-zinc-600 mt-0.5">Top profit 7D</p>
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-mono px-1.5 py-0.5 bg-zinc-900 text-zinc-500 border border-zinc-800 rounded">BSC</span>
+                <h2 className="text-xs font-semibold text-white uppercase tracking-wider">GMGN BSC — 7D</h2>
               </div>
-              <Link href="/bsc" className="text-xs text-zinc-600 hover:text-white transition-colors">View all →</Link>
+              <Link href="/bsc" className="text-[11px] text-zinc-600 hover:text-white transition-colors font-mono">all →</Link>
             </div>
-            <div className="border border-border rounded-lg overflow-hidden">
+            <div className="border border-border rounded overflow-hidden">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-border">
-                    <th className="px-3 py-2.5 text-left text-[11px] font-medium text-zinc-600 uppercase tracking-wider">#</th>
-                    <th className="px-3 py-2.5 text-left text-[11px] font-medium text-zinc-600 uppercase tracking-wider">Name</th>
-                    <th className="px-3 py-2.5 text-right text-[11px] font-medium text-zinc-600 uppercase tracking-wider">7D PnL</th>
+                  <tr className="border-b border-border bg-bg-secondary">
+                    <th className="px-3 py-2 text-left text-[10px] font-mono text-zinc-600 uppercase">#</th>
+                    <th className="px-3 py-2 text-left text-[10px] font-mono text-zinc-600 uppercase">Name</th>
+                    <th className="px-3 py-2 text-right text-[10px] font-mono text-zinc-600 uppercase">7D PnL</th>
                   </tr>
                 </thead>
                 <tbody>
                   {topGmgnBsc.map((w, i) => (
-                    <tr key={w.wallet_address} className="border-b border-border/50 last:border-b-0 hover:bg-bg-card transition-colors">
-                      <td className="px-3 py-2.5 text-xs text-zinc-600 tabular-nums">{i + 1}</td>
-                      <td className="px-3 py-2.5">
-                        <Link href={`/gmgn-wallet/${w.wallet_address}?chain=bsc`} className="text-sm text-white hover:text-accent transition-colors">
+                    <tr key={w.wallet_address} className="border-b border-zinc-900 last:border-b-0 hover:bg-bg-card transition-colors">
+                      <td className="px-3 py-2 text-[11px] text-zinc-700 font-mono tabular-nums">{i + 1}</td>
+                      <td className="px-3 py-2">
+                        <Link href={`/gmgn-wallet/${w.wallet_address}?chain=bsc`} className="text-xs text-zinc-300 hover:text-white transition-colors">
                           {w.name}
                         </Link>
                       </td>
-                      <td className={`px-3 py-2.5 text-sm text-right tabular-nums font-medium ${w.realized_profit_7d > 0 ? "text-buy" : "text-sell"}`}>
+                      <td className={`px-3 py-2 text-xs text-right tabular-nums font-mono font-semibold ${w.realized_profit_7d > 0 ? "text-buy" : "text-sell"}`}>
                         {w.realized_profit_7d > 0 ? "+" : ""}{w.realized_profit_7d >= 1000 ? `${(w.realized_profit_7d / 1000).toFixed(1)}k` : w.realized_profit_7d.toFixed(2)}
                       </td>
                     </tr>
@@ -306,22 +222,25 @@ export default async function Home() {
         </div>
       </div>
 
-      {/* Source cards */}
+      {/* Source cards — compact */}
       <div className="border-t border-border">
-        <div className="max-w-7xl mx-auto px-6 py-16">
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="max-w-7xl mx-auto px-6 py-8">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
             {[
-              { title: "KolScan Leaderboard", desc: `${kolscanWallets} KOL wallets. Scraped from kolscan.io with Playwright.`, href: "/leaderboard", tag: "SOL" },
-              { title: "GMGN Solana", desc: `${solGmgn.length.toLocaleString()} smart money wallets — degens, snipers, KOLs, launchpad traders.`, href: "/gmgn-sol", tag: "SOL" },
-              { title: "GMGN BSC", desc: `${bscGmgn.length.toLocaleString()} BNB Chain wallets — smart degens, KOLs, snipers.`, href: "/bsc", tag: "BSC" },
-              { title: "All Solana Combined", desc: `${allSolAddresses.size.toLocaleString()} unique wallets. KolScan + GMGN deduplicated.`, href: "/all-solana", tag: "SOL" },
+              { title: "KolScan Leaderboard", desc: `${kolscanWallets} KOL wallets`, href: "/leaderboard", tag: "SOL" },
+              { title: "GMGN Solana", desc: `${solGmgn.length.toLocaleString()} smart money wallets`, href: "/gmgn-sol", tag: "SOL" },
+              { title: "GMGN BSC", desc: `${bscGmgn.length.toLocaleString()} BNB Chain wallets`, href: "/bsc", tag: "BSC" },
+              { title: "All Solana", desc: `${allSolAddresses.size.toLocaleString()} unique wallets deduplicated`, href: "/all-solana", tag: "SOL" },
             ].map((f) => (
-              <Link key={f.title} href={f.href} className="bg-bg-card border border-border rounded-xl p-5 hover:border-zinc-600 transition-all group">
-                <div className="flex items-center gap-2 mb-2">
-                  <h3 className="text-white text-sm font-semibold group-hover:text-accent transition-colors">{f.title}</h3>
-                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-500 border border-zinc-700">{f.tag}</span>
+              <Link key={f.title} href={f.href} className="bg-bg-card border border-border rounded p-4 hover:border-zinc-700 transition-all group flex items-center justify-between">
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-[10px] font-mono px-1 py-0.5 bg-zinc-900 text-zinc-600 border border-zinc-800 rounded">{f.tag}</span>
+                    <h3 className="text-white text-xs font-semibold group-hover:text-accent transition-colors">{f.title}</h3>
+                  </div>
+                  <p className="text-zinc-600 text-[11px] font-mono">{f.desc}</p>
                 </div>
-                <p className="text-zinc-600 text-xs leading-relaxed">{f.desc}</p>
+                <span className="text-zinc-700 group-hover:text-zinc-400 transition-colors text-sm">→</span>
               </Link>
             ))}
           </div>
