@@ -1,20 +1,11 @@
 import { NextResponse } from "next/server";
 import { headers } from "next/headers";
-import { z } from "zod";
-import { desc, eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { db } from "@/drizzle/db";
 import { user, walletSubmission } from "@/drizzle/db/schema";
 import { checkRateLimit } from "@/lib/rate-limit";
-
-const schema = z.object({
-  walletAddress: z.string().min(24).max(80),
-  chain: z.enum(["solana", "bsc"]),
-  label: z.string().min(2).max(80),
-  notes: z.string().max(800).optional().nullable(),
-  twitter: z.string().url().optional().nullable(),
-  telegram: z.string().url().optional().nullable(),
-});
+import { submissionSchema } from "@/lib/validation";
 
 export async function GET() {
   const rows = await db
@@ -60,9 +51,19 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  const parsed = schema.safeParse(body);
+  const parsed = submissionSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json({ error: "Validation failed", details: parsed.error.flatten() }, { status: 422 });
+  }
+
+  // Check for duplicate wallet+chain
+  const [existing] = await db
+    .select({ id: walletSubmission.id })
+    .from(walletSubmission)
+    .where(and(eq(walletSubmission.walletAddress, parsed.data.walletAddress.trim()), eq(walletSubmission.chain, parsed.data.chain)))
+    .limit(1);
+  if (existing) {
+    return NextResponse.json({ error: "This wallet has already been submitted" }, { status: 409 });
   }
 
   const [roleRow] = await db

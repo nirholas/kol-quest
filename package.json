@@ -5,6 +5,7 @@
   "main": "scrape.js",
   "scripts": {
     "scrape": "node scrape.js",
+    "scrape:axiom": "node scrape-axiom.js",
     "setup": "npm install && npx playwright install chromium && sudo npx playwright install-deps chromium",
     "api": "bun api/index.ts",
     "mcp": "bun mcp/index.ts",

@@ -22,14 +22,14 @@ export async function POST(_request: Request, { params }: { params: { id: string
     return NextResponse.json({ error: "Admin access required" }, { status: 403 });
   }
 
-  const rl = checkRateLimit(`approve:${session.user.id}`, 60, 60 * 60 * 1000);
+  const rl = checkRateLimit(`reject:${session.user.id}`, 60, 60 * 60 * 1000);
   if (!rl.success) {
     return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
   }
 
   const [updated] = await db
     .update(walletSubmission)
-    .set({ status: "approved", updatedAt: new Date() })
+    .set({ status: "rejected", updatedAt: new Date() })
     .where(and(eq(walletSubmission.id, params.id), eq(walletSubmission.status, "pending")))
     .returning({ id: walletSubmission.id });
 

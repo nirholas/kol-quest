@@ -43,8 +43,8 @@ export default async function CommunityPage() {
                   <td className="py-3 px-4 text-zinc-400 uppercase">{s.chain}</td>
                   <td className="py-3 px-4 text-zinc-400">
                     <div className="flex gap-3">
-                      {s.twitter ? <a className="hover:text-accent" href={s.twitter} target="_blank" rel="noopener noreferrer">X</a> : <span>-</span>}
-                      {s.telegram ? <a className="hover:text-accent" href={s.telegram} target="_blank" rel="noopener noreferrer">TG</a> : <span>-</span>}
+                      {s.twitter && s.twitter.startsWith("https://") ? <a className="hover:text-accent" href={s.twitter} target="_blank" rel="noopener noreferrer">X</a> : <span>-</span>}
+                      {s.telegram && s.telegram.startsWith("https://") ? <a className="hover:text-accent" href={s.telegram} target="_blank" rel="noopener noreferrer">TG</a> : <span>-</span>}
                     </div>
                   </td>
                 </tr>

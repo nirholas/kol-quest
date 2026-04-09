@@ -1,10 +1,13 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { signIn, signOut, signUp, useSession } from "@/lib/auth-client";
 
 export default function AuthPage() {
   const { data, isPending, refetch } = useSession();
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get("redirect") || "/submit";
   const [tab, setTab] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
@@ -16,12 +19,12 @@ export default function AuthPage() {
   const username = useMemo(() => user?.email?.split("@")[0] || "", [user?.email]);
   const isAdmin = Boolean((user as unknown as { role?: string } | undefined)?.role === "admin");
 
-  async function bootstrapAdminRole() {
+  async function tryBootstrapAdmin() {
     try {
-      await fetch("/api/admin/bootstrap-role", { method: "POST" });
-      await refetch();
+      const res = await fetch("/api/admin/bootstrap-role", { method: "POST" });
+      if (res.ok) await refetch();
     } catch {
-      // no-op
+      // not admin — ignore
     }
   }
 
@@ -34,13 +37,17 @@ export default function AuthPage() {
       if (tab === "signin") {
         const result = await signIn.email({ email, password });
         if (result?.error) throw new Error(result.error.message || "Sign in failed");
-        await bootstrapAdminRole();
-        setMessage("Signed in");
+        await tryBootstrapAdmin();
+        setMessage("Signed in — redirecting...");
+        window.location.href = redirectTo;
+        return;
       } else {
         const result = await signUp.email({ email, password, name });
         if (result?.error) throw new Error(result.error.message || "Sign up failed");
-        await bootstrapAdminRole();
-        setMessage("Account created");
+        await tryBootstrapAdmin();
+        setMessage("Account created — redirecting...");
+        window.location.href = redirectTo;
+        return;
       }
       setPassword("");
       await refetch();
@@ -61,7 +68,7 @@ export default function AuthPage() {
     setLoading(true);
     setMessage("");
     try {
-      const result = await signIn.social({ provider, callbackURL: "/auth" });
+      const result = await signIn.social({ provider, callbackURL: redirectTo });
       if (result?.error) throw new Error(result.error.message || `Sign in with ${provider} failed`);
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Social sign in failed");

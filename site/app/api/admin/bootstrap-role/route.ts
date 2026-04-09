@@ -8,16 +8,12 @@ import { user } from "@/drizzle/db/schema";
 export async function POST() {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session?.user?.id || !session.user.email) {
-    return NextResponse.json({ error: "Authentication required" }, { status: 401 });
+    return NextResponse.json({ ok: false }, { status: 401 });
   }
 
   const adminEmail = process.env.ADMIN_EMAIL?.toLowerCase();
-  if (!adminEmail) {
-    return NextResponse.json({ ok: false, reason: "ADMIN_EMAIL not configured" });
-  }
-
-  if (session.user.email.toLowerCase() !== adminEmail) {
-    return NextResponse.json({ ok: false, reason: "Current user does not match ADMIN_EMAIL" });
+  if (!adminEmail || session.user.email.toLowerCase() !== adminEmail) {
+    return NextResponse.json({ ok: false }, { status: 403 });
   }
 
   await db

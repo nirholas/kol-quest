@@ -46,6 +46,17 @@ export default function AdminSubmissionsPage() {
     setMessage("Submission approved");
   }
 
+  async function reject(id: string) {
+    const res = await fetch(`/api/submissions/${id}/reject`, { method: "POST" });
+    const json = await res.json();
+    if (!res.ok) {
+      setMessage(json.error || "Reject failed");
+      return;
+    }
+    setItems((prev) => prev.filter((x) => x.id !== id));
+    setMessage("Submission rejected");
+  }
+
   return (
     <main className="max-w-7xl mx-auto px-6 py-12 space-y-6">
       <div>
@@ -76,12 +87,20 @@ export default function AdminSubmissionsPage() {
                     <td className="py-3 px-4 text-zinc-400 uppercase">{s.chain}</td>
                     <td className="py-3 px-4 text-zinc-500">{s.notes || "-"}</td>
                     <td className="py-3 px-4">
-                      <button
-                        onClick={() => approve(s.id)}
-                        className="px-3 py-1.5 rounded-lg bg-white text-black text-xs font-medium"
-                      >
-                        Approve
-                      </button>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => approve(s.id)}
+                          className="px-3 py-1.5 rounded-lg bg-white text-black text-xs font-medium"
+                        >
+                          Approve
+                        </button>
+                        <button
+                          onClick={() => reject(s.id)}
+                          className="px-3 py-1.5 rounded-lg border border-red-500/50 text-red-400 text-xs font-medium hover:bg-red-500/10"
+                        >
+                          Reject
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}

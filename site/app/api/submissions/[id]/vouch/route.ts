@@ -3,7 +3,7 @@ import { headers } from "next/headers";
 import { and, eq } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { db } from "@/drizzle/db";
-import { walletVouch } from "@/drizzle/db/schema";
+import { walletSubmission, walletVouch } from "@/drizzle/db/schema";
 import { checkRateLimit } from "@/lib/rate-limit";
 
 export async function POST(_request: Request, { params }: { params: { id: string } }) {
@@ -15,6 +15,20 @@ export async function POST(_request: Request, { params }: { params: { id: string
   const rl = checkRateLimit(`vouch:${session.user.id}`, 100, 60 * 60 * 1000);
   if (!rl.success) {
     return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
+  }
+
+  // Verify submission exists and prevent self-vouching
+  const [submission] = await db
+    .select({ submittedBy: walletSubmission.submittedBy })
+    .from(walletSubmission)
+    .where(eq(walletSubmission.id, params.id))
+    .limit(1);
+
+  if (!submission) {
+    return NextResponse.json({ error: "Submission not found" }, { status: 404 });
+  }
+  if (submission.submittedBy === session.user.id) {
+    return NextResponse.json({ error: "You cannot vouch for your own submission" }, { status: 403 });
   }
 
   const existing = await db
@@ -30,12 +44,15 @@ export async function POST(_request: Request, { params }: { params: { id: string
     return NextResponse.json({ ok: true, vouched: false });
   }
 
-  await db.insert(walletVouch).values({
-    userId: session.user.id,
-    submissionId: params.id,
-    weight: 1,
-    createdAt: new Date(),
-  });
+  await db
+    .insert(walletVouch)
+    .values({
+      userId: session.user.id,
+      submissionId: params.id,
+      weight: 1,
+      createdAt: new Date(),
+    })
+    .onConflictDoNothing();
 
   return NextResponse.json({ ok: true, vouched: true });
 }
