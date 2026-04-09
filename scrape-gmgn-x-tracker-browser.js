@@ -1,5 +1,5 @@
 /**
- * GMGN X Tracker Browser Console Scraper (v2 - More Stable)
+ * GMGN X Tracker Browser Console Scraper (v3 - Crash-Resistant)
  * 
  * INSTRUCTIONS:
  * 1. Go to https://gmgn.ai/follow?chain=sol in your browser
@@ -10,11 +10,12 @@
  * 6. When done, run: downloadData()
  * 
  * Commands available after pasting:
- *   autoScroll()    - Auto-scroll to load all data (~2-3 min)
- *   pauseScraper()  - Pause capturing data to reduce page load
- *   resumeScraper() - Resume capturing data
- *   downloadData()  - Download captured accounts as JSON
- *   getStats()      - Show current capture stats
+ *   autoScroll()    - Gently auto-scrolls to load all data.
+ *   pauseScraper()  - Pause capturing data to reduce page load.
+ *   resumeScraper() - Resume capturing data.
+ *   clearData()     - Clears all captured data to start fresh.
+ *   downloadData()  - Download captured accounts as JSON.
+ *   getStats()      - Show current capture stats.
  */
 
 (function() {
@@ -153,16 +154,23 @@
     window.__xTrackerScraper.isPaused = false;
     console.log('▶️ Scraper resumed.');
   };
+
+  window.clearData = function() {
+    const count = window.__xTrackerScraper.accounts.size;
+    window.__xTrackerScraper.accounts.clear();
+    console.log(`🗑️ Cleared ${count} accounts. Ready to start fresh.`);
+  };
   
-  window.autoScroll = async function(maxScrolls = 300, delay = 1500) {
-    console.log('🚀 Starting auto-scroll... Run pauseScraper() or refresh page to stop.');
+  window.autoScroll = async function(config = {}) {
+    const { maxScrolls = 300, delay = 2000, cooldownAfter = 20, cooldownDuration = 5000 } = config;
+    
+    console.log('🚀 Starting gentle auto-scroll... Run pauseScraper() or refresh page to stop.');
     let prevCount = window.__xTrackerScraper.accounts.size;
     let staleScrolls = 0;
     
     for (let i = 0; i < maxScrolls; i++) {
       if (window.__xTrackerScraper.isPaused) {
         console.log("Auto-scroll paused. Run resumeScraper() to continue.");
-        // Wait until resumed
         while (window.__xTrackerScraper.isPaused) {
           await new Promise(r => setTimeout(r, 1000));
         }
@@ -187,6 +195,11 @@
         console.log(`📜 Scroll ${i+1}: ${currentCount} accounts (+${currentCount - prevCount})`);
       }
       prevCount = currentCount;
+
+      if ((i + 1) % cooldownAfter === 0) {
+        console.log(`🧊 Taking a ${cooldownDuration / 1000}s cooldown to let the page breathe...`);
+        await new Promise(r => setTimeout(r, cooldownDuration));
+      }
     }
     
     console.log(`\n✅ Auto-scroll complete! Total accounts: ${window.__xTrackerScraper.accounts.size}`);
@@ -236,14 +249,15 @@
 
   console.log(`
 ╔════════════════════════════════════════════════════════════╗
-║      GMGN X Tracker Browser Scraper (v2 - Stable)          ║
+║    GMGN X Tracker Browser Scraper (v3 - Crash-Resistant)   ║
 ╠════════════════════════════════════════════════════════════╣
 ║  Commands:                                                 ║
-║    autoScroll()    - Auto-scroll to load all accounts      ║
-║    pauseScraper()  - Pause data capture                    ║
-║    resumeScraper() - Resume data capture                   ║
-║    downloadData()  - Download accounts as JSON             ║
-║    getStats()      - Show capture statistics               ║
+║    autoScroll()    - Gently auto-scrolls to load all.      ║
+║    pauseScraper()  - Pause data capture.                   ║
+║    resumeScraper() - Resume data capture.                  ║
+║    clearData()     - Clears all captured data.             ║
+║    downloadData()  - Download accounts as JSON.            ║
+║    getStats()      - Show capture statistics.              ║
 ╠════════════════════════════════════════════════════════════╣
 ║  Current accounts captured: ${String(window.__xTrackerScraper.accounts.size).padEnd(27)}║
 ╚════════════════════════════════════════════════════════════╝

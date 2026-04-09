@@ -1,17 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getWalletDetail } from "@/lib/wallet-detail";
+import { aggregateWalletData, detectChain } from "@/lib/wallet-aggregator";
 
-// GET /api/wallets/[address] — comprehensive wallet detail
-// Merges data from: unified wallets, X profiles, trades, community submissions
+// GET /api/wallets/[address] — comprehensive wallet summary
+// This is the main summary route.
 export async function GET(
-  _req: NextRequest,
-  { params }: { params: { address: string } },
+  req: NextRequest,
+  { params }: { params: { address: string } }
 ) {
-  const detail = await getWalletDetail(params.address);
+  const { searchParams } = req.nextUrl;
+  const chainParam = searchParams.get("chain") as "solana" | "ethereum" | undefined;
 
-  if (!detail.hasTrackedData && !detail.isValidAddress) {
-    return NextResponse.json({ error: "Wallet not found" }, { status: 404 });
+  try {
+    const chain = chainParam || detectChain(params.address) || "solana";
+    const data = await aggregateWalletData(params.address, chain);
+    return NextResponse.json(data.summary);
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
-
-  return NextResponse.json(detail);
 }

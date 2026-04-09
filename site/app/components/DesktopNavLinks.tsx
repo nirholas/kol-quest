@@ -45,7 +45,8 @@ function NavDropdown({
               <>
                 <div className="flex items-center gap-1.5">
                   <span className="font-medium">{item.label}</span>
-                  {item.live && <span className="w-1.5 h-1.5 rounded-full bg-buy animate-pulse" />}
+                                            {item.live && <span className="w-1.5 h-1.5 bg-buy rounded-full" />}
+                          {item.beta && <span className="text-xs text-accent font-medium">BETA</span>}
                   {item.external && (
                     <svg className="w-3 h-3 opacity-40 ml-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                       <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" />
