@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import NextImage from "next/image";
 import { getChartEmbedUrl } from "@/lib/token-api";
 
 interface TokenData {
@@ -61,6 +62,40 @@ interface Stats {
 }
 
 type ChartProvider = "dexscreener" | "geckoterminal";
+
+function TokenLogo({ src, size }: { src: string; size: number }) {
+  const [failed, setFailed] = useState(false);
+  if (failed) return null;
+  const cls = size === 48 ? "w-12 h-12" : size === 32 ? "w-8 h-8" : "w-6 h-6";
+  return (
+    <NextImage
+      src={src}
+      alt=""
+      width={size}
+      height={size}
+      className={`${cls} rounded-full flex-shrink-0`}
+      onError={() => setFailed(true)}
+      unoptimized
+    />
+  );
+}
+
+function WalletAvatar({ src, size }: { src: string; size: number }) {
+  const [failed, setFailed] = useState(false);
+  if (failed) return null;
+  const cls = size === 24 ? "w-6 h-6" : size === 20 ? "w-5 h-5" : "w-8 h-8";
+  return (
+    <NextImage
+      src={src}
+      alt=""
+      width={size}
+      height={size}
+      className={`${cls} rounded-full flex-shrink-0`}
+      onError={() => setFailed(true)}
+      unoptimized={src.startsWith("/")}
+    />
+  );
+}
 
 function fmt(v: number | null, prefix = "$"): string {
   if (v == null) return "—";
@@ -166,7 +201,7 @@ export default function TokenPageClient({
           {/* Logo + identity */}
           <div className="flex items-center gap-3 flex-1 min-w-0">
             {token.logo ? (
-              <img src={token.logo} alt="" className="w-12 h-12 rounded-full flex-shrink-0" onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.nextElementSibling?.classList.remove('hidden'); }} />
+              <TokenLogo src={token.logo} size={48} />
             ) : null}
             <div className={`w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center text-lg font-bold text-white flex-shrink-0 ${token.logo ? 'hidden' : ''}`}>
               {(token.symbol ?? token.name ?? "?").charAt(0).toUpperCase()}
@@ -376,7 +411,7 @@ export default function TokenPageClient({
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
                           {kol.walletAvatar ? (
-                            <img src={kol.walletAvatar} alt="" className="w-6 h-6 rounded-full flex-shrink-0" onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.nextElementSibling?.classList.remove('hidden'); }} />
+                            <WalletAvatar src={kol.walletAvatar} size={24} />
                           ) : null}
                           <div className={`w-6 h-6 rounded-full bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center text-[10px] font-bold text-white flex-shrink-0 ${kol.walletAvatar ? 'hidden' : ''}`}>
                             {(kol.walletLabel || kol.walletAddress).charAt(0).toUpperCase()}
@@ -448,7 +483,7 @@ export default function TokenPageClient({
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
                           {t.walletAvatar ? (
-                            <img src={t.walletAvatar} alt="" className="w-5 h-5 rounded-full" onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.nextElementSibling?.classList.remove('hidden'); }} />
+                            <WalletAvatar src={t.walletAvatar} size={20} />
                           ) : null}
                           <div className={`w-5 h-5 rounded-full bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center text-[9px] font-bold text-white ${t.walletAvatar ? 'hidden' : ''}`}>
                             {(t.walletLabel || t.walletAddress).charAt(0).toUpperCase()}

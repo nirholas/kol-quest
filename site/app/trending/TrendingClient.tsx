@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import NextImage from "next/image";
 
 interface TrendingToken {
   tokenAddress: string;
@@ -24,6 +25,22 @@ function formatUsd(v: number): string {
   if (Math.abs(v) >= 1_000_000) return `$${(v / 1_000_000).toFixed(2)}M`;
   if (Math.abs(v) >= 1_000) return `$${(v / 1_000).toFixed(1)}k`;
   return `$${v.toFixed(2)}`;
+}
+
+function TokenLogo({ src }: { src: string }) {
+  const [failed, setFailed] = useState(false);
+  if (failed) return null;
+  return (
+    <NextImage
+      src={src}
+      alt=""
+      width={24}
+      height={24}
+      className="w-6 h-6 rounded-full flex-shrink-0"
+      onError={() => setFailed(true)}
+      unoptimized
+    />
+  );
 }
 
 function timeAgo(dateStr: string): string {
@@ -98,7 +115,7 @@ export default function TrendingClient() {
                   className="flex items-center gap-2 group"
                 >
                   {t.tokenLogo ? (
-                    <img src={t.tokenLogo} alt="" className="w-6 h-6 rounded-full flex-shrink-0" />
+                    <TokenLogo src={t.tokenLogo} />
                   ) : (
                     <div className="w-6 h-6 rounded-full bg-zinc-800 flex items-center justify-center text-[10px] font-bold text-zinc-500 flex-shrink-0">
                       {(t.tokenSymbol || "?")[0]}

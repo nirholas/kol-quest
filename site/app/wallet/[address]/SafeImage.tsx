@@ -1,53 +1,41 @@
 "use client";
 
-import { useRef, useEffect } from "react";
+import { useState } from "react";
+import NextImage from "next/image";
 
 export function AvatarImage({ src }: { src: string }) {
-  const ref = useRef<HTMLImageElement>(null);
+  const [failed, setFailed] = useState(false);
 
-  useEffect(() => {
-    const img = ref.current;
-    if (!img) return;
-    const handler = () => {
-      img.style.display = "none";
-      img.nextElementSibling?.classList.remove("hidden");
-    };
-    img.addEventListener("error", handler);
-    if (img.complete && img.naturalWidth === 0) handler();
-    return () => img.removeEventListener("error", handler);
-  }, []);
+  if (failed) return null;
 
   return (
-    <img
-      ref={ref}
+    <NextImage
       src={src}
       alt=""
-      className="w-10 h-10 rounded-full flex-shrink-0"
+      width={40}
+      height={40}
+      className="w-10 h-10 rounded-full flex-shrink-0 object-cover"
+      onError={() => setFailed(true)}
+      unoptimized={src.startsWith("/")}
     />
   );
 }
 
 export function HeaderImage({ src }: { src: string }) {
-  const ref = useRef<HTMLImageElement>(null);
+  const [failed, setFailed] = useState(false);
 
-  useEffect(() => {
-    const img = ref.current;
-    if (!img) return;
-    const handler = () => {
-      (img.parentElement as HTMLElement).style.display = "none";
-    };
-    img.addEventListener("error", handler);
-    if (img.complete && img.naturalWidth === 0) handler();
-    return () => img.removeEventListener("error", handler);
-  }, []);
+  if (failed) return null;
 
   return (
     <div className="overflow-hidden mb-3 -mx-4 -mt-4">
-      <img
-        ref={ref}
+      <NextImage
         src={src}
         alt=""
+        width={800}
+        height={80}
         className="w-full h-20 object-cover"
+        onError={() => setFailed(true)}
+        unoptimized={src.startsWith("/")}
       />
     </div>
   );

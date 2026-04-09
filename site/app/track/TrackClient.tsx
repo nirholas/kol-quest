@@ -3,6 +3,7 @@
 import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import ShareButtons from "../components/ShareButtons";
+import NextImage from "next/image";
 
 interface TrendingToken {
   tokenAddress: string;
@@ -36,6 +37,24 @@ function formatInflow(v: number): string {
   if (abs >= 1_000) s = `${(abs / 1_000).toFixed(2)}K`;
   else s = abs.toFixed(2);
   return v >= 0 ? `$+${s}` : `$-${s}`;
+}
+
+function TokenLogo({ src }: { src: string }) {
+  const [failed, setFailed] = useState(false);
+  if (failed) return (
+    <div className="w-8 h-8 rounded-full bg-bg-elevated border border-border flex items-center justify-center text-xs font-bold text-zinc-400 shrink-0">?</div>
+  );
+  return (
+    <NextImage
+      src={src}
+      alt=""
+      width={32}
+      height={32}
+      className="w-8 h-8 rounded-full bg-bg-elevated border border-border shrink-0"
+      onError={() => setFailed(true)}
+      unoptimized
+    />
+  );
 }
 
 function timeAgo(date: string): string {
@@ -254,12 +273,7 @@ export default function TrackClient() {
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-3">
                     {token.tokenLogo ? (
-                      <img
-                        src={token.tokenLogo}
-                        alt=""
-                        className="w-8 h-8 rounded-full bg-bg-elevated border border-border shrink-0"
-                        onError={(e) => { e.currentTarget.style.display = "none"; }}
-                      />
+                      <TokenLogo src={token.tokenLogo} />
                     ) : (
                       <div className="w-8 h-8 rounded-full bg-bg-elevated border border-border flex items-center justify-center text-xs font-bold text-zinc-400 shrink-0">
                         {(token.tokenSymbol ?? token.tokenName ?? "?").charAt(0).toUpperCase()}

@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { avatarFallbackStyle } from "@/lib/avatar";
+import { AvatarFallback } from "@/app/components/FallbackImg";
 import type { XTrackerAccount } from "@/lib/types";
 
 type SortField = "handle" | "subscribers" | "followers" | "tag";
@@ -254,21 +255,14 @@ export default function XTrackerClient({ accounts }: { accounts: XTrackerAccount
                     {/* Handle + Avatar + Name */}
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
-                        {acc.avatar ? (
-                          <img
-                            src={acc.avatar}
-                            alt={acc.handle}
-                            className="w-8 h-8 rounded-full border border-border flex-shrink-0"
-                            loading="lazy"
-                          />
-                        ) : (
-                          <div
-                            className="w-8 h-8 rounded-full border flex items-center justify-center text-xs flex-shrink-0"
-                            style={avatarFallbackStyle(acc.handle)}
-                          >
-                            {acc.handle[0]?.toUpperCase()}
-                          </div>
-                        )}
+                        <AvatarFallback
+                          src={acc.avatar}
+                          seed={acc.handle}
+                          label={acc.handle}
+                          size="w-8 h-8"
+                          textSize="text-xs"
+                          className="border border-border"
+                        />
                         <div className="min-w-0">
                           <div className="flex items-center gap-1.5">
                             <span className="text-white font-medium truncate">

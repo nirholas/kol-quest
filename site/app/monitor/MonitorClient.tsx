@@ -5,6 +5,7 @@ import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import Link from "next/link";
 import { timeAgo, shortAddr, formatUsd } from "@/lib/format";
 import { avatarFallbackStyle } from "@/lib/avatar";
+import NextImage from "next/image";
 import ExportButton from "../components/ExportButton";
 import ShareButtons from "../components/ShareButtons";
 
@@ -107,6 +108,7 @@ function FallbackImg({
 }) {
   const [failed, setFailed] = useState(false);
   const px = size === "sm" ? "w-5 h-5" : size === "md" ? "w-8 h-8" : "w-6 h-6";
+  const dim = size === "sm" ? 20 : 32;
   const textSize = size === "sm" ? "text-[9px]" : size === "md" ? "text-xs" : "text-[10px]";
   if (failed || !src) {
     return (
@@ -119,11 +121,14 @@ function FallbackImg({
     );
   }
   return (
-    <img
+    <NextImage
       src={src}
       alt=""
+      width={dim}
+      height={dim}
       className={`${px} rounded-full flex-shrink-0 ${className || ""}`}
       onError={() => setFailed(true)}
+      unoptimized
     />
   );
 }

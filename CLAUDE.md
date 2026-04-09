@@ -158,6 +158,32 @@ Three providers: `"credential"` (email/password), `"solana-wallet"` (ed25519 sig
 
 ---
 
+## Code Quality Standards
+
+### No lazy shortcuts
+- **Read before editing.** Always read enough context to understand functions, types, and call sites before making changes.
+- **Complete implementations.** No placeholder code, no `// TODO: implement later`, no stubbed returns. Finish the work.
+- **Type safety.** Use TypeScript strictly — no `any` unless absolutely necessary and documented. Infer types where possible; define explicit interfaces for API boundaries.
+- **Error handling.** Catch errors explicitly. API routes return proper HTTP status codes with meaningful messages. Never swallow errors silently.
+- **Validation at boundaries.** All user input is validated with Zod schemas at API route entry points. Never trust client data.
+
+### Consistency
+- **Follow existing patterns.** Look at how similar features are implemented before adding new code. Match the style.
+- **File organization.** Components in `site/app/components/`, utilities in `site/lib/`, API routes in `site/app/api/`.
+- **Naming.** camelCase for variables/functions, PascalCase for components/types, kebab-case for files and routes.
+- **Imports.** Use absolute imports (`@/lib/...`, `@/components/...`) inside the site package. Relative imports for adjacent files only.
+
+### Testing changes
+- After editing code, verify there are no TypeScript errors by checking with `npx tsc --noEmit` in the `site/` directory.
+- For API changes, test the endpoint manually with curl or the browser.
+- For UI changes, check the page renders without errors in dev mode.
+
+### Git hygiene
+- Write clear commit messages: imperative mood, concise, describe the "what" not the "how".
+- Keep commits atomic — one logical change per commit.
+
+---
+
 ## Docs
 
 Full documentation lives in `docs/`:
@@ -166,6 +192,7 @@ Full documentation lives in `docs/`:
 - `docs/api-reference.md` — REST API endpoints
 - `docs/authentication.md` — auth flow and providers
 - `docs/trade-ingestion.md` — trade import and polling
+- `docs/data-sources.md` — fetcher roadmap and external API status
 - `docs/scrapers.md` — scraper details
 - `docs/mcp-server.md` — MCP server tools
 - `docs/deployment.md` — Vercel + environment setup

@@ -6,6 +6,8 @@ import Link from "next/link";
 import { timeAgo, shortAddr, formatUsd } from "@/lib/format";
 import ExportButton from "../components/ExportButton";
 import ShareButtons from "../components/ShareButtons";
+import { AvatarFallback } from "../components/FallbackImg";
+import NextImage from "next/image";
 
 interface Trade {
   id: string;
@@ -27,6 +29,22 @@ interface Trade {
   txHash: string | null;
   source: string;
   tradedAt: string;
+}
+
+function TokenLogo({ src }: { src: string }) {
+  const [failed, setFailed] = useState(false);
+  if (failed) return null;
+  return (
+    <NextImage
+      src={src}
+      alt=""
+      width={20}
+      height={20}
+      className="w-5 h-5 rounded-full"
+      onError={() => setFailed(true)}
+      unoptimized
+    />
+  );
 }
 
 function FeedInner() {
@@ -259,12 +277,13 @@ function FeedInner() {
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
-                        {t.walletAvatar ? (
-                          <img src={t.walletAvatar} alt="" className="w-5 h-5 rounded-full flex-shrink-0" loading="lazy" onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.nextElementSibling?.classList.remove('hidden'); }} />
-                        ) : null}
-                        <div className={`w-5 h-5 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center text-[9px] font-bold text-zinc-400 flex-shrink-0 ${t.walletAvatar ? 'hidden' : ''}`}>
-                          {(t.walletLabel || t.walletAddress).charAt(0).toUpperCase()}
-                        </div>
+                        <AvatarFallback
+                          src={t.walletAvatar}
+                          seed={t.walletAddress}
+                          label={t.walletLabel || t.walletAddress}
+                          size="w-5 h-5"
+                          textSize="text-[9px]"
+                        />
                         <Link href={walletHref(t.chain, t.walletAddress)} className="text-sm text-white hover:text-accent transition-colors">
                           {t.walletLabel || shortAddr(t.walletAddress)}
                         </Link>
@@ -272,7 +291,9 @@ function FeedInner() {
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
-                        {t.tokenLogo && <img src={t.tokenLogo} alt="" className="w-5 h-5 rounded-full" onError={(e) => { e.currentTarget.style.display = 'none'; }} />}
+                        {t.tokenLogo && (
+                          <TokenLogo src={t.tokenLogo} />
+                        )}
                         <div>
                           <span className="text-sm text-white font-medium">
                             {t.tokenSymbol || shortAddr(t.tokenAddress)}

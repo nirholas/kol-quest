@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { AvatarFallback } from "./FallbackImg";
 
 interface SearchResult {
   type: "wallet" | "token";
@@ -187,13 +188,14 @@ export default function SearchBar() {
                       i === selected ? "bg-bg-hover" : "hover:bg-bg-hover"
                     }`}
                   >
-                    {r.avatar ? (
-                      <img src={r.avatar} alt="" className="w-7 h-7 rounded-full flex-shrink-0" />
-                    ) : (
-                      <div className="w-7 h-7 rounded-full bg-zinc-800 flex items-center justify-center text-[10px] font-mono text-zinc-500 flex-shrink-0">
-                        {r.type === "wallet" ? "W" : "T"}
-                      </div>
-                    )}
+                    <AvatarFallback
+                      src={r.avatar}
+                      seed={r.address}
+                      label={r.type === "wallet" ? "W" : "T"}
+                      size="w-7 h-7"
+                      textSize="text-[10px]"
+                      className="font-mono text-zinc-500"
+                    />
                     <div className="flex-1 min-w-0">
                       <div className="text-sm text-white truncate">{r.label}</div>
                       {r.sublabel && (

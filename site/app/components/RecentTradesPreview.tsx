@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { AvatarFallback } from "./FallbackImg";
 
 interface Trade {
   id: string;
@@ -105,12 +106,13 @@ export default function RecentTradesPreview() {
                 </div>
                 <div className="flex items-center justify-between mt-1">
                   <span className="flex items-center gap-1.5 text-[11px] text-zinc-500 truncate min-w-0">
-                    {t.walletAvatar ? (
-                      <img src={t.walletAvatar} alt="" className="w-4 h-4 rounded-full flex-shrink-0" loading="lazy" onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.nextElementSibling?.classList.remove('hidden'); }} />
-                    ) : null}
-                    <div className={`w-4 h-4 rounded-full bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center text-[8px] font-bold text-white flex-shrink-0 ${t.walletAvatar ? 'hidden' : ''}`}>
-                      {(t.walletLabel || t.walletAddress).charAt(0).toUpperCase()}
-                    </div>
+                    <AvatarFallback
+                      src={t.walletAvatar}
+                      seed={t.walletAddress}
+                      label={t.walletLabel || t.walletAddress}
+                      size="w-4 h-4"
+                      textSize="text-[8px]"
+                    />
                     <span className="truncate">{t.walletLabel || shortAddr(t.walletAddress)}</span>
                   </span>
                   {t.amountUsd != null && (

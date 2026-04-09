@@ -6,6 +6,7 @@ import Link from "next/link";
 import type { KolEntry, SortField, SortDir, Timeframe } from "@/lib/types";
 import ExportButton from "../components/ExportButton";
 import ShareButtons from "../components/ShareButtons";
+import { AvatarFallback } from "../components/FallbackImg";
 
 function formatProfit(v: number): string {
   const abs = Math.abs(v);
@@ -198,18 +199,13 @@ function LeaderboardInner({
                   <td className="px-4 py-2 text-zinc-700 text-[11px] font-mono tabular-nums">{i + 1}</td>
                   <td className="px-4 py-2">
                     <div className="flex items-center gap-2">
-                      {entry.avatar ? (
-                        <img
-                          src={entry.avatar}
-                          alt=""
-                          className="w-6 h-6 rounded-full flex-shrink-0"
-                          loading="lazy"
-                          onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.nextElementSibling?.classList.remove('hidden'); }}
-                        />
-                      ) : null}
-                      <div className={`w-6 h-6 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center text-[10px] font-mono font-bold text-zinc-400 flex-shrink-0 ${entry.avatar ? 'hidden' : ''}`}>
-                        {entry.name.charAt(0).toUpperCase()}
-                      </div>
+                      <AvatarFallback
+                        src={entry.avatar}
+                        seed={entry.wallet_address}
+                        label={entry.name}
+                        size="w-6 h-6"
+                        textSize="text-[10px]"
+                      />
                       <Link
                         href={`/wallet/${entry.wallet_address}`}
                         className="text-white text-sm font-medium hover:text-buy transition-colors"

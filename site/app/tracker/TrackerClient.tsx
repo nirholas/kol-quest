@@ -3,6 +3,7 @@
 import { useState, useMemo, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { avatarFallbackStyle } from "@/lib/avatar";
+import { AvatarFallback } from "@/app/components/FallbackImg";
 import type { UnifiedWallet } from "@/lib/types";
 
 interface WatchlistEntry {
@@ -439,20 +440,14 @@ export default function TrackerClient({
                           {/* Wallet */}
                           <td className="px-4 py-3">
                             <div className="flex items-center gap-3">
-                              {wallet?.avatar ? (
-                                <img
-                                  src={wallet.avatar}
-                                  alt=""
-                                  className="w-7 h-7 rounded-full bg-bg-hover"
-                                  onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.nextElementSibling?.classList.remove('hidden'); }}
-                                />
-                              ) : null}
-                              <div
-                                className={`w-7 h-7 rounded-full border flex items-center justify-center text-xs font-mono ${wallet?.avatar ? 'hidden' : ''}`}
-                                style={avatarFallbackStyle(entry.walletAddress)}
-                              >
-                                {entry.walletAddress.slice(0, 2)}
-                              </div>
+                              <AvatarFallback
+                                src={wallet?.avatar}
+                                seed={entry.walletAddress}
+                                label={entry.walletAddress.slice(0, 2)}
+                                size="w-7 h-7"
+                                textSize="text-xs"
+                                className="font-mono"
+                              />
                               <div>
                                 <Link
                                     href={`/wallet/${entry.walletAddress}`}
