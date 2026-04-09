@@ -149,6 +149,17 @@ function parseGmgnRaw(raw: any, chain: "sol" | "bsc"): GmgnWallet[] {
             profit: parseFloat(d.profit) || 0,
           }))
         : [],
+      // All-time totals
+      buy_total: w.buy || 0,
+      sell_total: w.sell || 0,
+      txs_total: w.txs || 0,
+      // Tracker count
+      remark_count: w.remark_count || 0,
+      // Per-chain balances
+      eth_balance: parseFloat(w.eth_balance) || 0,
+      sol_balance: parseFloat(w.sol_balance) || 0,
+      trx_balance: parseFloat(w.trx_balance) || 0,
+      monad_balance: parseFloat(w.monad_balance) || 0,
     });
   }
 

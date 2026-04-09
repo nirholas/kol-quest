@@ -71,6 +71,17 @@ export interface GmgnWallet {
   pnl_gt_5x_num_7d: number;         // trades at >5x
   // Daily profit sparkline
   daily_profit_7d: { timestamp: number; profit: number }[];
+  // All-time totals (not capped to a timeframe window)
+  buy_total: number;
+  sell_total: number;
+  txs_total: number;
+  // How many GMGN users are tracking this wallet
+  remark_count: number;
+  // Per-chain balance breakdown
+  eth_balance: number;
+  sol_balance: number;
+  trx_balance: number;
+  monad_balance: number;
 }
 
 // Unified wallet for combined leaderboard views

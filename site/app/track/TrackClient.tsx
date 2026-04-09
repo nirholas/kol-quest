@@ -1,36 +1,27 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
+import Link from "next/link";
 import ShareButtons from "../components/ShareButtons";
 
-interface TrackedToken {
-  name: string;
-  logo?: string;
-  marketCap: number;
-  txBuy24h: number;
-  txSell24h: number;
-  walletCount: number;
-  inflow24h: number;
-  age: string;
-  address: string;
+interface TrendingToken {
+  tokenAddress: string;
+  tokenSymbol: string | null;
+  tokenName: string | null;
+  tokenLogo: string | null;
+  chain: string;
+  buyCount: number;
+  sellCount: number;
+  uniqueBuyers: number;
+  totalBuyUsd: number;
+  totalSellUsd: number;
+  netFlow: number;
+  firstSeen: string;
+  lastSeen: string;
 }
 
-const DEMO_TOKENS: TrackedToken[] = [
-  { name: "Mikerisu", marketCap: 3400, txBuy24h: 170, txSell24h: 151, walletCount: 1, inflow24h: 45.01, age: "2m", address: "0x1" },
-  { name: "Barsik", marketCap: 15200, txBuy24h: 1000, txSell24h: 1000, walletCount: 1, inflow24h: -36, age: "22m", address: "0x2" },
-  { name: "MAYHEM", marketCap: 268.3, txBuy24h: 122, txSell24h: 85, walletCount: 1, inflow24h: -1400, age: "3m", address: "0x3" },
-  { name: "Mythos", marketCap: 145000, txBuy24h: 2000, txSell24h: 2000, walletCount: 1, inflow24h: 1280, age: "12d", address: "0x4" },
-  { name: "MONDAY", marketCap: 574.5, txBuy24h: 463, txSell24h: 146, walletCount: 1, inflow24h: 201.8, age: "5m", address: "0x5" },
-  { name: "MONDAY", marketCap: 521.3, txBuy24h: 139, txSell24h: 113, walletCount: 1, inflow24h: 243.9, age: "6m", address: "0x6" },
-  { name: "Pound", marketCap: 11200, txBuy24h: 4000, txSell24h: 3000, walletCount: 3, inflow24h: 1130, age: "36m", address: "0x7" },
-  { name: "BULL", marketCap: 650.6, txBuy24h: 95, txSell24h: 40, walletCount: 1, inflow24h: 49.21, age: "14m", address: "0x8" },
-  { name: "CroydonAI", marketCap: 3700, txBuy24h: 756, txSell24h: 671, walletCount: 1, inflow24h: -15.2, age: "17h", address: "0x9" },
-  { name: "뉴크구", marketCap: 2300, txBuy24h: 22, txSell24h: 28, walletCount: 1, inflow24h: 5.704, age: "33m", address: "0xa" },
-  { name: "67POOP", marketCap: 2300, txBuy24h: 32, txSell24h: 34, walletCount: 1, inflow24h: -0.19, age: "33m", address: "0xb" },
-];
-
-type TimeFilter = "5m" | "1h" | "6h" | "24h";
-type GroupFilter = "all" | "default" | "axiom";
+type TimeFilter = "1h" | "6h" | "24h";
+type GroupFilter = "all";
 
 function formatMC(v: number): string {
   if (v >= 1_000_000) return `$${(v / 1_000_000).toFixed(1)}M`;
@@ -46,26 +37,62 @@ function formatInflow(v: number): string {
   return v >= 0 ? `$+${s}` : `$-${s}`;
 }
 
+function timeAgo(date: string): string {
+  const diff = Date.now() - new Date(date).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 60) return `${mins}m`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h`;
+  const days = Math.floor(hrs / 24);
+  return `${days}d`;
+}
+
 export default function TrackClient() {
   const [timeFilter, setTimeFilter] = useState<TimeFilter>("24h");
-  const [group, setGroup] = useState<GroupFilter>("all");
   const [search, setSearch] = useState("");
   const [advOpen, setAdvOpen] = useState(false);
+  const [tokens, setTokens] = useState<TrendingToken[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [minBuyers, setMinBuyers] = useState("");
+  const [minNetFlow, setMinNetFlow] = useState("");
+  const refreshRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const fetchTokens = () => {
+    setLoading(true);
+    fetch("/api/trending")
+      .then((r) => r.json())
+      .then((d) => {
+        setTokens(d.tokens ?? []);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    fetchTokens();
+    refreshRef.current = setInterval(fetchTokens, 30_000);
+    return () => {
+      if (refreshRef.current) clearInterval(refreshRef.current);
+    };
+  }, []);
 
   const filtered = useMemo(() => {
-    let list = DEMO_TOKENS;
+    let list = tokens;
     if (search) {
       const q = search.toLowerCase();
-      list = list.filter((t) => t.name.toLowerCase().includes(q) || t.address.toLowerCase().includes(q));
+      list = list.filter(
+        (t) =>
+          (t.tokenSymbol ?? "").toLowerCase().includes(q) ||
+          (t.tokenName ?? "").toLowerCase().includes(q) ||
+          t.tokenAddress.toLowerCase().includes(q),
+      );
     }
+    const minB = parseInt(minBuyers, 10);
+    if (!isNaN(minB) && minB > 0) list = list.filter((t) => t.uniqueBuyers >= minB);
+    const minF = parseFloat(minNetFlow);
+    if (!isNaN(minF)) list = list.filter((t) => t.netFlow >= minF);
     return list;
-  }, [search]);
-
-  const groupCounts: Record<GroupFilter, number> = {
-    all: DEMO_TOKENS.length,
-    default: 37,
-    axiom: 130,
-  };
+  }, [tokens, search, minBuyers, minNetFlow]);
 
   return (
     <div className="space-y-4">
