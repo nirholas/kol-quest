@@ -1,5 +1,7 @@
 import Link from "next/link";
 import ApiPlayground from "./ApiPlayground";
+import CodeBlock, { CodeTabs } from "./components/CodeBlock";
+import EndpointDoc from "./components/EndpointDoc";
 
 export const metadata = {
   title: "Docs | KolQuest — API, MCP & Technical Writeup",
@@ -21,6 +23,81 @@ function SectionNav({ items }: { items: { id: string; label: string }[] }) {
           {item.label}
         </a>
       ))}
+    </div>
+  );
+}
+
+function InfoCard({
+  icon,
+  title,
+  children,
+  variant = "default",
+}: {
+  icon: string;
+  title: string;
+  children: React.ReactNode;
+  variant?: "default" | "warning" | "success";
+}) {
+  const styles = {
+    default: "border-border bg-bg-card",
+    warning: "border-amber-500/30 bg-amber-500/5",
+    success: "border-emerald-500/30 bg-emerald-500/5",
+  };
+  return (
+    <div className={`rounded-xl border p-4 ${styles[variant]}`}>
+      <div className="flex items-center gap-2 mb-2">
+        <span className="text-lg">{icon}</span>
+        <h4 className="font-semibold text-white text-sm">{title}</h4>
+      </div>
+      <div className="text-zinc-400 text-sm leading-relaxed">{children}</div>
+    </div>
+  );
+}
+
+function ErrorCodeTable() {
+  const errors = [
+    { code: 400, name: "Bad Request", description: "Invalid request parameters or malformed JSON" },
+    { code: 401, name: "Unauthorized", description: "Authentication required or invalid credentials" },
+    { code: 403, name: "Forbidden", description: "Insufficient permissions for this resource" },
+    { code: 404, name: "Not Found", description: "Resource not found" },
+    { code: 429, name: "Too Many Requests", description: "Rate limit exceeded — slow down" },
+    { code: 500, name: "Internal Error", description: "Server error — try again later" },
+    { code: 502, name: "Bad Gateway", description: "Upstream API error" },
+    { code: 503, name: "Service Unavailable", description: "Service temporarily unavailable" },
+  ];
+
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full text-sm">
+        <thead>
+          <tr className="text-left border-b border-border">
+            <th className="pb-3 pr-4 text-zinc-500 font-medium">Code</th>
+            <th className="pb-3 pr-4 text-zinc-500 font-medium">Name</th>
+            <th className="pb-3 text-zinc-500 font-medium">Description</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-border">
+          {errors.map((e) => (
+            <tr key={e.code}>
+              <td className="py-3 pr-4">
+                <span
+                  className={`px-2 py-0.5 rounded text-xs font-bold ${
+                    e.code < 400
+                      ? "bg-emerald-500/10 text-emerald-400"
+                      : e.code < 500
+                        ? "bg-amber-500/10 text-amber-400"
+                        : "bg-red-500/10 text-red-400"
+                  }`}
+                >
+                  {e.code}
+                </span>
+              </td>
+              <td className="py-3 pr-4 text-white font-mono text-xs">{e.name}</td>
+              <td className="py-3 text-zinc-400">{e.description}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }
