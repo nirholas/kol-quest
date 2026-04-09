@@ -73,10 +73,12 @@ export const apiKey = pgTable(
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
     keyHash: text("key_hash").notNull().unique(),
+    keyPrefix: text("key_prefix"), // First 8 chars of the key for display (e.g. "kq_abc123")
     name: text("name"),
-    tier: text("tier").notNull().default("free"), // 'free', 'pro'
+    tier: text("tier").notNull().default("free"), // 'free', 'pro', 'enterprise'
     rateLimit: integer("rate_limit").notNull().default(60),
     createdAt: timestamp("created_at").notNull().defaultNow(),
+    expiresAt: timestamp("expires_at"),
     lastUsedAt: timestamp("last_used_at"),
     revokedAt: timestamp("revoked_at"),
   },
