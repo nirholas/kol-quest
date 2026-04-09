@@ -1,110 +1,170 @@
-# KolQuest
+<div align="center">
 
-Smart wallet intelligence and KOL analytics for Solana and BSC. Track the best crypto traders, monitor smart money moves in real time, and discover new tokens before they run.
+<img src="assets/hero-banner.svg" alt="KolQuest — Smart Wallet Intelligence" width="100%"/>
 
-**Live:** [kolquest.com](https://kolquest.com)
+<br/>
+<br/>
+
+Track the best crypto traders. Monitor smart money moves in real time. Discover new tokens before they run.
+
+<br/>
+
+[![Live](https://img.shields.io/badge/Live-kolquest.com-1D9BF0?style=for-the-badge&logo=vercel&logoColor=white)](https://kolquest.com)
+[![License](https://img.shields.io/badge/License-MIT-22c55e?style=for-the-badge)](LICENSE)
+[![Next.js](https://img.shields.io/badge/Next.js_14-black?style=for-the-badge&logo=next.js&logoColor=white)](https://nextjs.org)
+[![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://typescriptlang.org)
+
+</div>
+
+<br/>
+
+<img src="assets/divider.svg" width="100%" />
+
+<br/>
 
 ## Features
 
-### Leaderboards
-- **KolScan** — KOL profit rankings with daily/weekly/monthly timeframes, win rates, and social links
-- **GMGN Solana** — Smart money wallets ranked by realized profit, PnL, and win rate
-- **GMGN BSC** — Binance Smart Chain smart money wallets
-- **All Solana** — Unified leaderboard combining all Solana data sources
-- **Most Profitable / Top Win Rate** — Filtered views for different strategies
+<table>
+<tr>
+<td width="50%">
 
-### Real-Time Tracking
-- **Track** — Spot new tokens being traded by smart wallets as they happen
-- **Monitor** — Live activity feed from smart money wallets (GMGN-style)
-- **Feed** — Buy/sell trade stream with profit/loss, token details, and wallet labels
+<img src="assets/features-leaderboard.svg" alt="Leaderboards" width="100%"/>
 
-### Wallet Tracker
-- Save favorite wallets to a personal watchlist
-- Organize wallets into custom groups
-- Monitor individual wallet performance over time
+**Multi-source KOL rankings** across daily, weekly, and monthly timeframes. KolScan profit leaders, GMGN smart money wallets, win rate filters, and a unified All Solana view that merges every data source.
 
-### Community
-- Submit wallets you've found for community review
-- Vouch/upvote submissions from other users
-- Admin moderation workflow (pending -> approved/rejected)
+</td>
+<td width="50%">
 
-### X/Twitter Integration
-- Scraped profile data for KOLs (followers, bio, verified status)
-- Social links on leaderboard entries
+<img src="assets/features-realtime.svg" alt="Real-Time Tracking" width="100%"/>
 
-### Authentication
-- Email/password signup
-- **Solana wallet login** (message signing with ed25519)
-- **Ethereum wallet login** (EIP-191 / SIWE)
-- Role-based access (user, admin)
+**Live trade feeds** from smart money wallets as they happen. Token discovery, wallet monitoring, buy/sell streams with P&L — three real-time views for different tracking styles.
+
+</td>
+</tr>
+<tr>
+<td width="50%">
+
+<img src="assets/features-community.svg" alt="Community" width="100%"/>
+
+**Community-driven wallet discovery.** Submit wallets, vouch for others' finds, and browse approved submissions. Full moderation workflow with admin controls.
+
+</td>
+<td width="50%">
+
+<img src="assets/features-auth.svg" alt="Multi-Chain Auth" width="100%"/>
+
+**Sign in with your wallet.** Solana (ed25519), Ethereum (EIP-191/SIWE), or traditional email — all powered by Better-Auth with role-based access control.
+
+</td>
+</tr>
+</table>
+
+<br/>
+
+<img src="assets/divider.svg" width="100%" />
+
+<br/>
+
+## Architecture
+
+<div align="center">
+<img src="assets/architecture.svg" alt="Architecture Diagram" width="100%"/>
+</div>
+
+<br/>
+
+<img src="assets/divider.svg" width="100%" />
+
+<br/>
 
 ## Tech Stack
 
-| Layer | Tech |
-|-------|------|
-| Framework | Next.js 14, React 18, TypeScript |
-| Styling | Tailwind CSS, custom design system |
-| Database | PostgreSQL + Drizzle ORM |
-| Auth | Better-Auth (email, Solana, Ethereum) |
-| Scraping | Playwright, xactions (X/Twitter) |
-| Crypto | TweetNaCl, bs58, ethers.js |
-| Data | KolScan API, GMGN API |
+<div align="center">
+<img src="assets/tech-stack.svg" alt="Tech Stack" width="820"/>
+</div>
+
+<br/>
+
+| Layer | Technology |
+|:------|:-----------|
+| **Framework** | Next.js 14, React 18, TypeScript |
+| **Styling** | Tailwind CSS, custom dark design system |
+| **Database** | PostgreSQL + Drizzle ORM |
+| **Auth** | Better-Auth — email, Solana, Ethereum |
+| **Scraping** | Playwright, xactions (X/Twitter) |
+| **Crypto** | TweetNaCl, bs58, ethers.js |
+| **Data** | KolScan API, GMGN API, X/Twitter |
+
+<br/>
+
+<img src="assets/divider.svg" width="100%" />
+
+<br/>
 
 ## Project Structure
 
 ```
 kol-quest/
-  scrape.js              # KolScan leaderboard scraper
-  scrape-axiom.js        # GMGN API data ingestion
-  scrape-x-profiles.js   # X/Twitter profile scraper
-  scrape-gmgn-x-tracker.js
-  solwallets.json         # GMGN Solana wallet data
-  bscwallets.json         # GMGN BSC wallet data
-  api/                    # Bun API server
-  mcp/                    # MCP server
-  site/                   # Next.js application
-    app/
-      leaderboard/        # KolScan rankings
-      gmgn-sol/           # GMGN Solana wallets
-      bsc/                # GMGN BSC wallets
-      all-solana/         # Unified Solana leaderboard
-      track/              # Live token tracker
-      monitor/            # Real-time wallet monitor
-      tracker/            # Personal wallet tracker
-      feed/               # Trade activity feed
-      community/          # Community-submitted wallets
-      submit/             # Wallet submission form
-      admin/              # Admin panel
-      api/                # API routes
-    drizzle/              # DB schema & migrations
-    lib/                  # Auth, data loading, types
-    scripts/              # Trade ingestion scripts
+├── scrape.js                  # KolScan leaderboard scraper
+├── scrape-axiom.js            # GMGN API data ingestion
+├── scrape-x-profiles.js       # X/Twitter profile scraper
+├── scrape-gmgn-x-tracker.js   # GMGN X tracker accounts
+├── solwallets.json            # GMGN Solana wallet data
+├── bscwallets.json            # GMGN BSC wallet data
+├── api/                       # Bun API server
+├── mcp/                       # MCP server
+└── site/                      # Next.js application
+    ├── app/
+    │   ├── leaderboard/       # KolScan rankings
+    │   ├── gmgn-sol/          # GMGN Solana wallets
+    │   ├── bsc/               # GMGN BSC wallets
+    │   ├── all-solana/        # Unified Solana leaderboard
+    │   ├── track/             # Live token tracker
+    │   ├── monitor/           # Real-time wallet monitor
+    │   ├── tracker/           # Personal wallet tracker
+    │   ├── feed/              # Trade activity feed
+    │   ├── community/         # Community-submitted wallets
+    │   ├── submit/            # Wallet submission form
+    │   ├── admin/             # Admin panel
+    │   └── api/               # API routes
+    ├── drizzle/               # DB schema & migrations
+    ├── lib/                   # Auth, data loading, types
+    └── scripts/               # Trade ingestion scripts
 ```
+
+<br/>
+
+<img src="assets/divider.svg" width="100%" />
+
+<br/>
 
 ## Getting Started
 
 ### Prerequisites
+
 - Node.js 18+
 - PostgreSQL
 - Chromium (for scrapers)
 
-### Setup
+### Install
 
 ```bash
-# Install dependencies
+# Root dependencies (scrapers)
 npm install
+
+# Site dependencies (Next.js app)
 cd site && npm install
 
-# Install Playwright for scraping
+# Playwright for scraping
 npx playwright install chromium
 sudo npx playwright install-deps chromium   # Linux only
-
-# Configure environment
-cp site/.env.example site/.env
-# Edit site/.env with your database URL and auth secret
 ```
 
-### Environment Variables
+### Configure
+
+```bash
+cp site/.env.example site/.env
+```
 
 ```env
 DATABASE_URL=postgres://user:password@host:5432/dbname
@@ -118,9 +178,9 @@ ADMIN_USERNAME=yourusername
 
 ```bash
 cd site
-npm run db:push       # Push schema to database
-npm run db:generate   # Generate migrations
-npm run db:migrate    # Run migrations
+npm run db:push        # Push schema to database
+npm run db:generate    # Generate migrations
+npm run db:migrate     # Run migrations
 ```
 
 ### Run
@@ -133,29 +193,70 @@ npm run dev
 cd site && npm run build && npm start
 ```
 
-### Scrape Data
+<br/>
 
-```bash
-npm run scrape          # KolScan leaderboard
-npm run scrape:axiom    # GMGN smart money wallets
-npm run scrape:x        # X/Twitter profiles
-npm run scrape:x-tracker # GMGN X tracker accounts
-```
+<img src="assets/divider.svg" width="100%" />
 
-### Ingest Trades
+<br/>
 
-```bash
-cd site
-npm run ingest        # Bulk import from JSON files
-npm run ingest:poll   # Poll GMGN API for live trades
-```
+## Scripts
+
+| Command | Description |
+|:--------|:------------|
+| `npm run scrape` | Scrape KolScan leaderboard |
+| `npm run scrape:axiom` | Pull GMGN smart money data |
+| `npm run scrape:x` | Scrape X/Twitter KOL profiles |
+| `npm run scrape:x-tracker` | Scrape GMGN X tracker accounts |
+| `npm run dev` | Start Next.js dev server |
+| `npm run build` | Build for production |
+| `cd site && npm run ingest` | Bulk import trades from JSON |
+| `cd site && npm run ingest:poll` | Poll GMGN API for live trades |
+| `cd site && npm run db:push` | Push schema to database |
+
+<br/>
+
+<img src="assets/divider.svg" width="100%" />
+
+<br/>
 
 ## Data Sources
 
-- **[KolScan](https://kolscan.io)** — KOL wallet rankings, profit/loss, win rates
-- **[GMGN](https://gmgn.ai)** — Smart money wallet discovery, trade data, PnL analytics
-- **X/Twitter** — KOL social profiles and metadata
+<table>
+<tr>
+<td align="center" width="33%">
 
-## License
+**KolScan**
 
-MIT
+KOL wallet rankings, profit/loss tracking, win rates across timeframes
+
+</td>
+<td align="center" width="33%">
+
+**GMGN**
+
+Smart money wallet discovery, on-chain trade data, PnL analytics
+
+</td>
+<td align="center" width="33%">
+
+**X / Twitter**
+
+KOL social profiles, follower data, verification status
+
+</td>
+</tr>
+</table>
+
+<br/>
+
+<img src="assets/divider.svg" width="100%" />
+
+<br/>
+
+<div align="center">
+
+MIT License
+
+Built with data from [KolScan](https://kolscan.io) and [GMGN](https://gmgn.ai)
+
+</div>

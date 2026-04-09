@@ -1,0 +1,137 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 360" fill="none">
+  <defs>
+    <linearGradient id="archBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0d1117"/>
+      <stop offset="100%" style="stop-color:#0a0a0a"/>
+    </linearGradient>
+    <linearGradient id="blueAccent" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#1D9BF0"/>
+      <stop offset="100%" style="stop-color:#60a5fa"/>
+    </linearGradient>
+    <linearGradient id="greenAccent" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#22c55e"/>
+      <stop offset="100%" style="stop-color:#4ade80"/>
+    </linearGradient>
+    <linearGradient id="purpleAccent" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#a855f7"/>
+      <stop offset="100%" style="stop-color:#c084fc"/>
+    </linearGradient>
+    <linearGradient id="orangeAccent" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#f59e0b"/>
+      <stop offset="100%" style="stop-color:#fbbf24"/>
+    </linearGradient>
+    <filter id="nodeGlow">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <rect width="800" height="360" rx="12" fill="url(#archBg)" stroke="#222" stroke-width="1"/>
+
+  <!-- Title -->
+  <text x="400" y="32" text-anchor="middle" font-family="system-ui, sans-serif" font-size="14" fill="#6b7280" font-weight="500" letter-spacing="2">ARCHITECTURE</text>
+
+  <!-- DATA SOURCES (left column) -->
+  <text x="100" y="70" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" fill="#6b7280" font-weight="600" letter-spacing="1.5">DATA SOURCES</text>
+
+  <!-- KolScan -->
+  <rect x="30" y="85" width="140" height="44" rx="8" fill="#1D9BF0" opacity="0.06" stroke="#1D9BF0" stroke-width="0.8" stroke-opacity="0.4"/>
+  <text x="100" y="105" text-anchor="middle" font-family="system-ui, sans-serif" font-size="12" fill="#1D9BF0" font-weight="600">KolScan</text>
+  <text x="100" y="120" text-anchor="middle" font-family="monospace" font-size="9" fill="#4b5563">KOL rankings</text>
+
+  <!-- GMGN -->
+  <rect x="30" y="140" width="140" height="44" rx="8" fill="#22c55e" opacity="0.06" stroke="#22c55e" stroke-width="0.8" stroke-opacity="0.4"/>
+  <text x="100" y="160" text-anchor="middle" font-family="system-ui, sans-serif" font-size="12" fill="#22c55e" font-weight="600">GMGN API</text>
+  <text x="100" y="175" text-anchor="middle" font-family="monospace" font-size="9" fill="#4b5563">Smart money wallets</text>
+
+  <!-- X/Twitter -->
+  <rect x="30" y="195" width="140" height="44" rx="8" fill="#9ca3af" opacity="0.06" stroke="#9ca3af" stroke-width="0.8" stroke-opacity="0.4"/>
+  <text x="100" y="215" text-anchor="middle" font-family="system-ui, sans-serif" font-size="12" fill="#9ca3af" font-weight="600">X / Twitter</text>
+  <text x="100" y="230" text-anchor="middle" font-family="monospace" font-size="9" fill="#4b5563">KOL profiles</text>
+
+  <!-- Arrows from sources to scrapers -->
+  <g stroke="#333" stroke-width="1" stroke-dasharray="4,4" fill="none">
+    <line x1="170" y1="107" x2="240" y2="145"/>
+    <line x1="170" y1="162" x2="240" y2="160"/>
+    <line x1="170" y1="217" x2="240" y2="175"/>
+  </g>
+
+  <!-- SCRAPERS (center-left) -->
+  <text x="310" y="70" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" fill="#6b7280" font-weight="600" letter-spacing="1.5">INGESTION</text>
+
+  <rect x="240" y="85" width="140" height="140" rx="10" fill="#a855f7" opacity="0.04" stroke="#a855f7" stroke-width="0.8" stroke-opacity="0.3"/>
+  <text x="310" y="115" text-anchor="middle" font-family="monospace" font-size="10" fill="#c4b5fd">Playwright</text>
+  <text x="310" y="135" text-anchor="middle" font-family="monospace" font-size="10" fill="#c4b5fd">xactions</text>
+  <text x="310" y="160" text-anchor="middle" font-family="system-ui, sans-serif" font-size="9" fill="#6b7280">Scrape + Transform</text>
+  <line x1="265" y1="170" x2="355" y2="170" stroke="#a855f7" stroke-width="0.5" stroke-opacity="0.3"/>
+  <text x="310" y="190" text-anchor="middle" font-family="monospace" font-size="10" fill="#c4b5fd">Trade Ingest</text>
+  <text x="310" y="210" text-anchor="middle" font-family="system-ui, sans-serif" font-size="9" fill="#6b7280">Batch + Live poll</text>
+
+  <!-- Arrow to DB -->
+  <g stroke="#333" stroke-width="1" stroke-dasharray="4,4" fill="none">
+    <line x1="380" y1="155" x2="450" y2="155"/>
+    <polygon points="450,151 458,155 450,159" fill="#333"/>
+  </g>
+
+  <!-- DATABASE (center) -->
+  <text x="520" y="70" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" fill="#6b7280" font-weight="600" letter-spacing="1.5">STORAGE</text>
+
+  <rect x="460" y="100" width="120" height="70" rx="10" fill="#f59e0b" opacity="0.06" stroke="#f59e0b" stroke-width="0.8" stroke-opacity="0.4"/>
+  <text x="520" y="130" text-anchor="middle" font-family="system-ui, sans-serif" font-size="13" fill="#fbbf24" font-weight="600">PostgreSQL</text>
+  <text x="520" y="148" text-anchor="middle" font-family="monospace" font-size="9" fill="#4b5563">Drizzle ORM</text>
+
+  <!-- JSON files -->
+  <rect x="460" y="185" width="120" height="48" rx="8" fill="#6b7280" opacity="0.06" stroke="#6b7280" stroke-width="0.8" stroke-opacity="0.3"/>
+  <text x="520" y="207" text-anchor="middle" font-family="monospace" font-size="10" fill="#9ca3af">JSON cache</text>
+  <text x="520" y="223" text-anchor="middle" font-family="monospace" font-size="9" fill="#4b5563">Wallet data files</text>
+
+  <!-- Arrow to Next.js -->
+  <g stroke="#333" stroke-width="1" stroke-dasharray="4,4" fill="none">
+    <line x1="580" y1="135" x2="630" y2="135"/>
+    <polygon points="630,131 638,135 630,139" fill="#333"/>
+  </g>
+
+  <!-- NEXT.JS APP (right) -->
+  <text x="710" y="70" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" fill="#6b7280" font-weight="600" letter-spacing="1.5">APPLICATION</text>
+
+  <rect x="640" y="85" width="140" height="160" rx="10" fill="#ffffff" opacity="0.03" stroke="#444" stroke-width="0.8"/>
+
+  <text x="710" y="108" text-anchor="middle" font-family="system-ui, sans-serif" font-size="13" fill="white" font-weight="600">Next.js 14</text>
+
+  <!-- features list -->
+  <g font-family="monospace" font-size="10" fill="#9ca3af">
+    <circle cx="660" cy="126" r="2" fill="#1D9BF0"/>
+    <text x="670" y="130">Leaderboards</text>
+    <circle cx="660" cy="146" r="2" fill="#22c55e"/>
+    <text x="670" y="150">Live Tracking</text>
+    <circle cx="660" cy="166" r="2" fill="#a855f7"/>
+    <text x="670" y="170">Community</text>
+    <circle cx="660" cy="186" r="2" fill="#f59e0b"/>
+    <text x="670" y="190">Auth / Admin</text>
+    <circle cx="660" cy="206" r="2" fill="#ef4444"/>
+    <text x="670" y="210">Trade Feed</text>
+    <circle cx="660" cy="226" r="2" fill="#ec4899"/>
+    <text x="670" y="230">Watchlists</text>
+  </g>
+
+  <!-- CHAINS (bottom) -->
+  <text x="400" y="280" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" fill="#6b7280" font-weight="600" letter-spacing="1.5">SUPPORTED CHAINS</text>
+
+  <!-- Solana -->
+  <rect x="210" y="295" width="120" height="36" rx="18" fill="#9945FF" opacity="0.08" stroke="#9945FF" stroke-width="0.8" stroke-opacity="0.4"/>
+  <circle cx="236" cy="313" r="8" fill="none" stroke="#14F195" stroke-width="1.2"/>
+  <text x="236" y="317" text-anchor="middle" font-family="system-ui, sans-serif" font-size="9" font-weight="700" fill="#14F195">S</text>
+  <text x="290" y="317" text-anchor="middle" font-family="system-ui, sans-serif" font-size="12" fill="#c4b5fd" font-weight="500">Solana</text>
+
+  <!-- BSC -->
+  <rect x="350" y="295" width="100" height="36" rx="18" fill="#f0b90b" opacity="0.08" stroke="#f0b90b" stroke-width="0.8" stroke-opacity="0.4"/>
+  <circle cx="376" cy="313" r="8" fill="none" stroke="#f0b90b" stroke-width="1.2"/>
+  <text x="376" y="317" text-anchor="middle" font-family="system-ui, sans-serif" font-size="9" font-weight="700" fill="#f0b90b">B</text>
+  <text x="418" y="317" text-anchor="middle" font-family="system-ui, sans-serif" font-size="12" fill="#f0b90b" font-weight="500">BSC</text>
+
+  <!-- Ethereum -->
+  <rect x="470" y="295" width="120" height="36" rx="18" fill="#627EEA" opacity="0.08" stroke="#627EEA" stroke-width="0.8" stroke-opacity="0.4"/>
+  <circle cx="496" cy="313" r="8" fill="none" stroke="#627EEA" stroke-width="1.2"/>
+  <text x="496" y="317" text-anchor="middle" font-family="system-ui, sans-serif" font-size="9" font-weight="700" fill="#93a8f0">E</text>
+  <text x="548" y="317" text-anchor="middle" font-family="system-ui, sans-serif" font-size="12" fill="#93a8f0" font-weight="500">Ethereum</text>
+</svg>

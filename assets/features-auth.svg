@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200" fill="none">
+  <defs>
+    <linearGradient id="cardBg4" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#111111"/>
+      <stop offset="100%" style="stop-color:#0a0a0a"/>
+    </linearGradient>
+    <linearGradient id="accent4" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#f59e0b"/>
+      <stop offset="100%" style="stop-color:#ef4444"/>
+    </linearGradient>
+    <linearGradient id="solGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#9945FF"/>
+      <stop offset="100%" style="stop-color:#14F195"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="400" height="200" rx="12" fill="url(#cardBg4)" stroke="#222" stroke-width="1"/>
+  <rect x="0" y="0" width="400" height="3" rx="12" fill="url(#accent4)" opacity="0.8"/>
+
+  <!-- icon -->
+  <g transform="translate(30, 30)">
+    <rect width="40" height="40" rx="10" fill="#f59e0b" opacity="0.12"/>
+    <!-- shield/lock icon -->
+    <g transform="translate(10, 7)" fill="none" stroke="#f59e0b" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M10 1L1 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5L10 1z"/>
+      <rect x="7" y="9" width="6" height="5" rx="1"/>
+      <line x1="10" y1="11" x2="10" y2="12"/>
+    </g>
+  </g>
+
+  <!-- title -->
+  <text x="82" y="50" font-family="system-ui, sans-serif" font-size="18" font-weight="700" fill="white">Multi-Chain Auth</text>
+  <text x="82" y="68" font-family="system-ui, sans-serif" font-size="11" fill="#6b7280">Sign in with wallet or email</text>
+
+  <!-- auth methods -->
+  <g transform="translate(30, 90)">
+    <!-- Solana -->
+    <g>
+      <rect x="0" y="0" width="160" height="42" rx="8" fill="#9945FF" opacity="0.08" stroke="#9945FF" stroke-width="0.5" stroke-opacity="0.3"/>
+      <circle cx="26" cy="21" r="12" fill="url(#solGrad)" opacity="0.25"/>
+      <text x="26" y="25" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" font-weight="700" fill="#14F195">S</text>
+      <text x="48" y="18" font-family="system-ui, sans-serif" font-size="12" font-weight="600" fill="#c4b5fd">Solana</text>
+      <text x="48" y="32" font-family="system-ui, sans-serif" font-size="9" fill="#6b7280">ed25519 signing</text>
+    </g>
+
+    <!-- Ethereum -->
+    <g transform="translate(175, 0)">
+      <rect x="0" y="0" width="160" height="42" rx="8" fill="#627EEA" opacity="0.08" stroke="#627EEA" stroke-width="0.5" stroke-opacity="0.3"/>
+      <circle cx="26" cy="21" r="12" fill="#627EEA" opacity="0.25"/>
+      <text x="26" y="26" text-anchor="middle" font-family="system-ui, sans-serif" font-size="13" font-weight="700" fill="#93a8f0">E</text>
+      <text x="48" y="18" font-family="system-ui, sans-serif" font-size="12" font-weight="600" fill="#93a8f0">Ethereum</text>
+      <text x="48" y="32" font-family="system-ui, sans-serif" font-size="9" fill="#6b7280">EIP-191 / SIWE</text>
+    </g>
+
+    <!-- Email -->
+    <g transform="translate(0, 55)">
+      <rect x="0" y="0" width="160" height="42" rx="8" fill="#f59e0b" opacity="0.08" stroke="#f59e0b" stroke-width="0.5" stroke-opacity="0.3"/>
+      <circle cx="26" cy="21" r="12" fill="#f59e0b" opacity="0.25"/>
+      <text x="26" y="25" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" font-weight="700" fill="#fbbf24">@</text>
+      <text x="48" y="18" font-family="system-ui, sans-serif" font-size="12" font-weight="600" fill="#fbbf24">Email</text>
+      <text x="48" y="32" font-family="system-ui, sans-serif" font-size="9" fill="#6b7280">Password + sessions</text>
+    </g>
+
+    <!-- Admin -->
+    <g transform="translate(175, 55)">
+      <rect x="0" y="0" width="160" height="42" rx="8" fill="#ef4444" opacity="0.08" stroke="#ef4444" stroke-width="0.5" stroke-opacity="0.3"/>
+      <circle cx="26" cy="21" r="12" fill="#ef4444" opacity="0.25"/>
+      <text x="26" y="25" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" font-weight="700" fill="#f87171">*</text>
+      <text x="48" y="18" font-family="system-ui, sans-serif" font-size="12" font-weight="600" fill="#f87171">Admin</text>
+      <text x="48" y="32" font-family="system-ui, sans-serif" font-size="9" fill="#6b7280">Role-based access</text>
+    </g>
+  </g>
+</svg>
