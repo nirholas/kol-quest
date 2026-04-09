@@ -1,0 +1,124 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 300" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0a0a0a"/>
+      <stop offset="50%" style="stop-color:#0d1117"/>
+      <stop offset="100%" style="stop-color:#0a0a0a"/>
+    </linearGradient>
+    <linearGradient id="glow" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#1D9BF0">
+        <animate attributeName="stop-color" values="#1D9BF0;#a855f7;#22c55e;#1D9BF0" dur="6s" repeatCount="indefinite"/>
+      </stop>
+      <stop offset="50%" style="stop-color:#a855f7">
+        <animate attributeName="stop-color" values="#a855f7;#22c55e;#1D9BF0;#a855f7" dur="6s" repeatCount="indefinite"/>
+      </stop>
+      <stop offset="100%" style="stop-color:#22c55e">
+        <animate attributeName="stop-color" values="#22c55e;#1D9BF0;#a855f7;#22c55e" dur="6s" repeatCount="indefinite"/>
+      </stop>
+    </linearGradient>
+    <linearGradient id="subtextGlow" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#6b7280"/>
+      <stop offset="50%" style="stop-color:#9ca3af">
+        <animate attributeName="stop-color" values="#9ca3af;#d1d5db;#9ca3af" dur="3s" repeatCount="indefinite"/>
+      </stop>
+      <stop offset="100%" style="stop-color:#6b7280"/>
+    </linearGradient>
+    <filter id="textGlow">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+    <filter id="bigGlow">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+    <!-- grid pattern -->
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#ffffff" stroke-width="0.3" opacity="0.05"/>
+    </pattern>
+    <!-- animated pulse circle -->
+    <radialGradient id="pulse1" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#1D9BF0" stop-opacity="0.15"/>
+      <stop offset="100%" style="stop-color:#1D9BF0" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="pulse2" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#a855f7" stop-opacity="0.1"/>
+      <stop offset="100%" style="stop-color:#a855f7" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- background -->
+  <rect width="1200" height="300" fill="url(#bg)"/>
+  <rect width="1200" height="300" fill="url(#grid)"/>
+
+  <!-- animated pulse circles -->
+  <circle cx="200" cy="150" r="0" fill="url(#pulse1)">
+    <animate attributeName="r" values="0;200;0" dur="5s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="1;0;1" dur="5s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="1000" cy="150" r="0" fill="url(#pulse2)">
+    <animate attributeName="r" values="0;180;0" dur="4s" repeatCount="indefinite" begin="1.5s"/>
+    <animate attributeName="opacity" values="1;0;1" dur="4s" repeatCount="indefinite" begin="1.5s"/>
+  </circle>
+
+  <!-- decorative chart line -->
+  <polyline points="50,220 150,200 250,210 350,170 420,180 500,140 580,155 650,120 720,130 780,95 850,105 920,80 1000,90 1050,60 1150,70"
+    fill="none" stroke="url(#glow)" stroke-width="1.5" opacity="0.2" stroke-linecap="round" stroke-linejoin="round">
+    <animate attributeName="opacity" values="0.1;0.25;0.1" dur="4s" repeatCount="indefinite"/>
+  </polyline>
+
+  <!-- floating particles -->
+  <circle cx="100" cy="80" r="1.5" fill="#1D9BF0" opacity="0.4">
+    <animate attributeName="cy" values="80;60;80" dur="3s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.4;0.8;0.4" dur="3s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="300" cy="240" r="1" fill="#22c55e" opacity="0.3">
+    <animate attributeName="cy" values="240;220;240" dur="4s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="900" cy="60" r="1.5" fill="#a855f7" opacity="0.4">
+    <animate attributeName="cy" values="60;40;60" dur="3.5s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="1100" cy="200" r="1" fill="#1D9BF0" opacity="0.3">
+    <animate attributeName="cy" values="200;180;200" dur="2.8s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="700" cy="250" r="1.2" fill="#22c55e" opacity="0.3">
+    <animate attributeName="cy" values="250;235;250" dur="3.2s" repeatCount="indefinite"/>
+  </circle>
+
+  <!-- glow behind title -->
+  <text x="600" y="130" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="72" font-weight="800" fill="url(#glow)" filter="url(#bigGlow)" opacity="0.4">
+    KolQuest
+  </text>
+
+  <!-- main title -->
+  <text x="600" y="130" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="72" font-weight="800" fill="url(#glow)" filter="url(#textGlow)">
+    KolQuest
+  </text>
+
+  <!-- subtitle -->
+  <text x="600" y="175" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="18" font-weight="400" fill="url(#subtextGlow)" letter-spacing="4">
+    SMART WALLET INTELLIGENCE
+  </text>
+
+  <!-- tag pills -->
+  <g opacity="0.7">
+    <rect x="340" y="200" width="90" height="26" rx="13" fill="#1D9BF0" opacity="0.15" stroke="#1D9BF0" stroke-width="0.5" stroke-opacity="0.3"/>
+    <text x="385" y="217" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" fill="#1D9BF0" font-weight="500">Solana</text>
+
+    <rect x="445" y="200" width="70" height="26" rx="13" fill="#f0b90b" opacity="0.15" stroke="#f0b90b" stroke-width="0.5" stroke-opacity="0.3"/>
+    <text x="480" y="217" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" fill="#f0b90b" font-weight="500">BSC</text>
+
+    <rect x="530" y="200" width="110" height="26" rx="13" fill="#22c55e" opacity="0.15" stroke="#22c55e" stroke-width="0.5" stroke-opacity="0.3"/>
+    <text x="585" y="217" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" fill="#22c55e" font-weight="500">Smart Money</text>
+
+    <rect x="655" y="200" width="100" height="26" rx="13" fill="#a855f7" opacity="0.15" stroke="#a855f7" stroke-width="0.5" stroke-opacity="0.3"/>
+    <text x="705" y="217" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" fill="#a855f7" font-weight="500">KOL Tracker</text>
+
+    <rect x="770" y="200" width="90" height="26" rx="13" fill="#1D9BF0" opacity="0.15" stroke="#1D9BF0" stroke-width="0.5" stroke-opacity="0.3"/>
+    <text x="815" y="217" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" fill="#1D9BF0" font-weight="500">Real-Time</text>
+  </g>
+
+  <!-- bottom accent line -->
+  <rect x="0" y="296" width="1200" height="4" fill="url(#glow)" opacity="0.6">
+    <animate attributeName="opacity" values="0.4;0.8;0.4" dur="3s" repeatCount="indefinite"/>
+  </rect>
+</svg>

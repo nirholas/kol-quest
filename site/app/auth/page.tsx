@@ -125,7 +125,7 @@ function AuthContent() {
         body: { message, signature, walletAddress, chainId: 1 },
       });
 
-      if (!verifyRes.data?.success) throw new Error("Wallet verification failed");
+      if (!(verifyRes.data as { success?: boolean } | null)?.success) throw new Error("Wallet verification failed");
 
       await tryBootstrapAdmin();
       setMessage("Wallet connected — redirecting...");
@@ -154,9 +154,10 @@ function AuthContent() {
         method: "POST",
         body: { walletAddress },
       });
-      if (!nonceRes.data?.nonce) throw new Error("Failed to get nonce");
+      const nonceData2 = nonceRes.data as { nonce?: string } | null;
+      if (!nonceData2?.nonce) throw new Error("Failed to get nonce");
 
-      const message = `Sign in to KolQuest\n\nWallet: ${walletAddress}\nNonce: ${nonceRes.data.nonce}`;
+      const message = `Sign in to KolQuest\n\nWallet: ${walletAddress}\nNonce: ${nonceData2.nonce}`;
       const encodedMessage = new TextEncoder().encode(message);
       const { signature } = await solana.signMessage(encodedMessage, "utf8");
 
@@ -168,7 +169,7 @@ function AuthContent() {
         body: { message, signature: signatureBase64, walletAddress },
       });
 
-      if (!verifyRes.data?.success) throw new Error("Wallet verification failed");
+      if (!(verifyRes.data as { success?: boolean } | null)?.success) throw new Error("Wallet verification failed");
 
       await tryBootstrapAdmin();
       setMessage("Phantom connected — redirecting...");
