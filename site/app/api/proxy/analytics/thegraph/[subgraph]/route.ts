@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { executeGraphQuery, SUBGRAPHS } from "@/lib/proxy/sources/thegraph";
-import { assertOrigin } from "@/lib/assert-origin";
+import { checkOrigin } from "@/lib/assert-origin";
 
 export async function POST(
   req: NextRequest,
   { params }: { params: { subgraph: string } }
 ) {
   try {
-    assertOrigin(req);
+    const originError = checkOrigin(req);
+    if (originError) return originError;
     const body = await req.json();
     if (!body.query) {
       return NextResponse.json({ error: "Missing 'query' in request body" }, { status: 400 });

@@ -9,6 +9,7 @@
     "scrape:axiom": "node scrape-axiom.js",
     "scrape:x": "node scrape-x-profiles.js",
     "scrape:x-tracker": "node scrape-gmgn-x-tracker.js",
+    "scrape:gmgn": "node scrape-gmgn-ranks.js",
     "scrape:polymarket": "node scrape-polymarket.js",
     "monitor:rewards": "node monitor-gmgn-rewards.js",
     "monitor:rewards-login": "node monitor-gmgn-rewards.js --login",

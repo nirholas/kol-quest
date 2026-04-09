@@ -15,9 +15,12 @@ async function fetchWithTimeout(url: string, ms = 5000): Promise<Response> {
   return res;
 }
 
-interface ProxyConfig {
+export interface ProxyConfig {
   baseUrl: string;
   apiKey?: string;
+  name?: string;
+  authHeader?: string;
+  authKey?: string;
   rateLimit: {
     limit: number;
     windowMs: number;

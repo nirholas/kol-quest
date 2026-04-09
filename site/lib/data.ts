@@ -434,11 +434,140 @@ export async function getXTrackerAccounts(): Promise<XTrackerAccount[]> {
 // ────────────────────────────────────────────────────────────
 // Polymarket Data
 // ────────────────────────────────────────────────────────────
-const POLYMARKET_DATA_URL =
-  "https://raw.githubusercontent.com/nirholas/scrape-kolscan-wallets/main/site/data/polymarket-leaderboard.json";
+const POLYMARKET_DATA_API = "https://data-api.polymarket.com";
+const POLYMARKET_GAMMA_API = "https://gamma-api.polymarket.com";
+const POLYMARKET_HEADERS = {
+  "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+  Accept: "application/json",
+  "Accept-Language": "en-US,en;q=0.9",
+  Origin: "https://polymarket.com",
+  Referer: "https://polymarket.com/",
+};
+
+function mapPolymarketTrader(raw: Record<string, unknown>, rank: number): PolymarketTrader {
+  return {
+    wallet_address: (raw.proxyWallet || raw.address || raw.user || "") as string,
+    username: (raw.username || raw.name || null) as string | null,
+    display_name: (raw.displayName || raw.display_name || raw.name || null) as string | null,
+    profile_image: (raw.profileImage || raw.avatar || raw.pfp || null) as string | null,
+    bio: (raw.bio || null) as string | null,
+    twitter_handle: (raw.twitterHandle || raw.twitter || null) as string | null,
+    rank,
+    pnl_total: parseFloat((raw.pnl || raw.profit || raw.totalPnl || "0") as string) || 0,
+    pnl_7d: parseFloat((raw.pnl_7d || raw.weeklyPnl || "0") as string) || 0,
+    pnl_30d: parseFloat((raw.pnl_30d || raw.monthlyPnl || "0") as string) || 0,
+    pnl_ytd: parseFloat((raw.pnl_ytd || raw.ytdPnl || "0") as string) || 0,
+    volume_total: parseFloat((raw.volume || raw.totalVolume || "0") as string) || 0,
+    volume_7d: parseFloat((raw.volume_7d || raw.weeklyVolume || "0") as string) || 0,
+    volume_30d: parseFloat((raw.volume_30d || raw.monthlyVolume || "0") as string) || 0,
+    trades_count: (raw.tradesCount || raw.trades || raw.numTrades || 0) as number,
+    markets_traded: (raw.marketsTraded || raw.markets || raw.numMarkets || 0) as number,
+    positions_count: (raw.positionsCount || raw.positions || raw.numPositions || 0) as number,
+    winrate: parseFloat((raw.winRate || raw.winrate || "0") as string) || 0,
+    profit_factor: parseFloat((raw.profitFactor || "0") as string) || 0,
+    followers_count: (raw.followersCount || raw.followers || 0) as number,
+    last_trade_at: (raw.lastTradeAt || raw.lastTrade || raw.lastActive || null) as string | null,
+    created_at: (raw.createdAt || raw.joinDate || null) as string | null,
+    tags: (raw.tags || raw.badges || []) as string[],
+  };
+}
+
+function mapPolymarketMarket(raw: Record<string, unknown>): PolymarketMarket {
+  const outcomePrices = raw.outcomePrices as Record<string, string> | null;
+  return {
+    id: (raw.id || raw.conditionId || raw.condition_id || "") as string,
+    condition_id: (raw.conditionId || raw.condition_id || raw.id || "") as string,
+    slug: (raw.slug || "") as string,
+    question: (raw.question || raw.title || "") as string,
+    description: (raw.description || null) as string | null,
+    category: (raw.category || raw.tag || "other") as string,
+    end_date: (raw.endDate || raw.end_date || raw.endDateIso || null) as string | null,
+    outcomes: outcomePrices ? Object.keys(outcomePrices) : ["Yes", "No"],
+    outcome_prices: outcomePrices
+      ? Object.values(outcomePrices).map(Number)
+      : [parseFloat((raw.bestBid || "0.5") as string) || 0.5, 1 - (parseFloat((raw.bestBid || "0.5") as string) || 0.5)],
+    volume: parseFloat((raw.volume || "0") as string) || 0,
+    liquidity: parseFloat((raw.liquidity || "0") as string) || 0,
+    open_interest: parseFloat((raw.openInterest || raw.open_interest || "0") as string) || 0,
+    active: raw.active !== false && !raw.closed && !raw.resolved,
+    closed: (raw.closed || false) as boolean,
+    resolved: (raw.resolved || false) as boolean,
+    resolution_outcome: (raw.resolutionOutcome || raw.resolution || null) as string | null,
+    image: (raw.image || raw.icon || null) as string | null,
+    icon: (raw.icon || null) as string | null,
+  };
+}
+
+async function fetchPolymarketLive(): Promise<PolymarketData> {
+  const traders: PolymarketTrader[] = [];
+  const markets: PolymarketMarket[] = [];
+  const seenAddresses = new Set<string>();
+
+  try {
+    // Fetch main leaderboard
+    const [lb, lb7d, lb30d, activeMarkets] = await Promise.allSettled([
+      fetch(`${POLYMARKET_DATA_API}/leaderboard?limit=500`, { headers: POLYMARKET_HEADERS }).then((r) => (r.ok ? r.json() : null)),
+      fetch(`${POLYMARKET_DATA_API}/leaderboard?window=7d&limit=200`, { headers: POLYMARKET_HEADERS }).then((r) => (r.ok ? r.json() : null)),
+      fetch(`${POLYMARKET_DATA_API}/leaderboard?window=30d&limit=200`, { headers: POLYMARKET_HEADERS }).then((r) => (r.ok ? r.json() : null)),
+      fetch(`${POLYMARKET_GAMMA_API}/markets?limit=200&active=true&order=volume&ascending=false`, { headers: POLYMARKET_HEADERS }).then((r) => (r.ok ? r.json() : null)),
+    ]);
+
+    const lbData = lb.status === "fulfilled" && Array.isArray(lb.value) ? lb.value : [];
+    const lb7dData = lb7d.status === "fulfilled" && Array.isArray(lb7d.value) ? lb7d.value : [];
+    const lb30dData = lb30d.status === "fulfilled" && Array.isArray(lb30d.value) ? lb30d.value : [];
+    const marketsData = activeMarkets.status === "fulfilled" && Array.isArray(activeMarkets.value) ? activeMarkets.value : [];
+
+    // Map traders from main leaderboard
+    for (let i = 0; i < lbData.length; i++) {
+      const t = mapPolymarketTrader(lbData[i], i + 1);
+      if (t.wallet_address && !seenAddresses.has(t.wallet_address.toLowerCase())) {
+        traders.push(t);
+        seenAddresses.add(t.wallet_address.toLowerCase());
+      }
+    }
+
+    // Enrich with 7d/30d PnL from windowed leaderboards
+    const addrToTrader = new Map(traders.map((t) => [t.wallet_address.toLowerCase(), t]));
+    for (const raw of lb7dData) {
+      const addr = ((raw.address || raw.user || raw.proxyWallet || "") as string).toLowerCase();
+      const existing = addrToTrader.get(addr);
+      if (existing && raw.pnl) existing.pnl_7d = parseFloat(raw.pnl as string) || existing.pnl_7d;
+      else if (!seenAddresses.has(addr) && addr) {
+        const t = mapPolymarketTrader(raw, traders.length + 1);
+        traders.push(t);
+        seenAddresses.add(addr);
+        addrToTrader.set(addr, t);
+      }
+    }
+    for (const raw of lb30dData) {
+      const addr = ((raw.address || raw.user || raw.proxyWallet || "") as string).toLowerCase();
+      const existing = addrToTrader.get(addr);
+      if (existing && raw.pnl) existing.pnl_30d = parseFloat(raw.pnl as string) || existing.pnl_30d;
+      else if (!seenAddresses.has(addr) && addr) {
+        const t = mapPolymarketTrader(raw, traders.length + 1);
+        traders.push(t);
+        seenAddresses.add(addr);
+      }
+    }
+
+    // Map markets
+    for (const m of marketsData) {
+      markets.push(mapPolymarketMarket(m));
+    }
+  } catch {
+    // live fetch failed
+  }
+
+  return {
+    meta: { scrapedAt: new Date().toISOString(), source: "polymarket-live", totalTraders: traders.length, totalMarkets: markets.length },
+    traders,
+    markets,
+  };
+}
 
 export const getPolymarketData = unstable_cache(
   async (): Promise<PolymarketData> => {
+    // 1. Try local file (generated by scrape-polymarket.js)
     try {
       const fs = await import("fs");
       const path = await import("path");
@@ -450,14 +579,9 @@ export const getPolymarketData = unstable_cache(
       // fs not available
     }
 
-    try {
-      const res = await fetch(POLYMARKET_DATA_URL);
-      if (res.ok) {
-        return res.json();
-      }
-    } catch {
-      // fetch failed
-    }
+    // 2. Fetch live from Polymarket APIs (always available, no key needed)
+    const live = await fetchPolymarketLive();
+    if (live.traders.length > 0) return live;
 
     return { meta: { scrapedAt: "", source: "polymarket", totalTraders: 0, totalMarkets: 0 }, traders: [], markets: [] };
   },

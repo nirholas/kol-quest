@@ -19,6 +19,7 @@ const NAV_SECTIONS = [
       { href: "/gmgn-sol", label: "Solana Wallets", desc: "Smart money on Solana", live: false },
       { href: "/bsc", label: "BSC Wallets", desc: "Smart money on BNB Chain", live: false },
       { href: "/x-tracker", label: "X Tracker", desc: "10K+ crypto X accounts", live: false },
+      { href: "/polymarket", label: "Polymarket", desc: "Prediction market top traders", live: false },
     ],
   },
   {
@@ -28,7 +29,8 @@ const NAV_SECTIONS = [
       { href: "/monitor", label: "Monitor", desc: "GMGN-style live wallet monitor", live: true },
       { href: "/track", label: "Track", desc: "New tokens from tracked wallets", live: false },
       { href: "/tracker", label: "Wallet Tracker", desc: "Your tracked wallet portfolio", live: false },
-      { href: "/all-solana", label: "All Solana", desc: "Combined deduplicated wallets", live: false },
+      { href: "/all-solana", label: "All Solana", desc: "Combined deduplicated Solana wallets", live: false },
+      { href: "/all-wallets", label: "All Wallets", desc: "Every source — Solana + BSC + Polymarket", live: false },
     ],
   },
   {

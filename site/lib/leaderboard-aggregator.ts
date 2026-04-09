@@ -1,194 +1,422 @@
 /**
- * @fileoverview Aggregates leaderboard data from multiple sources.
+ * @fileoverview Aggregates leaderboard data from multiple sources (KolScan + GMGN).
  *
- * This service is responsible for:
- * 1. Fetching raw ranking data from various APIs/services (KolScan, GMGN, Dune, Flipside).
- * 2. Normalizing the data into a common `LeaderboardEntry` format.
- * 3. Calculating a composite score for each wallet.
- * 4. Storing the aggregated and scored data in a cache (e.g., database or Redis).
- * 5. Providing a function to retrieve the cached leaderboard, ready for API serving.
- *
- * This is intended to be run as a background job (e.g., cron) to keep
- * the leaderboard data fresh without incurring high latency on user requests.
+ * Builds a unified LeaderboardEntry[] from available data sources, computes
+ * composite scores, and caches the result in the database. The API route
+ * uses getLeaderboard() which applies in-memory filtering/pagination.
  */
 
 import { db } from "@/drizzle/db";
 import { leaderboardCache } from "@/drizzle/db/schema";
+import { eq } from "drizzle-orm";
+import { unstable_cache } from "next/cache";
+import { getData, getSolGmgnData, getBscGmgnData, getXProfiles, getXProfile } from "@/lib/data";
 import type {
   LeaderboardEntry,
   LeaderboardChain,
-  LeaderboardTimeframe,
-  LeaderboardCategory,
   LeaderboardQuery,
   LeaderboardResponse,
+  LeaderboardSource,
+  KolEntry,
+  GmgnWallet,
 } from "@/lib/types";
 
-// Placeholder for actual data fetching functions
-async function fetchKolScanData(): Promise<any[]> {
-  console.log("Fetching data from KolScan...");
-  // TODO: Replace with actual implementation
-  return [];
+const CACHE_KEY = "leaderboard_v1";
+const STALE_MS = 15 * 60 * 1000; // 15 minutes
+
+// --- Helpers ---
+
+function twitterUsername(val: string | null | undefined): string | null {
+  if (!val) return null;
+  const m = val.match(/(?:twitter\.com|x\.com)\/([^/?# ]+)/);
+  return m ? m[1] : val.startsWith("@") ? val.slice(1) : val;
 }
 
-async function fetchGmgnData(chain: LeaderboardChain, category: string, timeframe: string): Promise<any[]> {
-  console.log(`Fetching GMGN data for ${chain}/${category}/${timeframe}...`);
-  // TODO: Replace with actual implementation
-  return [];
+function gmgnCategories(wallet: GmgnWallet): string[] {
+  const s = new Set<string>();
+  if (wallet.category) s.add(wallet.category);
+  for (const t of wallet.tags) s.add(t);
+  if (wallet.twitter_username) s.add("kol");
+  return [...s];
 }
 
-async function fetchDuneData(queryId: number): Promise<any[]> {
-  console.log(`Fetching Dune data for query ${queryId}...`);
-  // TODO: Replace with actual implementation
-  return [];
-}
-
-/**
- * Normalizes raw data from a source into a partial LeaderboardEntry.
- * This function will need to be adapted for each data source's specific format.
- */
-function normalizeData(rawData: any[], source: string): Partial<LeaderboardEntry>[] {
-  // TODO: Implement normalization logic for each source
-  return rawData.map(item => ({
-    address: item.wallet_address,
-    // ... other fields
-  }));
-}
-
-/**
- * Calculates a composite score for a wallet based on its rankings.
- * The scoring algorithm can be adjusted to weigh different sources or metrics.
- */
-function calculateCompositeScore(entry: LeaderboardEntry): number {
+function calcCompositeScore(entry: LeaderboardEntry): number {
   let score = 0;
-  let rankCount = 0;
-  
-  // Example scoring: average of ranks, with some bonus for PnL
-  const ranks: number[] = [];
-  if (entry.rankings.kolscan) ranks.push(entry.rankings.kolscan.rank);
-  if (entry.rankings.gmgn) ranks.push(entry.rankings.gmgn.rank);
-  if (entry.rankings.dune) ranks.push(entry.rankings.dune.rank);
 
+  // Rank-based component: rank 1 → 60 pts, rank 500 → 0 pts
+  const ranks = (Object.values(entry.rankings) as Array<{ rank: number } | undefined>)
+    .filter((r): r is { rank: number } => r != null)
+    .map((r) => r.rank);
   if (ranks.length > 0) {
-    const avgRank = ranks.reduce((sum, r) => sum + r, 0) / ranks.length;
-    score += (100 - Math.min(avgRank, 100)); // Higher rank (lower number) = higher score
+    const avgRank = ranks.reduce((a, b) => a + b, 0) / ranks.length;
+    score += Math.max(0, 60 - (avgRank - 1) * 0.12);
   }
 
-  score += Math.log10(Math.max(1, entry.totalPnl)) * 5; // Bonus for PnL
+  // Multi-source bonus (up to 20 pts)
+  score += Math.min(20, entry.verifiedSources.length * 10);
+
+  // Twitter/identity bonus (5 pts)
+  if (entry.twitter) score += 5;
+
+  // PnL bonus (log scale, up to 10 pts)
+  if (entry.totalPnl > 0) {
+    score += Math.min(10, Math.log10(entry.totalPnl / 1000 + 1) * 7);
+  }
+
+  // Win rate bonus (up to 5 pts)
+  if (entry.avgWinRate > 0.5) {
+    score += Math.min(5, (entry.avgWinRate - 0.5) * 10);
+  }
 
   return Math.min(100, Math.max(0, score));
 }
 
+// --- Core aggregation ---
 
-/**
- * Main function to refresh the leaderboard data.
- * Fetches, normalizes, scores, and caches the data.
- */
-export async function refreshLeaderboardData() {
-  console.log("Starting leaderboard data refresh...");
+async function _buildEntries(): Promise<LeaderboardEntry[]> {
+  const [kolscanRaw, gmgnSol, gmgnBsc, xProfiles] = await Promise.all([
+    getData(),
+    getSolGmgnData(),
+    getBscGmgnData(),
+    getXProfiles(),
+  ]);
 
-  const allEntries = new Map<string, LeaderboardEntry>();
+  const entryMap = new Map<string, LeaderboardEntry>();
 
-  // 1. Fetch from all sources
-  const kolscanRaw = await fetchKolScanData();
-  // ... fetch from other sources (GMGN, Dune, etc.)
+  // ── KolScan ───────────────────────────────────────────────────────────────
+  const kolsByAddress = new Map<string, KolEntry[]>();
+  for (const e of kolscanRaw) {
+    const list = kolsByAddress.get(e.wallet_address) ?? [];
+    list.push(e);
+    kolsByAddress.set(e.wallet_address, list);
+  }
+  const kols7d = kolscanRaw
+    .filter((e) => e.timeframe === 7)
+    .sort((a, b) => b.profit - a.profit);
+  const kolRank7d = new Map(kols7d.map((e, i) => [e.wallet_address, i + 1]));
 
-  // 2. Normalize and merge data
-  // This is a simplified example. A real implementation would need to handle
-  // different chains, timeframes, and merge wallet data carefully.
-  
-  const normalizedKolscan = normalizeData(kolscanRaw, 'kolscan');
-  
-  for (const partial of normalizedKolscan) {
-    const existing = allEntries.get(partial.address!) || {
-      address: partial.address!,
-      chain: 'solana',
-      name: partial.name || 'Unknown',
-      rankings: {},
+  for (const [addr, list] of kolsByAddress) {
+    const d7 = list.find((e) => e.timeframe === 7);
+    const rank = kolRank7d.get(addr) ?? 9999;
+    const wins7 = d7?.wins ?? 0;
+    const losses7 = d7?.losses ?? 0;
+    const winrate7 = wins7 + losses7 > 0 ? wins7 / (wins7 + losses7) : 0;
+    const pnl7 = d7?.profit ?? 0;
+    const twitterUrl = list[0].twitter;
+    const uname = twitterUsername(twitterUrl);
+    let avatar: string | null = twitterUrl
+      ? (getXProfile(xProfiles, twitterUrl)?.avatar ?? null)
+      : null;
+
+    entryMap.set(addr, {
+      address: addr,
+      chain: "solana",
+      name: list[0].name,
+      avatar,
+      ensOrSns: null,
+      twitter: uname ? { username: uname, name: list[0].name, avatar } : undefined,
+      rankings: {
+        kolscan: { rank, pnl: pnl7, winRate: winrate7, trades: wins7 + losses7 },
+      },
       compositeScore: 0,
-      avgRank: 0,
-      totalPnl: 0,
-      avgWinRate: 0,
+      avgRank: rank,
+      totalPnl: pnl7,
+      avgWinRate: winrate7,
       lastActive: null,
-      totalTrades: 0,
-      categories: [],
-      verifiedSources: [],
-    };
-    
-    // Merge logic here...
-    // existing.rankings.kolscan = ...
-    // existing.totalPnl += ...
-    
-    allEntries.set(partial.address!, existing);
+      totalTrades: wins7 + losses7,
+      categories: ["kol"],
+      verifiedSources: ["kolscan" as LeaderboardSource],
+    });
   }
 
-  // 3. Calculate scores and finalize entries
-  const finalEntries: LeaderboardEntry[] = [];
-  for (const entry of allEntries.values()) {
-    entry.compositeScore = calculateCompositeScore(entry);
-    finalEntries.push(entry);
-  }
-  
-  // Sort by composite score by default
-  finalEntries.sort((a, b) => b.compositeScore - a.compositeScore);
+  // ── GMGN Solana ──────────────────────────────────────────────────────────
+  const gmgnSolSorted = [...gmgnSol].sort(
+    (a, b) => b.realized_profit_7d - a.realized_profit_7d
+  );
 
-  // 4. Cache the data
-  // We'll store the entire blob as a single JSON object in the DB.
-  // This is simpler than a normalized table structure for this use case.
-  
-  const cacheKey = "default_leaderboard"; // More complex keying could be used for different views
-  
-  await db.insert(leaderboardCache).values({
-    key: cacheKey,
-    data: JSON.stringify(finalEntries),
-    lastUpdated: new Date(),
-  }).onConflictDoUpdate({
-    target: leaderboardCache.key,
-    set: {
-        data: JSON.stringify(finalEntries),
-        lastUpdated: new Date(),
+  for (let i = 0; i < gmgnSolSorted.length; i++) {
+    const w = gmgnSolSorted[i];
+    const rank = i + 1;
+    const lastActive = w.last_active
+      ? new Date(w.last_active * 1000).toISOString()
+      : null;
+    const uname = w.twitter_username ?? null;
+    let avatar = w.avatar;
+    if (!avatar && uname) {
+      avatar = getXProfile(xProfiles, `https://x.com/${uname}`)?.avatar ?? null;
     }
-  });
+    const gmgnRanking = {
+      rank,
+      pnl: w.realized_profit_7d,
+      winRate: w.winrate_7d,
+      trades: w.txs_7d,
+      category: w.category,
+    };
 
-  console.log(`Leaderboard data refreshed successfully. Cached ${finalEntries.length} entries.`);
+    if (entryMap.has(w.wallet_address)) {
+      const existing = entryMap.get(w.wallet_address)!;
+      existing.rankings.gmgn = gmgnRanking;
+      if (!existing.avatar && avatar) existing.avatar = avatar;
+      if (!existing.twitter && uname) {
+        existing.twitter = { username: uname, name: w.twitter_name ?? uname, avatar };
+      }
+      existing.ensOrSns = existing.ensOrSns ?? w.sns_id ?? w.ens_name;
+      existing.lastActive = existing.lastActive ?? lastActive;
+      existing.totalTrades = Math.max(existing.totalTrades, w.txs_7d);
+      existing.verifiedSources = [
+        ...new Set([...existing.verifiedSources, "gmgn" as LeaderboardSource]),
+      ];
+      existing.categories = [
+        ...new Set([...existing.categories, ...gmgnCategories(w)]),
+      ];
+    } else {
+      entryMap.set(w.wallet_address, {
+        address: w.wallet_address,
+        chain: "solana",
+        name: w.name,
+        avatar,
+        ensOrSns: w.sns_id ?? w.ens_name,
+        twitter: uname
+          ? { username: uname, name: w.twitter_name ?? uname, avatar }
+          : undefined,
+        rankings: { gmgn: gmgnRanking },
+        compositeScore: 0,
+        avgRank: rank,
+        totalPnl: w.realized_profit_7d,
+        avgWinRate: w.winrate_7d,
+        lastActive,
+        totalTrades: w.txs_7d,
+        categories: gmgnCategories(w),
+        verifiedSources: ["gmgn" as LeaderboardSource],
+      });
+    }
+  }
+
+  // ── GMGN BSC ─────────────────────────────────────────────────────────────
+  const gmgnBscSorted = [...gmgnBsc].sort(
+    (a, b) => b.realized_profit_7d - a.realized_profit_7d
+  );
+
+  for (let i = 0; i < gmgnBscSorted.length; i++) {
+    const w = gmgnBscSorted[i];
+    const rank = i + 1;
+    const lastActive = w.last_active
+      ? new Date(w.last_active * 1000).toISOString()
+      : null;
+    const uname = w.twitter_username ?? null;
+    let avatar = w.avatar;
+    if (!avatar && uname) {
+      avatar = getXProfile(xProfiles, `https://x.com/${uname}`)?.avatar ?? null;
+    }
+    // Use a chain-prefixed key so BSC wallets with the same address as Solana stay separate
+    const key = `bsc:${w.wallet_address}`;
+    entryMap.set(key, {
+      address: w.wallet_address,
+      chain: "bsc",
+      name: w.name,
+      avatar,
+      ensOrSns: w.sns_id ?? w.ens_name,
+      twitter: uname
+        ? { username: uname, name: w.twitter_name ?? uname, avatar }
+        : undefined,
+      rankings: {
+        gmgn: {
+          rank,
+          pnl: w.realized_profit_7d,
+          winRate: w.winrate_7d,
+          trades: w.txs_7d,
+          category: w.category,
+        },
+      },
+      compositeScore: 0,
+      avgRank: rank,
+      totalPnl: w.realized_profit_7d,
+      avgWinRate: w.winrate_7d,
+      lastActive,
+      totalTrades: w.txs_7d,
+      categories: gmgnCategories(w),
+      verifiedSources: ["gmgn" as LeaderboardSource],
+    });
+  }
+
+  // ── Finalize scores ───────────────────────────────────────────────────────
+  const entries = Array.from(entryMap.values());
+
+  for (const e of entries) {
+    const rankValues = (
+      Object.values(e.rankings) as Array<{ rank: number } | undefined>
+    )
+      .filter((r): r is { rank: number } => r != null)
+      .map((r) => r.rank);
+    e.avgRank =
+      rankValues.length > 0
+        ? rankValues.reduce((a, b) => a + b, 0) / rankValues.length
+        : 9999;
+
+    const pnlValues = (
+      Object.values(e.rankings) as Array<{ pnl?: number } | undefined>
+    )
+      .filter((r): r is { pnl: number } => r?.pnl != null)
+      .map((r) => r.pnl);
+    e.totalPnl = pnlValues.length > 0 ? Math.max(...pnlValues) : 0;
+
+    const wrValues = (
+      Object.values(e.rankings) as Array<{ winRate?: number } | undefined>
+    )
+      .filter((r): r is { winRate: number } => r?.winRate != null && r.winRate > 0)
+      .map((r) => r.winRate);
+    e.avgWinRate =
+      wrValues.length > 0
+        ? wrValues.reduce((a, b) => a + b, 0) / wrValues.length
+        : 0;
+
+    e.compositeScore = calcCompositeScore(e);
+  }
+
+  entries.sort((a, b) => b.compositeScore - a.compositeScore);
+  return entries;
 }
 
-/**
- * Retrieves the leaderboard from the cache and applies query filters.
- */
-export async function getLeaderboard(query: LeaderboardQuery): Promise<LeaderboardResponse> {
-    const cacheKey = "default_leaderboard";
-    const result = await db.select().from(leaderboardCache).where({ key: cacheKey }).limit(1);
+// Cached build — revalidates every 15 minutes
+const buildEntries = unstable_cache(_buildEntries, ["leaderboard-entries"], {
+  revalidate: 900,
+});
 
-    if (result.length === 0 || !result[0].data) {
-        // Optionally, trigger a refresh if data is missing
-        // await refreshLeaderboardData();
+// --- Public API ---
+
+/** Rebuild leaderboard data and persist to DB cache. Called by cron job. */
+export async function refreshLeaderboardData(): Promise<void> {
+  const entries = await _buildEntries();
+  await db
+    .insert(leaderboardCache)
+    .values({ key: CACHE_KEY, data: JSON.stringify(entries), lastUpdated: new Date() })
+    .onConflictDoUpdate({
+      target: leaderboardCache.key,
+      set: { data: JSON.stringify(entries), lastUpdated: new Date() },
+    });
+}
+
+async function loadEntries(): Promise<{
+  entries: LeaderboardEntry[];
+  lastUpdated: string;
+}> {
+  // Try DB cache first (avoids rebuilding on every request)
+  try {
+    const rows = await db
+      .select()
+      .from(leaderboardCache)
+      .where(eq(leaderboardCache.key, CACHE_KEY))
+      .limit(1);
+    if (rows.length > 0) {
+      const row = rows[0];
+      const age = Date.now() - row.lastUpdated.getTime();
+      if (age < STALE_MS) {
         return {
-            entries: [],
-            pagination: { page: 1, limit: 50, total: 0, totalPages: 0 },
-            lastUpdated: new Date().toISOString(),
-            sources: { kolscan: false, gmgn: false, dune: false, flipside: false, polymarket: false }
+          entries: JSON.parse(row.data) as LeaderboardEntry[],
+          lastUpdated: row.lastUpdated.toISOString(),
         };
+      }
     }
-    
-    let entries: LeaderboardEntry[] = JSON.parse(result[0].data as string);
-    const lastUpdated = result[0].lastUpdated!.toISOString();
+  } catch {
+    // DB unavailable — fall through to in-process cache
+  }
 
-    // TODO: Apply filtering, sorting, and pagination from the query object
-    // For example:
-    // - Filter by chain, category
-    // - Search by name/address
-    // - Sort by PnL, score, etc.
-    
-    const page = query.page || 1;
-    const limit = query.limit || 50;
-    const total = entries.length;
-    const totalPages = Math.ceil(total / limit);
-    const paginatedEntries = entries.slice((page - 1) * limit, page * limit);
+  const entries = await buildEntries();
+  return { entries, lastUpdated: new Date().toISOString() };
+}
 
-    return {
-        entries: paginatedEntries,
-        pagination: { page, limit, total, totalPages },
-        lastUpdated,
-        sources: { kolscan: true, gmgn: true, dune: true, flipside: true, polymarket: true } // Should be dynamic
+/** Query the leaderboard with filters, sorting, and pagination. */
+export async function getLeaderboard(
+  query: LeaderboardQuery
+): Promise<LeaderboardResponse> {
+  const { entries: all, lastUpdated } = await loadEntries();
+
+  let filtered = all;
+
+  if (query.chain && query.chain !== "all") {
+    filtered = filtered.filter((e) => e.chain === query.chain);
+  }
+
+  if (query.category && query.category !== "overall") {
+    const cat = query.category;
+    const catAliases: Record<string, string[]> = {
+      kol: ["kol"],
+      smart_money: ["smart_degen", "smart_money"],
+      whale: ["whale"],
+      sniper: ["sniper", "snipe_bot"],
+      meme: ["meme", "meme_coin"],
+      defi: ["defi", "defi_farmer"],
     };
+    const matchers = catAliases[cat] ?? [cat];
+    filtered = filtered.filter((e) =>
+      e.categories.some((c) => matchers.some((m) => c.toLowerCase().includes(m)))
+    );
+  }
+
+  if (query.search) {
+    const q = query.search.toLowerCase();
+    filtered = filtered.filter(
+      (e) =>
+        e.name.toLowerCase().includes(q) ||
+        e.address.toLowerCase().includes(q) ||
+        (e.twitter?.username.toLowerCase().includes(q) ?? false) ||
+        (e.ensOrSns?.toLowerCase().includes(q) ?? false)
+    );
+  }
+
+  if (query.minPnl !== undefined) {
+    filtered = filtered.filter((e) => e.totalPnl >= query.minPnl!);
+  }
+
+  if (query.minWinRate !== undefined) {
+    // Accept 0-100 or 0-1
+    const threshold = query.minWinRate > 1 ? query.minWinRate / 100 : query.minWinRate;
+    filtered = filtered.filter((e) => e.avgWinRate >= threshold);
+  }
+
+  if (query.activeInDays !== undefined) {
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - query.activeInDays);
+    filtered = filtered.filter(
+      (e) => e.lastActive != null && new Date(e.lastActive) >= cutoff
+    );
+  }
+
+  if (query.verifiedOnly) {
+    filtered = filtered.filter((e) => !!e.twitter);
+  }
+
+  const sortKey = query.sort ?? "composite";
+  const order = query.order ?? "desc";
+  filtered = [...filtered].sort((a, b) => {
+    if (sortKey === "pnl")
+      return order === "asc" ? a.totalPnl - b.totalPnl : b.totalPnl - a.totalPnl;
+    if (sortKey === "winrate")
+      return order === "asc" ? a.avgWinRate - b.avgWinRate : b.avgWinRate - a.avgWinRate;
+    if (sortKey === "trades")
+      return order === "asc" ? a.totalTrades - b.totalTrades : b.totalTrades - a.totalTrades;
+    if (sortKey === "rank")
+      // Lower avgRank number = better; "desc" = best first
+      return order === "desc" ? a.avgRank - b.avgRank : b.avgRank - a.avgRank;
+    return order === "asc"
+      ? a.compositeScore - b.compositeScore
+      : b.compositeScore - a.compositeScore;
+  });
+
+  const page = query.page ?? 1;
+  const limit = query.limit ?? 50;
+  const total = filtered.length;
+
+  return {
+    entries: filtered.slice((page - 1) * limit, page * limit),
+    pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
+    lastUpdated,
+    sources: {
+      kolscan: all.some((e) => e.verifiedSources.includes("kolscan")),
+      gmgn: all.some((e) => e.verifiedSources.includes("gmgn")),
+      dune: false,
+      flipside: false,
+      polymarket: false,
+    },
+  };
 }

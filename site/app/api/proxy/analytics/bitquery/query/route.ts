@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { executeBitquery } from "@/lib/proxy/sources/bitquery";
-import { assertOrigin } from "@/lib/assert-origin";
+import { checkOrigin } from "@/lib/assert-origin";
 
 export async function POST(req: NextRequest) {
   try {
-    assertOrigin(req);
+    const originError = checkOrigin(req);
+    if (originError) return originError;
     const body = await req.json();
     if (!body.query) {
       return NextResponse.json({ error: "Missing 'query' in request body" }, { status: 400 });

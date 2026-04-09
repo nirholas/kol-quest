@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/drizzle/db";
 import { leaderboardCache } from "@/drizzle/db/schema";
-import { and, asc, desc, eq, gte, lte, ilike, sql } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import type {
   LeaderboardResponse,
   LeaderboardQuery,
   LeaderboardEntry,
   LeaderboardChain,
 } from "@/lib/types";
-import { assertOrigin } from "@/lib/assert-origin";
+import { checkOrigin } from "@/lib/assert-origin";
 
 // GET /api/leaderboard — get aggregated leaderboard rankings
 export async function GET(req: NextRequest) {
@@ -31,94 +31,86 @@ export async function GET(req: NextRequest) {
     verifiedOnly: searchParams.get("verifiedOnly") === "true",
   };
 
-  const whereClauses = [];
-  if (query.chain && query.chain !== "all") {
-    whereClauses.push(eq(leaderboardCache.chain, query.chain));
-  }
-  if (query.timeframe) {
-    whereClauses.push(eq(leaderboardCache.timeframe, query.timeframe));
-  }
-  if (query.category && query.category !== "overall") {
-    whereClauses.push(sql`'${query.category}' = ANY(${leaderboardCache.categories})`);
-  }
-  if (query.search) {
-    whereClauses.push(
-      sql`${leaderboardCache.name} ILIKE ${"%" + query.search + "%"} OR ${
-        leaderboardCache.address
-      } ILIKE ${"%" + query.search + "%"} OR ${leaderboardCache.twitterUsername} ILIKE ${
-        "%" + query.search + "%"
-      }`
-    );
-  }
-  if (query.minPnl !== undefined) {
-    whereClauses.push(gte(leaderboardCache.totalPnl, query.minPnl));
-  }
-  if (query.minWinRate !== undefined) {
-    whereClauses.push(gte(leaderboardCache.avgWinRate, query.minWinRate));
-  }
-  if (query.activeInDays !== undefined) {
-    const d = new Date();
-    d.setDate(d.getDate() - query.activeInDays);
-    whereClauses.push(gte(leaderboardCache.lastActive, d.toISOString()));
-  }
-  if (query.verifiedOnly) {
-    whereClauses.push(sql`${leaderboardCache.twitterUsername} IS NOT NULL`);
-  }
+  // Build cache key from chain/timeframe/category
+  const chain = query.chain || "all";
+  const timeframe = query.timeframe || "7d";
+  const category = query.category || "overall";
+  const cacheKey = `${chain}_${timeframe}_${category}`;
 
-  const where = and(...whereClauses);
-
-  const totalEntries = await db
-    .select({ count: sql`count(*)` })
-    .from(leaderboardCache)
-    .where(where);
-  const total = Number(totalEntries[0].count);
-
-  const sortColumn = {
-    pnl: leaderboardCache.totalPnl,
-    winrate: leaderboardCache.avgWinRate,
-    trades: leaderboardCache.totalTrades,
-    composite: leaderboardCache.compositeScore,
-    rank: leaderboardCache.avgRank,
-  }[query.sort || "composite"];
-
-  const orderBy = query.order === "asc" ? asc(sortColumn) : desc(sortColumn);
-
-  const results = await db
+  // Try keyed lookup first, fall back to "default_leaderboard"
+  let cacheRow = await db
     .select()
     .from(leaderboardCache)
-    .where(where)
-    .orderBy(orderBy)
-    .limit(query.limit!)
-    .offset((query.page! - 1) * query.limit!);
+    .where(eq(leaderboardCache.key, cacheKey))
+    .limit(1)
+    .then((r) => r[0] ?? null);
 
-  const entries: LeaderboardEntry[] = results.map((r) => ({
-    address: r.address,
-    chain: r.chain as LeaderboardChain,
-    name: r.name,
-    avatar: r.avatar,
-    ensOrSns: r.ensOrSns,
-    twitter: r.twitterUsername
-      ? {
-          username: r.twitterUsername,
-          name: r.twitterName || "",
-          avatar: r.twitterAvatar,
-        }
-      : undefined,
-    rankings: r.rankings as any,
-    compositeScore: r.compositeScore,
-    avgRank: r.avgRank,
-    totalPnl: r.totalPnl,
-    avgWinRate: r.avgWinRate,
-    lastActive: r.lastActive,
-    totalTrades: r.totalTrades,
-    categories: r.categories,
-    verifiedSources: r.verifiedSources as any,
-    rankChange: r.rankChange,
-  }));
+  if (!cacheRow) {
+    cacheRow = await db
+      .select()
+      .from(leaderboardCache)
+      .where(eq(leaderboardCache.key, "default_leaderboard"))
+      .limit(1)
+      .then((r) => r[0] ?? null);
+  }
 
-  const lastUpdated = results.length > 0 ? results[0].updatedAt : new Date().toISOString();
+  let allEntries: LeaderboardEntry[] = cacheRow ? (JSON.parse(cacheRow.data) as LeaderboardEntry[]) : [];
 
-  // For now, hardcode sources until dynamic source detection is added
+  // Filter chain in-memory when not using a chain-specific key
+  if (query.chain && query.chain !== "all") {
+    allEntries = allEntries.filter((e) => e.chain === query.chain);
+  }
+
+  // Search filter
+  if (query.search) {
+    const q = query.search.toLowerCase();
+    allEntries = allEntries.filter(
+      (e) =>
+        e.name?.toLowerCase().includes(q) ||
+        e.address?.toLowerCase().includes(q) ||
+        e.twitter?.username?.toLowerCase().includes(q)
+    );
+  }
+
+  // Numeric filters
+  if (query.minPnl !== undefined) {
+    allEntries = allEntries.filter((e) => e.totalPnl >= query.minPnl!);
+  }
+  if (query.minWinRate !== undefined) {
+    allEntries = allEntries.filter((e) => e.avgWinRate >= query.minWinRate!);
+  }
+  if (query.activeInDays !== undefined) {
+    const since = new Date();
+    since.setDate(since.getDate() - query.activeInDays);
+    allEntries = allEntries.filter(
+      (e) => e.lastActive && new Date(e.lastActive) >= since
+    );
+  }
+  if (query.verifiedOnly) {
+    allEntries = allEntries.filter((e) => e.twitter?.username);
+  }
+
+  // Sort
+  const sortKey = query.sort || "composite";
+  const multiplier = query.order === "asc" ? 1 : -1;
+  allEntries.sort((a, b) => {
+    let av = 0;
+    let bv = 0;
+    if (sortKey === "pnl") { av = a.totalPnl; bv = b.totalPnl; }
+    else if (sortKey === "winrate") { av = a.avgWinRate; bv = b.avgWinRate; }
+    else if (sortKey === "trades") { av = a.totalTrades; bv = b.totalTrades; }
+    else if (sortKey === "rank") { av = a.avgRank; bv = b.avgRank; }
+    else { av = a.compositeScore; bv = b.compositeScore; }
+    return (av - bv) * multiplier;
+  });
+
+  const total = allEntries.length;
+  const page = query.page!;
+  const limit = query.limit!;
+  const entries = allEntries.slice((page - 1) * limit, page * limit);
+
+  const lastUpdated = cacheRow ? cacheRow.lastUpdated.toISOString() : new Date().toISOString();
+
   const sources = {
     kolscan: true,
     gmgn: true,
@@ -130,10 +122,10 @@ export async function GET(req: NextRequest) {
   const response: LeaderboardResponse = {
     entries,
     pagination: {
-      page: query.page!,
-      limit: query.limit!,
+      page,
+      limit,
       total,
-      totalPages: Math.ceil(total / query.limit!),
+      totalPages: Math.ceil(total / limit),
     },
     lastUpdated,
     sources,
@@ -142,11 +134,11 @@ export async function GET(req: NextRequest) {
   return NextResponse.json(response);
 }
 
-// Example of how a POST would work to refresh the cache
-// This would be called by a cron job, not a user
-// Requires some form of auth (e.g., secret key)
+// POST /api/leaderboard — refresh the leaderboard cache (cron only)
 export async function POST(req: NextRequest) {
-  assertOrigin(req);
+  const originError = checkOrigin(req);
+  if (originError) return originError;
+
   const authHeader = req.headers.get("Authorization");
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

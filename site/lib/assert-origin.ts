@@ -23,3 +23,12 @@ export function checkOrigin(req: Request): Response | null {
   }
   return null;
 }
+
+/**
+ * Throws an error if the request origin is not trusted.
+ * Use this inside try/catch blocks in API routes that mutate data.
+ */
+export function assertOrigin(req: Request): void {
+  const result = checkOrigin(req);
+  if (result) throw new Error("Forbidden");
+}

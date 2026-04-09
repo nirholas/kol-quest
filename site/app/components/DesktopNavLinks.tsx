@@ -113,6 +113,7 @@ export default function DesktopNavLinks() {
           { href: "/gmgn-sol", label: "Solana Wallets", desc: "Smart money on Solana" },
           { href: "/bsc", label: "BSC Wallets", desc: "Smart money on BNB Chain" },
           { href: "/x-tracker", label: "X Tracker", desc: "10K+ crypto X accounts" },
+          { href: "/polymarket", label: "Polymarket", desc: "Prediction market top traders" },
         ]}
       />
       <NavDropdown
@@ -123,8 +124,8 @@ export default function DesktopNavLinks() {
           { href: "/monitor", label: "Monitor", desc: "GMGN-style live wallet monitor", live: true },
           { href: "/track", label: "Track", desc: "New tokens from tracked wallets" },
           { href: "/tracker", label: "Wallet Tracker", desc: "Your tracked wallet portfolio" },
-          { href: "/all-solana", label: "All Solana", desc: "Combined deduplicated wallets" },
-          { href: "/polymarket", label: "Polymarket", desc: "Prediction market pros", beta: true },
+          { href: "/all-solana", label: "All Solana", desc: "Combined deduplicated Solana wallets" },
+          { href: "/all-wallets", label: "All Wallets", desc: "Every source in one view — Solana + BSC + Polymarket" },
         ]}
       />
       <Link href="/docs" className={linkCls("/docs")}>

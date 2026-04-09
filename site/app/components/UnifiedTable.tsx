@@ -34,24 +34,31 @@ function Sparkline({ values }: { values: number[] }) {
 const CATEGORY_LABELS: Record<string, string> = {
   smart_degen: "Smart Degen",
   kol: "KOL",
-  launchpad_smart: "Launchpad",
+  sniper: "Sniper",
   fresh_wallet: "Fresh Wallet",
+  top_dev: "Top Dev",
+  pump_smart: "Pump Smart",
+  launchpad_smart: "Launchpad",
   snipe_bot: "Sniper",
   live: "Live",
   top_followed: "Top Followed",
   top_renamed: "Top Renamed",
-  top_dev: "Top Dev",
+  prediction_trader: "Prediction",
 };
 
 const CATEGORY_COLORS: Record<string, string> = {
   smart_degen: "bg-accent/10 text-accent border-accent/20",
   kol: "bg-buy/10 text-buy border-buy/20",
+  sniper: "bg-sell/10 text-sell border-sell/20",
+  fresh_wallet: "bg-zinc-800 text-zinc-400 border-zinc-700",
+  top_dev: "bg-purple-900/30 text-purple-400 border-purple-800/40",
+  pump_smart: "bg-orange-900/30 text-orange-400 border-orange-800/40",
   launchpad_smart: "bg-accent/10 text-accent border-accent/20",
-  fresh_wallet: "bg-zinc-800 text-zinc-500 border-zinc-700",
   snipe_bot: "bg-sell/10 text-sell border-sell/20",
   live: "bg-buy/10 text-buy border-buy/20",
   top_followed: "bg-accent/10 text-accent border-accent/20",
   top_renamed: "bg-zinc-800 text-zinc-500 border-zinc-700",
+  prediction_trader: "bg-blue-900/30 text-blue-400 border-blue-800/40",
 };
 
 function UnifiedTableInner({
@@ -168,6 +175,12 @@ function UnifiedTableInner({
     "px-3 py-2 text-left font-mono text-zinc-600 cursor-pointer hover:text-zinc-300 select-none whitespace-nowrap text-[10px] uppercase tracking-wider transition-colors";
   const explorer =
     chain === "bsc" ? "https://bscscan.com/address" : "https://solscan.io/account";
+
+  function walletExplorer(w: UnifiedWallet) {
+    if (w.chain === "bsc") return "https://bscscan.com/address";
+    if (w.chain === "polygon") return "https://polygonscan.com/address";
+    return "https://solscan.io/account";
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-10 animate-fade-in">
@@ -333,7 +346,7 @@ function UnifiedTableInner({
                     <td className="px-3 py-2.5">
                       <div className="flex items-center gap-1">
                         <a
-                          href={`${explorer}/${w.wallet_address}`}
+                          href={`${walletExplorer(w)}/${w.wallet_address}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="font-mono text-xs text-zinc-500 hover:text-buy transition-colors"
