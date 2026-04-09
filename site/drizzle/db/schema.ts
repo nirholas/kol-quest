@@ -156,6 +156,16 @@ export const trade = pgTable(
   },
 );
 
+export const feedback = pgTable("feedback", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").references(() => user.id, { onDelete: "set null" }),
+  type: text("type").notNull().default("feedback"), // "feedback" | "removal_request"
+  message: text("message").notNull(),
+  walletAddress: varchar("wallet_address", { length: 96 }),
+  status: text("status").notNull().default("open"), // "open" | "resolved" | "dismissed"
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
 export const watchlist = pgTable(
   "watchlist",
   {

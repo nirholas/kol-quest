@@ -15,3 +15,11 @@ export const submissionSchema = z.object({
 });
 
 export type SubmissionInput = z.infer<typeof submissionSchema>;
+
+export const feedbackSchema = z.object({
+  type: z.enum(["feedback", "removal_request"]),
+  message: z.string().min(10).max(2000),
+  walletAddress: z.string().min(24).max(96).optional().nullable(),
+});
+
+export type FeedbackInput = z.infer<typeof feedbackSchema>;
