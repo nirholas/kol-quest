@@ -108,6 +108,56 @@ async function fetchExplorer(
   return fetchJSON(`${base}?${qs}`, { source, delayMs: 220 });
 }
 
+async function fetchChainV2(chain: typeof CHAINS_V2[0], wallets: string[], apikey: string) {
+  const src = `${SRC}-${chain.chain}`;
+
+  // Global stats via V2 API
+  const price = await fetchV2(chain.chainid, "stats", "ethprice", {}, apikey, src);
+  if (price) saveArchive(src, "eth-price", price);
+  await sleep(250);
+
+  const supply = await fetchV2(chain.chainid, "stats", "ethsupply", {}, apikey, src);
+  if (supply) saveArchive(src, "eth-supply", supply);
+  await sleep(250);
+
+  const gas = await fetchV2(chain.chainid, "gastracker", "gasoracle", {}, apikey, src);
+  if (gas) saveArchive(src, "gas-oracle", gas);
+  await sleep(250);
+
+  // Per-wallet
+  log(src, `Fetching ${wallets.length} wallets via V2 API...`);
+
+  const limit = Math.min(wallets.length, 50);
+  for (const wallet of wallets.slice(0, limit)) {
+    const data: any = { wallet };
+
+    const balance = await fetchV2(
+      chain.chainid, "account", "balance", { address: wallet, tag: "latest" }, apikey, src
+    );
+    if (balance) data.balance = balance;
+
+    const txs = await fetchV2(
+      chain.chainid, "account", "txlist",
+      { address: wallet, startblock: "0", endblock: "99999999", sort: "desc", page: "1", offset: "50" },
+      apikey, src
+    );
+    if (txs) data.transactions = txs;
+
+    const erc20 = await fetchV2(
+      chain.chainid, "account", "tokentx",
+      { address: wallet, startblock: "0", endblock: "99999999", sort: "desc", page: "1", offset: "50" },
+      apikey, src
+    );
+    if (erc20) data.erc20_transfers = erc20;
+
+    saveArchive(src, `wallet-${wallet.toLowerCase()}`, data);
+    log(src, `Saved ${wallet.slice(0, 8)}...`);
+    await sleep(300);
+  }
+
+  log(src, `Done.`);
+}
+
 async function fetchChainWallets(explorer: typeof EXPLORERS[0], wallets: string[]) {
   const apikey = env(explorer.envKey) || "";
   const src = `${SRC}-${explorer.chain}`;
@@ -160,18 +210,23 @@ async function fetchChainWallets(explorer: typeof EXPLORERS[0], wallets: string[
 }
 
 export async function runEtherscan() {
-  log(SRC, "Starting Etherscan-family fetch...");
+  if (!hasKey("ETHERSCAN_API_KEY")) {
+    log(SRC, "No ETHERSCAN_API_KEY — skipping all chains");
+    return;
+  }
 
+  log(SRC, "Starting Etherscan V2 API fetch (single key for 60+ chains)...");
+
+  const apikey = env("ETHERSCAN_API_KEY") || "";
   const evmWallets = loadEvmWallets();
   log(SRC, `Total EVM wallets available: ${evmWallets.length}`);
 
-  for (const explorer of EXPLORERS) {
-    if (!hasKey(explorer.envKey)) {
-      log(SRC, `No key for ${explorer.chain} (${explorer.envKey}), skipping wallet data (global stats only)`);
-    }
-    await fetchChainWallets(explorer, evmWallets);
+  // Use V2 API with chainid for all chains
+  for (const chain of CHAINS_V2) {
+    log(SRC, `Fetching ${chain.chain} (chainid: ${chain.chainid})...`);
+    await fetchChainV2(chain, evmWallets, apikey);
     await sleep(1000);
   }
 
-  log(SRC, "Etherscan-family fetch complete.");
+  log(SRC, "Etherscan V2 fetch complete — covered 12 chains with single API key.");
 }
