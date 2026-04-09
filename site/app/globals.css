@@ -69,30 +69,36 @@ code {
 }
 
 /* Iridescent / holographic glow */
-@keyframes iridescent {
-  0%   { filter: hue-rotate(0deg)   brightness(1);   }
-  25%  { filter: hue-rotate(60deg)  brightness(1.1);  }
-  50%  { filter: hue-rotate(180deg) brightness(1.15); }
-  75%  { filter: hue-rotate(270deg) brightness(1.1);  }
-  100% { filter: hue-rotate(360deg) brightness(1);    }
-}
-
 @keyframes float {
   0%, 100% { transform: translateY(0); }
-  50%      { transform: translateY(-8px); }
+  50%      { transform: translateY(-6px); }
 }
 
-.hero-keycap {
-  animation: float 5s ease-in-out infinite;
+.hero-cube {
+  animation: float 6s ease-in-out infinite;
 }
 
-.iridescent-glow {
+@keyframes shimmer {
+  0%   { filter: hue-rotate(0deg); }
+  100% { filter: hue-rotate(360deg); }
+}
+
+.iridescent-edge {
   background: conic-gradient(
-    from 0deg,
-    #ff0080, #ff8c00, #40e0d0, #00bfff,
-    #8a2be2, #ff0080
+    from 220deg,
+    #ff6b00, #ffaa00, #40e0d0, #00aaff,
+    #3366ff, #8844ee, #ff4488, #ff6b00
   );
-  animation: iridescent 6s linear infinite;
+  animation: shimmer 8s linear infinite;
+}
+
+.iridescent-pool {
+  background: conic-gradient(
+    from 180deg,
+    rgba(255,107,0,0.7), rgba(0,170,255,0.5), rgba(51,102,255,0.8),
+    rgba(255,68,136,0.4), rgba(64,224,208,0.6), rgba(255,107,0,0.7)
+  );
+  animation: shimmer 8s linear infinite;
 }
 
 @keyframes chart-draw {

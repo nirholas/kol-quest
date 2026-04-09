@@ -1,3 +1,10 @@
 {
-  "/page": "app/page.js"
+  "/manifest.webmanifest/route": "app/manifest.webmanifest/route.js",
+  "/icon.svg/route": "app/icon.svg/route.js",
+  "/page": "app/page.js",
+  "/api/trades/route": "app/api/trades/route.js",
+  "/feed/page": "app/feed/page.js",
+  "/leaderboard/page": "app/leaderboard/page.js",
+  "/auth/page": "app/auth/page.js",
+  "/docs/page": "app/docs/page.js"
 }

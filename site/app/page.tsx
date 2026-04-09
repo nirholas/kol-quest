@@ -94,70 +94,67 @@ export default async function Home() {
             </div>
           </div>
 
-          {/* Right — 3D keycap with iridescent glow */}
+          {/* Right — 3D cube with iridescent glow (Framer-style) */}
           <div className="hidden lg:flex items-center justify-center relative">
-            <div className="relative hero-keycap">
-              {/* Iridescent reflection underneath */}
-              <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 w-64 h-32 rounded-full iridescent-glow opacity-40 blur-2xl" />
-              <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-48 h-20 rounded-full iridescent-glow opacity-60 blur-xl" />
+            {/* Color pool on surface below */}
+            <div className="absolute bottom-[2rem] left-1/2 -translate-x-1/2 w-[340px] h-[160px] iridescent-pool opacity-50 blur-[60px] rounded-full" />
+            <div className="absolute bottom-[3rem] left-1/2 -translate-x-1/2 w-[260px] h-[100px] iridescent-pool opacity-70 blur-[30px] rounded-full" />
 
-              {/* Keycap body */}
-              <div className="relative w-64 h-64 rounded-[2rem] bg-gradient-to-b from-zinc-800 to-zinc-900 shadow-[0_20px_60px_rgba(0,0,0,0.8),inset_0_1px_0_rgba(255,255,255,0.08)] border border-zinc-700/50">
-                {/* Inner face */}
-                <div className="absolute inset-3 rounded-[1.5rem] bg-gradient-to-br from-zinc-900 via-[#0d0d0d] to-black border border-zinc-800/60 flex items-center justify-center overflow-hidden">
-                  {/* Pumping chart SVG */}
-                  <svg viewBox="0 0 120 80" className="w-36 h-24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    {/* Grid lines */}
-                    <line x1="0" y1="20" x2="120" y2="20" stroke="#222" strokeWidth="0.5" />
-                    <line x1="0" y1="40" x2="120" y2="40" stroke="#222" strokeWidth="0.5" />
-                    <line x1="0" y1="60" x2="120" y2="60" stroke="#222" strokeWidth="0.5" />
-                    {/* Glow under the line */}
-                    <defs>
-                      <linearGradient id="chartGrad" x1="0" y1="0" x2="120" y2="0">
-                        <stop offset="0%" stopColor="#22c55e" stopOpacity="0.6" />
-                        <stop offset="100%" stopColor="#4ade80" stopOpacity="1" />
-                      </linearGradient>
-                      <linearGradient id="fillGrad" x1="60" y1="10" x2="60" y2="75" gradientUnits="userSpaceOnUse">
-                        <stop offset="0%" stopColor="#22c55e" stopOpacity="0.3" />
-                        <stop offset="100%" stopColor="#22c55e" stopOpacity="0" />
-                      </linearGradient>
-                    </defs>
-                    {/* Area fill */}
-                    <path d="M10 65 L25 58 L40 62 L55 50 L65 45 L75 38 L85 25 L95 18 L110 8 L110 75 L10 75 Z" fill="url(#fillGrad)" />
-                    {/* Chart line — pumping up */}
-                    <polyline
-                      points="10,65 25,58 40,62 55,50 65,45 75,38 85,25 95,18 110,8"
-                      stroke="url(#chartGrad)"
-                      strokeWidth="2.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className="chart-line"
-                    />
-                    {/* Glowing dot at peak */}
-                    <circle cx="110" cy="8" r="3" fill="#4ade80">
-                      <animate attributeName="opacity" values="1;0.4;1" dur="2s" repeatCount="indefinite" />
-                    </circle>
-                    <circle cx="110" cy="8" r="6" fill="#22c55e" opacity="0.2">
-                      <animate attributeName="r" values="6;10;6" dur="2s" repeatCount="indefinite" />
-                      <animate attributeName="opacity" values="0.2;0;0.2" dur="2s" repeatCount="indefinite" />
-                    </circle>
-                    {/* Dollar sign */}
-                    <text x="16" y="22" fill="#4ade80" fontSize="14" fontWeight="bold" opacity="0.6" fontFamily="Inter, sans-serif">$</text>
-                  </svg>
+            <div className="relative hero-cube" style={{ perspective: '800px' }}>
+              {/* 3D cube container */}
+              <div className="relative w-[280px] h-[320px]">
+                {/* Iridescent edge — wraps the bottom of the cube */}
+                <div className="absolute bottom-0 left-0 right-0 h-[120px] rounded-b-[2rem] overflow-hidden">
+                  <div className="absolute inset-0 iridescent-edge opacity-80" />
+                  {/* Dark overlay to make it look like light bleeding from under */}
+                  <div className="absolute inset-0 bg-gradient-to-b from-black/90 via-black/40 to-transparent" />
                 </div>
 
-                {/* Keycap top highlight */}
-                <div className="absolute top-3 left-6 right-6 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-              </div>
+                {/* Thin iridescent line at top edge */}
+                <div className="absolute top-[2px] left-6 right-6 h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
 
-              {/* Floating stat badges */}
-              <div className="absolute -bottom-6 -right-6 w-20 h-20 rounded-2xl bg-bg-card/90 backdrop-blur border border-border flex flex-col items-center justify-center shadow-elevated">
-                <div className="text-buy text-lg font-bold">{kolscanWallets}</div>
-                <div className="text-[9px] text-zinc-600 uppercase tracking-wider">KOLs</div>
-              </div>
-              <div className="absolute -top-4 -left-4 w-20 h-20 rounded-2xl bg-bg-card/90 backdrop-blur border border-border flex flex-col items-center justify-center shadow-elevated">
-                <div className="text-accent text-lg font-bold">{solGmgn.length.toLocaleString()}</div>
-                <div className="text-[9px] text-zinc-600 uppercase tracking-wider">GMGN</div>
+                {/* Top face — dark keycap */}
+                <div className="absolute top-0 left-0 right-0 h-[220px] rounded-[2rem] bg-gradient-to-b from-[#2a2a2e] via-[#1c1c20] to-[#151518] border border-zinc-700/40 shadow-[0_30px_80px_rgba(0,0,0,0.9),inset_0_1px_0_rgba(255,255,255,0.06)]">
+                  {/* Inner dish */}
+                  <div className="absolute inset-4 rounded-[1.25rem] bg-gradient-to-br from-[#1a1a1e] via-[#0e0e10] to-[#080809] border border-zinc-800/50 flex items-center justify-center overflow-hidden">
+                    {/* Chart SVG */}
+                    <svg viewBox="0 0 120 80" className="w-40 h-28" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <line x1="0" y1="20" x2="120" y2="20" stroke="#1a1a1a" strokeWidth="0.5" />
+                      <line x1="0" y1="40" x2="120" y2="40" stroke="#1a1a1a" strokeWidth="0.5" />
+                      <line x1="0" y1="60" x2="120" y2="60" stroke="#1a1a1a" strokeWidth="0.5" />
+                      <defs>
+                        <linearGradient id="chartGrad" x1="0" y1="0" x2="120" y2="0">
+                          <stop offset="0%" stopColor="#22c55e" stopOpacity="0.5" />
+                          <stop offset="100%" stopColor="#4ade80" stopOpacity="1" />
+                        </linearGradient>
+                        <linearGradient id="fillGrad" x1="60" y1="10" x2="60" y2="75" gradientUnits="userSpaceOnUse">
+                          <stop offset="0%" stopColor="#22c55e" stopOpacity="0.25" />
+                          <stop offset="100%" stopColor="#22c55e" stopOpacity="0" />
+                        </linearGradient>
+                      </defs>
+                      <path d="M10 65 L25 58 L40 62 L55 50 L65 45 L75 38 L85 25 L95 18 L110 8 L110 75 L10 75 Z" fill="url(#fillGrad)" />
+                      <polyline
+                        points="10,65 25,58 40,62 55,50 65,45 75,38 85,25 95,18 110,8"
+                        stroke="url(#chartGrad)"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="chart-line"
+                      />
+                      <circle cx="110" cy="8" r="2.5" fill="#4ade80">
+                        <animate attributeName="opacity" values="1;0.4;1" dur="2s" repeatCount="indefinite" />
+                      </circle>
+                      <circle cx="110" cy="8" r="5" fill="#22c55e" opacity="0.15">
+                        <animate attributeName="r" values="5;9;5" dur="2s" repeatCount="indefinite" />
+                        <animate attributeName="opacity" values="0.15;0;0.15" dur="2s" repeatCount="indefinite" />
+                      </circle>
+                      <text x="14" y="20" fill="#4ade80" fontSize="12" fontWeight="bold" opacity="0.4" fontFamily="Inter, sans-serif">$</text>
+                    </svg>
+                  </div>
+                </div>
+
+                {/* Side face — gives 3D depth */}
+                <div className="absolute bottom-0 left-0 right-0 h-[120px] rounded-b-[2rem] bg-gradient-to-b from-[#111114] to-[#0a0a0c] border-x border-b border-zinc-800/30" />
               </div>
             </div>
           </div>

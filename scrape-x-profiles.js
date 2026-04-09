@@ -90,18 +90,67 @@ function extractUsernames() {
 // --------------------------------------------------------------------------
 // 2. Scrape profiles with rate limiting
 // --------------------------------------------------------------------------
+
+/** Bootstrap an authenticated client — fetches ct0 CSRF token from Twitter */
+async function createAuthenticatedClient(authToken) {
+  // First, hit Twitter to get a ct0 cookie
+  const res = await fetch("https://x.com", {
+    headers: { Cookie: `auth_token=${authToken}` },
+    redirect: "manual",
+  });
+
+  // Extract ct0 from set-cookie headers
+  let ct0 = "";
+  const setCookies = res.headers.getSetCookie?.() || [];
+  for (const cookie of setCookies) {
+    const match = cookie.match(/ct0=([^;]+)/);
+    if (match) {
+      ct0 = match[1];
+      break;
+    }
+  }
+
+  if (!ct0) {
+    // Generate a random ct0 as fallback (Twitter sometimes accepts this)
+    const crypto = await import("crypto");
+    ct0 = crypto.randomBytes(16).toString("hex");
+  }
+
+  const client = new TwitterHttpClient({
+    cookies: `auth_token=${authToken}; ct0=${ct0}`,
+    rateLimitStrategy: "wait",
+  });
+
+  return client;
+}
+
+/** Scrape a profile using guest token (no auth needed for public profiles) */
+async function scrapeWithGuest(guestManager, username) {
+  const { queryId, operationName } = GRAPHQL.UserByScreenName;
+  const variables = {
+    screen_name: username,
+    withSafetyModeUserFields: true,
+  };
+
+  const url = buildGraphQLUrl(queryId, operationName, variables, DEFAULT_FEATURES);
+  const headers = await guestManager.getHeaders();
+
+  const res = await fetch(url, { headers });
+
+  if (res.status === 429) throw new Error("rate limited (429)");
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+  const json = await res.json();
+  const result = json?.data?.user?.result;
+  if (!result || result.__typename === "UserUnavailable") {
+    throw new Error(`User @${username} not found`);
+  }
+
+  return parseUserData(result);
+}
+
 async function scrapeProfiles(usernames) {
   const authToken = process.env.X_AUTH_TOKEN;
-  if (!authToken) {
-    console.error("❌ X_AUTH_TOKEN environment variable required.");
-    console.error(
-      "   Set it to your x.com auth_token cookie value."
-    );
-    console.error(
-      "   Browser DevTools → Application → Cookies → x.com → auth_token"
-    );
-    process.exit(1);
-  }
 
   // Load existing profiles to resume
   const outputPath = path.join(__dirname, "site/data/x-profiles.json");
@@ -135,11 +184,34 @@ async function scrapeProfiles(usernames) {
     return existing;
   }
 
-  // Create HTTP client
-  const client = new TwitterHttpClient({
-    cookies: `auth_token=${authToken}`,
-    rateLimitStrategy: "wait",
-  });
+  // Set up scraping strategy
+  let client = null;
+  const guestManager = new GuestTokenManager({ poolSize: 3 });
+
+  if (authToken) {
+    console.log("🔑 Auth token provided — using authenticated client (higher rate limits)");
+    try {
+      client = await createAuthenticatedClient(authToken);
+      // Test the client
+      const testProfile = await scrapeProfile(client, "x");
+      console.log(`✅ Auth client working (tested on @x)\n`);
+    } catch (e) {
+      console.log(`⚠️  Auth client failed (${e.message}), falling back to guest tokens\n`);
+      client = null;
+    }
+  } else {
+    console.log("🌐 No auth token — using guest tokens (public profiles only)\n");
+  }
+
+  // Pre-fill guest token pool
+  if (!client) {
+    try {
+      await guestManager.fillPool();
+      console.log("✅ Guest token pool ready\n");
+    } catch (e) {
+      console.log(`⚠️  Guest pool fill failed (${e.message}), will activate on demand\n`);
+    }
+  }
 
   const results = { ...existing };
   let success = 0;
@@ -151,11 +223,13 @@ async function scrapeProfiles(usernames) {
 
     try {
       let profile;
-      try {
+
+      if (client) {
+        // Authenticated path
         profile = await scrapeProfile(client, username);
-      } catch {
-        // Fallback: direct GraphQL fetch
-        profile = await fetchProfileDirect(authToken, username);
+      } else {
+        // Guest token path
+        profile = await scrapeWithGuest(guestManager, username);
       }
 
       results[username] = {
@@ -194,6 +268,10 @@ async function scrapeProfiles(usernames) {
         results[username] = { username, error: msg, scrapedAt: new Date().toISOString() };
       } else if (msg.includes("rate") || msg.includes("429")) {
         console.log(`${progress} ⏳ Rate limited, waiting 60s...`);
+        // If using guest tokens, rotate to a new one
+        if (!client) {
+          try { await guestManager.activate(); } catch {}
+        }
         await sleep(60000);
         i--; // retry
         failed--;
@@ -212,69 +290,6 @@ async function scrapeProfiles(usernames) {
   console.log(`📁 Saved to ${outputPath}`);
 
   return results;
-}
-
-// --------------------------------------------------------------------------
-// Fallback: direct GraphQL fetch (if xactions HTTP module doesn't load)
-// --------------------------------------------------------------------------
-async function fetchProfileDirect(authToken, username) {
-  const variables = JSON.stringify({
-    screen_name: username,
-    withSafetyModeUserFields: true,
-  });
-  const features = JSON.stringify({
-    hidden_profile_subscriptions_enabled: true,
-    rweb_tipjar_consumption_enabled: true,
-    responsive_web_graphql_exclude_directive_enabled: true,
-    verified_phone_label_enabled: false,
-    subscriptions_verification_info_is_identity_verified_enabled: true,
-    subscriptions_verification_info_verified_since_enabled: true,
-    highlights_tweets_tab_ui_enabled: true,
-    responsive_web_twitter_article_notes_tab_enabled: true,
-    subscriptions_feature_can_gift_premium: true,
-    creator_subscriptions_tweet_preview_api_enabled: true,
-    responsive_web_graphql_skip_user_profile_image_extensions_enabled: false,
-    responsive_web_graphql_timeline_navigation_enabled: true,
-  });
-
-  const url = `https://x.com/i/api/graphql/BQ6xjFU6Mgm-WhEP3OiT9w/UserByScreenName?variables=${encodeURIComponent(variables)}&features=${encodeURIComponent(features)}`;
-
-  const res = await fetch(url, {
-    headers: {
-      Authorization:
-        "Bearer AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA",
-      Cookie: `auth_token=${authToken}`,
-      "x-csrf-token": authToken,
-      "Content-Type": "application/json",
-    },
-  });
-
-  if (!res.ok) {
-    if (res.status === 429) throw new Error("rate limited (429)");
-    throw new Error(`HTTP ${res.status}`);
-  }
-
-  const json = await res.json();
-  const result = json?.data?.user?.result;
-  if (!result || result.__typename === "UserUnavailable") {
-    throw new Error("User not found or suspended");
-  }
-
-  const legacy = result.legacy || {};
-  return {
-    name: legacy.name || "",
-    username: legacy.screen_name || username,
-    bio: legacy.description || "",
-    location: legacy.location || "",
-    website: legacy.entities?.url?.urls?.[0]?.expanded_url || "",
-    joined: legacy.created_at || "",
-    followers: legacy.followers_count ?? 0,
-    following: legacy.friends_count ?? 0,
-    tweets: legacy.statuses_count ?? 0,
-    avatar: (legacy.profile_image_url_https || "").replace("_normal", "_400x400"),
-    header: legacy.profile_banner_url || "",
-    verified: Boolean(result.is_blue_verified || legacy.verified),
-  };
 }
 
 function sleep(ms) {
