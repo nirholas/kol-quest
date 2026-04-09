@@ -60,12 +60,12 @@ function AuthContent() {
         window.location.href = redirectTo;
         return;
       } else {
-        const result = await signUp.email({
-          email: `${username}@wallet.local`,
+        const result = await signUp.username({
+          username,
           password,
           name: username,
-          username,
-        } as Parameters<typeof signUp.email>[0]);
+          email: `${username}@wallet.local`,
+        });
         if (result?.error) throw new Error(result.error.message || "Sign up failed");
         await tryBootstrapAdmin();
         setMessage("Account created — redirecting...");

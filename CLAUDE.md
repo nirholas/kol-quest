@@ -184,6 +184,46 @@ Three providers: `"credential"` (email/password), `"solana-wallet"` (ed25519 sig
 
 ---
 
+## Common Patterns
+
+### Adding a new API route
+1. Create `site/app/api/{route}/route.ts`
+2. Define Zod schema for request body/params
+3. Call `assertOrigin(request)` for mutations
+4. Get session with `auth.api.getSession({ headers: request.headers })`
+5. Validate input, query database, return `NextResponse.json(...)`
+6. Add rate limiting if user-facing
+
+### Adding a new page
+1. Create `site/app/{route}/page.tsx`
+2. Use async server components for data fetching
+3. Import shared components from `site/app/components/`
+4. Use Tailwind for styling — match existing design tokens
+
+### Working with wallet data
+1. Static data: use functions from `site/lib/data.ts` (`getData()`, `getGmgnSolData()`, etc.)
+2. Dynamic data: query via Drizzle from `site/drizzle/db/index.ts`
+3. For new wallet fields, update `site/lib/types.ts` interfaces first
+
+### Database changes
+1. Edit `site/drizzle/db/schema.ts`
+2. Run `cd site && npm run db:push` for dev
+3. Run `cd site && npm run db:generate` to create a migration file for prod
+4. Update TypeScript types if schema changes affect API responses
+
+---
+
+## Anti-Patterns (Don't Do This)
+
+- **Don't hardcode wallet addresses or API keys.** Use environment variables.
+- **Don't bypass validation.** Even internal calls should go through Zod schemas.
+- **Don't use `fetch()` for database operations.** Use Drizzle queries directly on the server.
+- **Don't put business logic in components.** Extract to `lib/` utilities or server actions.
+- **Don't leave console.log statements.** Remove debug logging before committing.
+- **Don't ignore TypeScript errors.** Fix them or document why the exception is necessary with a comment.
+
+---
+
 ## Docs
 
 Full documentation lives in `docs/`:
