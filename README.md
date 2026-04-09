@@ -5,7 +5,7 @@
 <br/>
 <br/>
 
-Track the best crypto traders. Monitor smart money moves in real time. Discover new tokens before they run.
+Track the best traders. Monitor smart money moves in real time. Discover new tokens before they run.
 
 <br/>
 
