@@ -6,7 +6,7 @@ import type { KolEntry, SortField, SortDir, Timeframe } from "@/lib/types";
 
 function WinRate({ wins, losses }: { wins: number; losses: number }) {
   const total = wins + losses;
-  if (total === 0) return <span className="text-muted">-</span>;
+  if (total === 0) return <span className="text-zinc-600">—</span>;
   const pct = (wins / total) * 100;
   return (
     <span className={pct >= 50 ? "text-buy" : "text-sell"}>
@@ -16,8 +16,8 @@ function WinRate({ wins, losses }: { wins: number; losses: number }) {
 }
 
 function SortIcon({ field, current, dir }: { field: SortField; current: SortField; dir: SortDir }) {
-  if (field !== current) return <span className="text-muted/30 ml-1">↕</span>;
-  return <span className="text-buy ml-1">{dir === "desc" ? "↓" : "↑"}</span>;
+  if (field !== current) return <span className="text-zinc-700 ml-1 text-[10px]">↕</span>;
+  return <span className="text-buy ml-1 text-[10px]">{dir === "desc" ? "↓" : "↑"}</span>;
 }
 
 function truncate(addr: string) {
@@ -76,137 +76,131 @@ export default function LeaderboardClient({ data }: { data: KolEntry[] }) {
     { label: "Monthly", value: 30 },
   ];
 
-  const thClass = "px-3 py-3 text-left font-medium text-muted cursor-pointer hover:text-white select-none whitespace-nowrap text-sm";
+  const thClass = "px-4 py-3.5 text-left font-medium text-zinc-500 cursor-pointer hover:text-zinc-300 select-none whitespace-nowrap text-xs uppercase tracking-wider transition-colors";
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-white mb-2">KOL Leaderboard</h1>
-        <p className="text-muted text-sm">
-          {filtered.length} entries · Sorted by {sortField} ({sortDir})
-        </p>
-      </div>
-
-      {/* Controls */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-4">
-        {/* Timeframe Tabs */}
-        <div className="flex bg-bg-card border border-border rounded-lg overflow-hidden">
-          {timeframes.map((tf) => (
-            <button
-              key={tf.value}
-              onClick={() => setTimeframe(tf.value)}
-              className={`px-4 py-2 text-sm font-medium transition-colors ${
-                timeframe === tf.value
-                  ? "bg-buy text-black"
-                  : "text-muted hover:text-white hover:bg-bg-hover"
-              }`}
-            >
-              {tf.label}
-            </button>
-          ))}
+    <div className="max-w-6xl mx-auto px-6 py-10 animate-fade-in">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
+        <div>
+          <h1 className="text-2xl font-bold text-white tracking-tight">KOL Leaderboard</h1>
+          <p className="text-zinc-500 text-sm mt-1">
+            {filtered.length} {filtered.length === 1 ? "entry" : "entries"} · sorted by {sortField}
+          </p>
         </div>
 
-        {/* Search */}
-        <input
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search name or wallet..."
-          className="bg-bg-card border border-border rounded-lg px-3 py-2 text-sm text-white placeholder:text-muted/50 outline-none focus:border-buy/50 w-full sm:w-64 transition-colors"
-        />
+        {/* Controls */}
+        <div className="flex items-center gap-2">
+          {/* Timeframe Tabs */}
+          <div className="flex bg-bg-card border border-border rounded-xl p-0.5">
+            {timeframes.map((tf) => (
+              <button
+                key={tf.value}
+                onClick={() => setTimeframe(tf.value)}
+                className={`px-4 py-1.5 rounded-[10px] text-sm font-medium transition-all duration-200 ${
+                  timeframe === tf.value
+                    ? "bg-buy text-black shadow-glow"
+                    : "text-zinc-500 hover:text-white"
+                }`}
+              >
+                {tf.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Search */}
+          <div className="relative">
+            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search..."
+              className="bg-bg-card border border-border rounded-xl pl-9 pr-3 py-2 text-sm text-white placeholder:text-zinc-600 outline-none focus:border-buy/40 focus:ring-1 focus:ring-buy/20 w-44 transition-all"
+            />
+          </div>
+        </div>
       </div>
 
       {/* Table */}
-      <div className="bg-bg-card border border-border rounded-xl overflow-hidden">
+      <div className="bg-bg-card rounded-2xl border border-border overflow-hidden shadow-card">
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="border-b border-border">
-              <tr>
-                <th className="px-3 py-3 text-left font-medium text-muted text-sm w-12">#</th>
+            <thead>
+              <tr className="border-b border-border">
+                <th className="px-4 py-3.5 text-left font-medium text-zinc-500 text-xs uppercase tracking-wider w-12">#</th>
                 <th className={thClass} onClick={() => toggleSort("name")}>
                   Name <SortIcon field="name" current={sortField} dir={sortDir} />
                 </th>
-                <th className="px-3 py-3 text-left font-medium text-muted text-sm">Wallet</th>
+                <th className="px-4 py-3.5 text-left font-medium text-zinc-500 text-xs uppercase tracking-wider">Wallet</th>
                 <th className={thClass} onClick={() => toggleSort("profit")}>
-                  Profit (SOL) <SortIcon field="profit" current={sortField} dir={sortDir} />
+                  Profit <SortIcon field="profit" current={sortField} dir={sortDir} />
                 </th>
                 <th className={thClass} onClick={() => toggleSort("wins")}>
-                  Wins <SortIcon field="wins" current={sortField} dir={sortDir} />
+                  W <SortIcon field="wins" current={sortField} dir={sortDir} />
                 </th>
                 <th className={thClass} onClick={() => toggleSort("losses")}>
-                  Losses <SortIcon field="losses" current={sortField} dir={sortDir} />
+                  L <SortIcon field="losses" current={sortField} dir={sortDir} />
                 </th>
                 <th className={thClass} onClick={() => toggleSort("winrate")}>
-                  Win Rate <SortIcon field="winrate" current={sortField} dir={sortDir} />
+                  Win% <SortIcon field="winrate" current={sortField} dir={sortDir} />
                 </th>
-                <th className="px-3 py-3 text-left font-medium text-muted text-sm">Links</th>
+                <th className="px-4 py-3.5 text-left font-medium text-zinc-500 text-xs uppercase tracking-wider">Links</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-border">
+            <tbody>
               {filtered.map((entry, i) => (
                 <tr
                   key={`${entry.wallet_address}-${entry.timeframe}`}
-                  className="hover:bg-bg-hover transition-colors"
+                  className="border-b border-border/50 last:border-b-0 hover:bg-bg-hover/50 transition-colors group"
                 >
-                  <td className="px-3 py-2.5 text-muted text-sm">{i + 1}</td>
-                  <td className="px-3 py-2.5 text-white text-sm font-medium">
+                  <td className="px-4 py-3 text-zinc-600 text-sm tabular-nums">{i + 1}</td>
+                  <td className="px-4 py-3">
                     <Link
                       href={`/wallet/${entry.wallet_address}`}
-                      className="hover:text-buy transition-colors"
+                      className="text-white text-sm font-medium hover:text-buy transition-colors"
                     >
                       {entry.name}
                     </Link>
                   </td>
-                  <td className="px-3 py-2.5">
+                  <td className="px-4 py-3">
                     <a
                       href={`https://solscan.io/account/${entry.wallet_address}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="font-mono text-xs text-buy hover:underline"
+                      className="font-mono text-xs text-zinc-500 hover:text-buy transition-colors"
                       title={entry.wallet_address}
                     >
                       {truncate(entry.wallet_address)}
                     </a>
                   </td>
-                  <td className={`px-3 py-2.5 text-sm font-medium ${
-                    entry.profit > 0 ? "text-buy" : entry.profit < 0 ? "text-sell" : "text-muted"
+                  <td className={`px-4 py-3 text-sm font-semibold tabular-nums ${
+                    entry.profit > 0 ? "text-buy" : entry.profit < 0 ? "text-sell" : "text-zinc-600"
                   }`}>
                     {entry.profit > 0 ? "+" : ""}
                     {entry.profit.toFixed(2)}
                   </td>
-                  <td className="px-3 py-2.5 text-sm text-buy">{entry.wins}</td>
-                  <td className="px-3 py-2.5 text-sm text-sell">{entry.losses}</td>
-                  <td className="px-3 py-2.5 text-sm">
+                  <td className="px-4 py-3 text-sm text-buy tabular-nums">{entry.wins}</td>
+                  <td className="px-4 py-3 text-sm text-sell tabular-nums">{entry.losses}</td>
+                  <td className="px-4 py-3 text-sm tabular-nums">
                     <WinRate wins={entry.wins} losses={entry.losses} />
                   </td>
-                  <td className="px-3 py-2.5 text-sm flex gap-2">
-                    {entry.twitter && (
-                      <a
-                        href={entry.twitter}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-muted hover:text-white transition-colors"
-                        title="Twitter/X"
-                      >
-                        𝕏
-                      </a>
-                    )}
-                    {entry.telegram && (
-                      <a
-                        href={entry.telegram}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-muted hover:text-blue-400 transition-colors"
-                        title="Telegram"
-                      >
-                        ✈
-                      </a>
-                    )}
+                  <td className="px-4 py-3 text-sm">
+                    <div className="flex gap-2.5 opacity-40 group-hover:opacity-100 transition-opacity">
+                      {entry.twitter && (
+                        <a href={entry.twitter} target="_blank" rel="noopener noreferrer"
+                          className="text-zinc-400 hover:text-white transition-colors text-xs" title="Twitter/X">𝕏</a>
+                      )}
+                      {entry.telegram && (
+                        <a href={entry.telegram} target="_blank" rel="noopener noreferrer"
+                          className="text-zinc-400 hover:text-blue-400 transition-colors text-xs" title="Telegram">✈</a>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}
               {filtered.length === 0 && (
                 <tr>
-                  <td colSpan={8} className="px-3 py-8 text-center text-muted text-sm">
+                  <td colSpan={8} className="px-4 py-16 text-center text-zinc-600 text-sm">
                     No entries found
                   </td>
                 </tr>
