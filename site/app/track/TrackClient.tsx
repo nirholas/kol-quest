@@ -21,13 +21,6 @@ interface TrendingToken {
 }
 
 type TimeFilter = "1h" | "6h" | "24h";
-type GroupFilter = "all";
-
-function formatMC(v: number): string {
-  if (v >= 1_000_000) return `$${(v / 1_000_000).toFixed(1)}M`;
-  if (v >= 1_000) return `$${(v / 1_000).toFixed(1)}K`;
-  return `$${v.toFixed(1)}`;
-}
 
 function formatInflow(v: number): string {
   const abs = Math.abs(v);
@@ -100,12 +93,12 @@ export default function TrackClient() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl font-bold text-white">Track</h1>
-          <p className="text-sm text-zinc-500 mt-0.5">New tokens spotted by tracked wallets</p>
+          <p className="text-sm text-zinc-500 mt-0.5">Tokens spotted by tracked wallets in the last 24h</p>
         </div>
 
         {/* Time filter + Advanced */}
         <div className="flex items-center gap-2">
-          {(["5m", "1h", "6h", "24h"] as TimeFilter[]).map((t) => (
+          {(["1h", "6h", "24h"] as TimeFilter[]).map((t) => (
             <button
               key={t}
               onClick={() => setTimeFilter(t)}
@@ -126,9 +119,9 @@ export default function TrackClient() {
                 : "bg-bg-card text-zinc-400 hover:text-white hover:bg-bg-hover border border-border"
             }`}
           >
-            Adv.
+            Filters
             <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+              <path d="M3 4h18M7 8h10M11 12h2" />
             </svg>
           </button>
           <ShareButtons title="KolQuest Token Tracker" />
@@ -140,71 +133,28 @@ export default function TrackClient() {
         <div className="bg-bg-card border border-border rounded-xl p-4 animate-fade-in">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <div>
-              <label className="text-[11px] text-zinc-500 uppercase tracking-wider mb-1 block">Min MC</label>
-              <input
-                type="text"
-                placeholder="e.g. 1000"
-                className="w-full bg-bg-primary border border-border rounded-lg px-3 py-1.5 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-accent"
-              />
-            </div>
-            <div>
-              <label className="text-[11px] text-zinc-500 uppercase tracking-wider mb-1 block">Max MC</label>
-              <input
-                type="text"
-                placeholder="e.g. 1000000"
-                className="w-full bg-bg-primary border border-border rounded-lg px-3 py-1.5 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-accent"
-              />
-            </div>
-            <div>
-              <label className="text-[11px] text-zinc-500 uppercase tracking-wider mb-1 block">Min Wallets</label>
+              <label className="text-[11px] text-zinc-500 uppercase tracking-wider mb-1 block">Min KOL Buyers</label>
               <input
                 type="text"
                 placeholder="e.g. 3"
+                value={minBuyers}
+                onChange={(e) => setMinBuyers(e.target.value)}
                 className="w-full bg-bg-primary border border-border rounded-lg px-3 py-1.5 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-accent"
               />
             </div>
             <div>
-              <label className="text-[11px] text-zinc-500 uppercase tracking-wider mb-1 block">Min Inflow</label>
+              <label className="text-[11px] text-zinc-500 uppercase tracking-wider mb-1 block">Min Net Flow ($)</label>
               <input
                 type="text"
-                placeholder="e.g. 100"
+                placeholder="e.g. 1000"
+                value={minNetFlow}
+                onChange={(e) => setMinNetFlow(e.target.value)}
                 className="w-full bg-bg-primary border border-border rounded-lg px-3 py-1.5 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-accent"
               />
             </div>
           </div>
         </div>
       )}
-
-      {/* Portfolio group tabs */}
-      <div className="flex items-center gap-1 overflow-x-auto pb-1">
-        {/* Counter badges */}
-        <div className="flex items-center gap-1.5 mr-3 shrink-0">
-          <span className="text-xs text-zinc-500">P1</span>
-          <span className="text-xs text-zinc-500">P2</span>
-          <span className="text-xs text-zinc-500">P3</span>
-        </div>
-        <div className="h-4 w-px bg-border mr-2 shrink-0" />
-
-        {(["all", "default", "axiom"] as GroupFilter[]).map((g) => (
-          <button
-            key={g}
-            onClick={() => setGroup(g)}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap ${
-              group === g
-                ? "bg-bg-hover text-white border border-border-light"
-                : "text-zinc-500 hover:text-zinc-300 hover:bg-bg-hover"
-            }`}
-          >
-            {g === "default" && <span className="text-yellow-400">⭐</span>}
-            {g === "axiom" && <span className="text-yellow-400">⭐</span>}
-            <span className="capitalize">{g === "all" ? "All" : g.charAt(0).toUpperCase() + g.slice(1)}</span>
-            <span className="text-[11px] text-zinc-600 tabular-nums">{groupCounts[g]}</span>
-          </button>
-        ))}
-
-        <div className="h-4 w-px bg-border mx-1 shrink-0" />
-        <span className="text-[11px] text-zinc-600 shrink-0">Groups</span>
-      </div>
 
       {/* Search */}
       <div className="relative">
@@ -213,7 +163,7 @@ export default function TrackClient() {
         </svg>
         <input
           type="text"
-          placeholder="Search token or wallet…"
+          placeholder="Search token name, symbol, or address…"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="w-full sm:w-80 bg-bg-card border border-border rounded-lg pl-10 pr-4 py-2 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-accent transition-colors"
@@ -222,64 +172,84 @@ export default function TrackClient() {
 
       {/* Table */}
       <div className="overflow-x-auto rounded-xl border border-border">
+        {loading ? (
+          <div className="px-4 py-12 text-center text-zinc-600 text-sm">Loading tokens…</div>
+        ) : (
         <table className="w-full text-sm">
           <thead>
             <tr className="text-[11px] text-zinc-500 uppercase tracking-wider border-b border-border">
-              <th className="text-left px-4 py-3 font-medium">Token / Wallet</th>
-              <th className="text-right px-4 py-3 font-medium">MC / Bal</th>
-              <th className="text-right px-4 py-3 font-medium whitespace-nowrap">{timeFilter} TXs</th>
-              <th className="text-right px-4 py-3 font-medium whitespace-nowrap">{timeFilter} Inflow</th>
-              <th className="text-right px-4 py-3 font-medium">Age</th>
-              <th className="text-center px-4 py-3 font-medium"></th>
+              <th className="text-left px-4 py-3 font-medium">Token</th>
+              <th className="text-right px-4 py-3 font-medium">Chain</th>
+              <th className="text-right px-4 py-3 font-medium whitespace-nowrap">Buys / Sells</th>
+              <th className="text-right px-4 py-3 font-medium whitespace-nowrap">KOL Buyers</th>
+              <th className="text-right px-4 py-3 font-medium whitespace-nowrap">Net Flow</th>
+              <th className="text-right px-4 py-3 font-medium">First Seen</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
-            {filtered.map((token, i) => (
+            {filtered.map((token) => (
               <tr
-                key={`${token.address}-${i}`}
+                key={token.tokenAddress}
                 className="hover:bg-bg-hover transition-colors duration-150 cursor-pointer group"
               >
-                {/* Token / Wallet */}
+                {/* Token */}
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-bg-elevated border border-border flex items-center justify-center text-xs font-bold text-zinc-400 shrink-0">
-                      {token.name.charAt(0).toUpperCase()}
-                    </div>
+                    {token.tokenLogo ? (
+                      <img
+                        src={token.tokenLogo}
+                        alt=""
+                        className="w-8 h-8 rounded-full bg-bg-elevated border border-border shrink-0"
+                        onError={(e) => { e.currentTarget.style.display = "none"; }}
+                      />
+                    ) : (
+                      <div className="w-8 h-8 rounded-full bg-bg-elevated border border-border flex items-center justify-center text-xs font-bold text-zinc-400 shrink-0">
+                        {(token.tokenSymbol ?? token.tokenName ?? "?").charAt(0).toUpperCase()}
+                      </div>
+                    )}
                     <div className="min-w-0">
-                      <span className="text-white font-medium truncate block">{token.name}</span>
+                      <Link
+                        href={`/token/${token.chain}/${token.tokenAddress}`}
+                        className="text-white font-medium hover:text-buy transition-colors truncate block"
+                      >
+                        {token.tokenSymbol ?? token.tokenName ?? token.tokenAddress.slice(0, 8)}
+                      </Link>
+                      {token.tokenName && token.tokenSymbol && token.tokenName !== token.tokenSymbol && (
+                        <span className="text-[11px] text-zinc-500 truncate block">{token.tokenName}</span>
+                      )}
                     </div>
                   </div>
                 </td>
 
-                {/* MC */}
-                <td className="px-4 py-3 text-right font-mono text-zinc-300 whitespace-nowrap">
-                  {formatMC(token.marketCap)}
+                {/* Chain */}
+                <td className="px-4 py-3 text-right">
+                  <span className="text-[10px] font-mono px-1.5 py-0.5 rounded border bg-zinc-900 text-zinc-500 border-zinc-800 uppercase">
+                    {token.chain}
+                  </span>
                 </td>
 
                 {/* TXs */}
                 <td className="px-4 py-3 text-right font-mono text-zinc-400 whitespace-nowrap">
-                  <span className="text-buy">{token.txBuy24h.toLocaleString()}</span>
+                  <span className="text-buy">{token.buyCount.toLocaleString()}</span>
                   <span className="text-zinc-600 mx-1">/</span>
-                  <span className="text-sell">{token.txSell24h.toLocaleString()}</span>
+                  <span className="text-sell">{token.sellCount.toLocaleString()}</span>
                 </td>
 
-                {/* Inflow */}
+                {/* KOL Buyers */}
+                <td className="px-4 py-3 text-right font-mono text-zinc-300 whitespace-nowrap">
+                  {token.uniqueBuyers}
+                </td>
+
+                {/* Net Flow */}
                 <td className={`px-4 py-3 text-right font-mono whitespace-nowrap ${
-                  token.inflow24h >= 0 ? "text-buy" : "text-sell"
+                  token.netFlow >= 0 ? "text-buy" : "text-sell"
                 }`}>
-                  {formatInflow(token.inflow24h)}
+                  {formatInflow(token.netFlow)}
                 </td>
 
-                {/* Age */}
-                <td className="px-4 py-3 text-right text-zinc-500 whitespace-nowrap">
-                  {token.age}
-                </td>
-
-                {/* Action */}
-                <td className="px-4 py-3 text-center">
-                  <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-buy/10 text-buy border border-buy/20">
-                    Created
-                  </span>
+                {/* First Seen */}
+                <td className="px-4 py-3 text-right text-zinc-500 whitespace-nowrap font-mono text-xs">
+                  {timeAgo(token.firstSeen)}
                 </td>
               </tr>
             ))}
@@ -287,18 +257,19 @@ export default function TrackClient() {
             {filtered.length === 0 && (
               <tr>
                 <td colSpan={6} className="px-4 py-12 text-center text-zinc-600">
-                  No tokens match your search.
+                  {tokens.length === 0 ? "No token activity in the last 24h." : "No tokens match your filters."}
                 </td>
               </tr>
             )}
           </tbody>
         </table>
+        )}
       </div>
 
       {/* Footer stats */}
       <div className="flex items-center justify-between text-[11px] text-zinc-600 px-1">
-        <span>{filtered.length} token{filtered.length !== 1 ? "s" : ""} tracked</span>
-        <span>Auto-refresh in 15s</span>
+        <span>{filtered.length} token{filtered.length !== 1 ? "s" : ""}</span>
+        <span>Auto-refreshes every 30s</span>
       </div>
     </div>
   );

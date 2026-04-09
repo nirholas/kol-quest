@@ -4,6 +4,9 @@ bun.lock
 .env
 .env.*
 !.env.example
+
+# API archive data (large — store locally or in object storage)
+archive/
 .vercel
 .env*.local
 

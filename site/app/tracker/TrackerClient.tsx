@@ -40,7 +40,7 @@ function SortIcon({ active, dir }: { active: boolean; dir: "asc" | "desc" }) {
   return <span className="text-buy ml-1 text-[10px]">{dir === "desc" ? "↓" : "↑"}</span>;
 }
 
-type SortField = "label" | "balance" | "winrate" | "profit" | "tracked" | "lastActive";
+type SortField = "label" | "winrate" | "profit" | "tracked" | "lastActive";
 type SortDir = "asc" | "desc";
 
 export default function TrackerClient({
@@ -129,10 +129,6 @@ export default function TrackerClient({
       switch (sortField) {
         case "label":
           cmp = (a.label || a.walletAddress).localeCompare(b.label || b.walletAddress);
-          break;
-        case "balance":
-          // No balance data in UnifiedWallet, sort by profit_30d as proxy
-          cmp = ((wA?.profit_30d || 0) - (wB?.profit_30d || 0));
           break;
         case "winrate":
           cmp = ((wA?.winrate_7d || 0) - (wB?.winrate_7d || 0));

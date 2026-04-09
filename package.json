@@ -13,7 +13,14 @@
     "api": "bun api/index.ts",
     "mcp": "bun mcp/index.ts",
     "dev": "cd site && npm run dev",
-    "build": "cd site && npm run build"
+    "build": "cd site && npm run build",
+    "fetch": "bun fetchers/index.ts",
+    "fetch:free": "bun fetchers/index.ts --free-only",
+    "fetch:list": "bun fetchers/index.ts --list",
+    "fetch:solana": "bun fetchers/index.ts --only dexscreener,geckoterminal,gmgn,kolscan,solana-ecosystem,helius,birdeye,solscan",
+    "fetch:evm": "bun fetchers/index.ts --only etherscan,blockscout,moralis,alchemy,covalent,debank,zerion,chainbase",
+    "fetch:analytics": "bun fetchers/index.ts --only dune,flipside,bitquery,thegraph",
+    "fetch:market": "bun fetchers/index.ts --only dexscreener,geckoterminal,coingecko,solana-ecosystem"
   },
   "keywords": [
     "kolscan",

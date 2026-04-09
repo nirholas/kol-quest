@@ -13,6 +13,7 @@ export interface TokenData {
   buys24h: number | null;
   sells24h: number | null;
   topPairAddress: string | null;
+  launchpad: string | null;
   source: string;
   error?: string;
 }
@@ -77,6 +78,7 @@ async function fromDexScreener(
       buys24h: pair.txns?.h24?.buys ?? null,
       sells24h: pair.txns?.h24?.sells ?? null,
       topPairAddress: pair.pairAddress ?? null,
+      launchpad: null,
       source: "dexscreener",
     };
   } catch {
@@ -125,6 +127,7 @@ async function fromGeckoTerminal(
       buys24h: null,
       sells24h: null,
       topPairAddress,
+      launchpad: null,
       source: "geckoterminal",
     };
   } catch {
@@ -194,6 +197,7 @@ export async function getTokenData(
         buys24h: null,
         sells24h: null,
         topPairAddress: null,
+        launchpad: null,
         source: "jupiter",
       };
     }
@@ -215,6 +219,7 @@ export async function getTokenData(
     buys24h: null,
     sells24h: null,
     topPairAddress: null,
+    launchpad: null,
     source: "unavailable",
     error: "Price data unavailable",
   };
