@@ -36,7 +36,12 @@ function NavDropdown({ label, items }: { label: string; items: { href: string; l
 }
 
 async function Nav() {
-  const session = await auth.api.getSession({ headers: await headers() });
+  let session: Awaited<ReturnType<typeof auth.api.getSession>> | null = null;
+  try {
+    session = await auth.api.getSession({ headers: await headers() });
+  } catch {
+    // DB not available — show unauthenticated nav
+  }
 
   return (
     <nav className="sticky top-0 z-50 bg-bg-primary/90 backdrop-blur-xl border-b border-border">

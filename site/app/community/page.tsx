@@ -1,18 +1,25 @@
-import { desc, eq } from "drizzle-orm";
+import { desc, eq, InferSelectModel } from "drizzle-orm";
 import { db } from "@/drizzle/db";
 import { walletSubmission } from "@/drizzle/db/schema";
+
+type WalletSubmission = InferSelectModel<typeof walletSubmission>;
 
 export const metadata = {
   title: "KolQuest Community Wallets",
 };
 
 export default async function CommunityPage() {
-  const submissions = await db
-    .select()
-    .from(walletSubmission)
-    .where(eq(walletSubmission.status, "approved"))
-    .orderBy(desc(walletSubmission.createdAt))
-    .limit(500);
+  let submissions: WalletSubmission[] = [];
+  try {
+    submissions = await db
+      .select()
+      .from(walletSubmission)
+      .where(eq(walletSubmission.status, "approved"))
+      .orderBy(desc(walletSubmission.createdAt))
+      .limit(500);
+  } catch {
+    // DB not available
+  }
 
   return (
     <main className="max-w-7xl mx-auto px-6 py-12 space-y-6">

@@ -19,24 +19,44 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
   };
 }
 
-export const auth = betterAuth({
-  database: drizzleAdapter(db, {
-    provider: "pg",
-  }),
-  emailAndPassword: {
-    enabled: true,
-    requireEmailVerification: true,
-  },
-  user: {
-    additionalFields: {
-      role: {
-        type: "string",
-        defaultValue: "user",
-        input: false,
+function createAuth() {
+  try {
+    return betterAuth({
+      database: drizzleAdapter(db, {
+        provider: "pg",
+      }),
+      emailAndPassword: {
+        enabled: true,
+        requireEmailVerification: true,
       },
-    },
+      user: {
+        additionalFields: {
+          role: {
+            type: "string",
+            defaultValue: "user",
+            input: false,
+          },
+        },
+      },
+      socialProviders,
+      trustedOrigins: [process.env.NEXT_PUBLIC_URL || "http://localhost:3000"],
+      plugins: [admin()],
+    });
+  } catch {
+    // Return a stub that throws helpful errors at call time instead of crashing at import
+    return null;
+  }
+}
+
+const _auth = createAuth();
+
+export const auth = new Proxy({} as NonNullable<ReturnType<typeof createAuth>>, {
+  get(_target, prop, receiver) {
+    if (!_auth) {
+      throw new Error(
+        "Auth is not configured. Set DATABASE_URL and AUTH_SECRET in .env.local",
+      );
+    }
+    return Reflect.get(_auth, prop, receiver);
   },
-  socialProviders,
-  trustedOrigins: [process.env.NEXT_PUBLIC_URL || "http://localhost:3000"],
-  plugins: [admin()],
 });
