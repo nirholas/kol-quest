@@ -100,13 +100,19 @@ export async function getWalletDetail(addressRaw: string): Promise<WalletDetailR
   const address = normalizeAddress(addressRaw.trim());
   const inferredChain = inferChainFromAddress(address);
 
-  const [sol, bsc, xProfiles] = await Promise.all([
+  const [sol, bsc, xProfiles, solGmgn, bscGmgn] = await Promise.all([
     getAllSolanaWallets(),
     getBscWallets(),
     getXProfiles(),
+    getSolGmgnData(),
+    getBscGmgnData(),
   ]);
 
   const wallet = [...sol, ...bsc].find(
+    (w) => w.wallet_address.toLowerCase() === address.toLowerCase(),
+  ) || null;
+
+  const gmgnWallet = [...solGmgn, ...bscGmgn].find(
     (w) => w.wallet_address.toLowerCase() === address.toLowerCase(),
   ) || null;
 
