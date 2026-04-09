@@ -3,8 +3,8 @@
 import Link from "next/link";
 import { AvatarFallback } from "@/app/components/FallbackImg";
 import CopyButton from "@/app/components/CopyButton";
-import { formatProfit, formatNumber, timeAgo, truncateAddr } from "@/lib/format";
-import type { LeaderboardEntry, LeaderboardQuery, LeaderboardResponse } from "@/lib/types";
+import { formatProfit, formatNumber, formatUsd, timeAgo, truncateAddr } from "@/lib/format";
+import type { LeaderboardEntry, LeaderboardQuery, LeaderboardResponse, LeaderboardTimeframe } from "@/lib/types";
 
 // --- Sub-components ---
 
@@ -116,6 +116,7 @@ export interface LeaderboardTableProps {
   sort: SortKey;
   order: "asc" | "desc";
   page: number;
+  timeframe?: LeaderboardTimeframe;
   onSort: (field: SortKey) => void;
   onPage: (page: number) => void;
 }
@@ -125,6 +126,7 @@ export default function LeaderboardTable({
   sort,
   order,
   page,
+  timeframe = "7d",
   onSort,
   onPage,
 }: LeaderboardTableProps) {
@@ -144,7 +146,7 @@ export default function LeaderboardTable({
                 <th className={thBase}>Wallet</th>
                 <th className={thBase}>Twitter</th>
                 <SortTh
-                  label="7d PnL"
+                  label={`${timeframe === "all" ? "All" : timeframe} PnL`}
                   field="pnl"
                   sort={sort}
                   order={order}
@@ -164,6 +166,7 @@ export default function LeaderboardTable({
                   order={order}
                   onSort={onSort}
                 />
+                <th className={thBase}>Portfolio</th>
                 <th className={thBase}>Last Active</th>
                 <th className={thBase}>Tags</th>
                 <th className={thBase}>Sources</th>
@@ -183,6 +186,7 @@ export default function LeaderboardTable({
                   key={`${entry.chain}:${entry.address}`}
                   entry={entry}
                   rank={(page - 1) * pagination.limit + i + 1}
+                  timeframe={timeframe}
                 />
               ))}
               {entries.length === 0 && (
@@ -245,8 +249,38 @@ export default function LeaderboardTable({
   );
 }
 
-function EntryRow({ entry, rank }: { entry: LeaderboardEntry; rank: number }) {
+function EntryRow({ entry, rank, timeframe }: { entry: LeaderboardEntry; rank: number; timeframe: LeaderboardTimeframe }) {
   const walletHref = `/wallet/${entry.address}`;
+
+  // Display PnL for the selected timeframe
+  const displayPnl = (() => {
+    if (!entry.pnlByTimeframe) return entry.totalPnl;
+    switch (timeframe) {
+      case "24h": return entry.pnlByTimeframe["24h"] ?? 0;
+      case "30d": return entry.pnlByTimeframe["30d"] ?? entry.totalPnl;
+      case "all": return entry.pnlByTimeframe["all"] ?? entry.totalPnl;
+      default: return entry.pnlByTimeframe["7d"] ?? entry.totalPnl;
+    }
+  })();
+
+  const displayWinRate = (() => {
+    if (!entry.winRateByTimeframe) return entry.avgWinRate;
+    switch (timeframe) {
+      case "24h": return entry.winRateByTimeframe["24h"] ?? 0;
+      case "30d": return entry.winRateByTimeframe["30d"] ?? entry.avgWinRate;
+      default: return entry.winRateByTimeframe["7d"] ?? entry.avgWinRate;
+    }
+  })();
+
+  const displayTrades = (() => {
+    if (!entry.tradesByTimeframe) return entry.totalTrades;
+    switch (timeframe) {
+      case "24h": return entry.tradesByTimeframe["24h"] ?? 0;
+      case "30d": return entry.tradesByTimeframe["30d"] ?? entry.totalTrades;
+      case "all": return entry.tradesByTimeframe["all"] ?? entry.totalTrades;
+      default: return entry.tradesByTimeframe["7d"] ?? entry.totalTrades;
+    }
+  })();
 
   return (
     <tr className="border-b border-zinc-900 last:border-b-0 hover:bg-bg-hover/30 transition-colors group">
@@ -338,20 +372,20 @@ function EntryRow({ entry, rank }: { entry: LeaderboardEntry; rank: number }) {
       {/* PnL */}
       <td
         className={`px-4 py-2.5 text-xs font-semibold tabular-nums font-mono ${
-          entry.totalPnl > 0
+          displayPnl > 0
             ? "text-buy"
-            : entry.totalPnl < 0
+            : displayPnl < 0
             ? "text-sell"
             : "text-zinc-600"
         }`}
       >
-        {entry.totalPnl !== 0 ? formatProfit(entry.totalPnl) : "—"}
+        {displayPnl !== 0 ? formatProfit(displayPnl) : "—"}
       </td>
 
       {/* Win rate */}
       <td className="px-4 py-2.5 text-xs tabular-nums">
-        {entry.avgWinRate > 0 ? (
-          <WinRatePill rate={entry.avgWinRate} />
+        {displayWinRate > 0 ? (
+          <WinRatePill rate={displayWinRate} />
         ) : (
           <span className="text-zinc-600">—</span>
         )}
@@ -359,7 +393,15 @@ function EntryRow({ entry, rank }: { entry: LeaderboardEntry; rank: number }) {
 
       {/* Trades */}
       <td className="px-4 py-2.5 text-xs text-zinc-400 tabular-nums">
-        {entry.totalTrades > 0 ? formatNumber(entry.totalTrades) : "—"}
+        {displayTrades > 0 ? formatNumber(displayTrades) : "—"}
+      </td>
+
+      {/* Portfolio Value */}
+      <td className="px-4 py-2.5 text-xs text-zinc-400 tabular-nums">
+        {entry.portfolioValue != null && entry.portfolioValue > 0
+          ? formatUsd(entry.portfolioValue)
+          : <span className="text-zinc-700">—</span>
+        }
       </td>
 
       {/* Last Active */}

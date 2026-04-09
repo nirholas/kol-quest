@@ -10,9 +10,13 @@ const CHAINS: { label: string; value: LeaderboardChain | "all" }[] = [
   { label: "All", value: "all" },
   { label: "Solana", value: "solana" },
   { label: "BSC", value: "bsc" },
+  { label: "ETH", value: "ethereum" },
+  { label: "Base", value: "base" },
+  { label: "Arbi", value: "arbitrum" },
 ];
 
 const TIMEFRAMES: { label: string; value: Timeframe }[] = [
+  { label: "24h", value: "24h" },
   { label: "7d", value: "7d" },
   { label: "30d", value: "30d" },
   { label: "All", value: "all" },

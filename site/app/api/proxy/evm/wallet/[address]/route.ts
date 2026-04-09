@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { createEvmRoute } from "@/lib/proxy/evm-route";
 import { moralisProxy } from "@/lib/proxy/sources/moralis";
 import { debankProxy } from "@/lib/proxy/sources/debank";
 import { alchemyProxy } from "@/lib/proxy/sources/alchemy";
@@ -15,9 +16,9 @@ import {
 } from "@/lib/proxy/types";
 
 // GET /api/proxy/evm/wallet/[address]?chains=eth,bsc,polygon
-export async function GET(
+async function unifiedWalletHandler(
   request: NextRequest,
-  { params }: { params: { address: string } }
+  params: Record<string, string>
 ) {
   const { address } = params;
   const chainsParam = request.nextUrl.searchParams.get("chains") || "eth";

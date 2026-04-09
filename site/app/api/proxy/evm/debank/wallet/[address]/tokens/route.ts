@@ -1,17 +1,11 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
+import { createEvmRoute } from "@/lib/proxy/evm-route";
 import { debankProxy } from "@/lib/proxy/sources/debank";
 import { getCacheHeaders, CACHE_TTL, CACHE_STALE } from "@/lib/proxy/types";
 
-export async function GET(
-  _request: NextRequest,
-  { params }: { params: { address: string } }
-) {
-  try {
-    const data = await debankProxy.getWalletTokens(params.address.toLowerCase());
-    return NextResponse.json(data, {
-      headers: getCacheHeaders(CACHE_TTL.walletBalances, CACHE_STALE.walletBalances),
-    });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
-}
+export const GET = createEvmRoute(async (_request, params) => {
+  const data = await debankProxy.getWalletTokens(params.address.toLowerCase());
+  return NextResponse.json(data, {
+    headers: getCacheHeaders(CACHE_TTL.walletBalances, CACHE_STALE.walletBalances),
+  });
+});

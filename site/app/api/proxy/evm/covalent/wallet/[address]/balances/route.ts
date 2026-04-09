@@ -1,19 +1,13 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
+import { createEvmRoute } from "@/lib/proxy/evm-route";
 import { covalentProxy } from "@/lib/proxy/sources/covalent";
 import { COVALENT_CHAIN_NAMES, getCacheHeaders, CACHE_TTL, CACHE_STALE } from "@/lib/proxy/types";
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { address: string } }
-) {
-  try {
-    const chainParam = request.nextUrl.searchParams.get("chain") || "eth";
-    const chain = COVALENT_CHAIN_NAMES[chainParam] || chainParam;
-    const data = await covalentProxy.getWalletBalances(params.address, chain);
-    return NextResponse.json(data, {
-      headers: getCacheHeaders(CACHE_TTL.walletBalances, CACHE_STALE.walletBalances),
-    });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
-}
+export const GET = createEvmRoute(async (request, params) => {
+  const chainParam = request.nextUrl.searchParams.get("chain") || "eth";
+  const chain = COVALENT_CHAIN_NAMES[chainParam] || chainParam;
+  const data = await covalentProxy.getWalletBalances(params.address, chain);
+  return NextResponse.json(data, {
+    headers: getCacheHeaders(CACHE_TTL.walletBalances, CACHE_STALE.walletBalances),
+  });
+});
