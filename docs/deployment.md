@@ -162,3 +162,57 @@ Key things to monitor:
 - Trade ingestion errors (GMGN API rate limits)
 - Database connection issues
 - Auth session errors
+
+## Security & Performance
+
+### Rate Limiting
+
+**Required for production:** Configure Upstash Redis to enable distributed rate limiting across serverless instances.
+
+```env
+UPSTASH_REDIS_REST_URL=https://your-instance.upstash.io
+UPSTASH_REDIS_REST_TOKEN=your-token
+```
+
+Without Redis, rate limiting falls back to in-memory mode which doesn't scale across multiple instances.
+
+Rate limits by endpoint:
+| Endpoint | Limit | Window |
+|----------|-------|--------|
+| `/api/feedback` | 10 | 1 hour |
+| `/api/submissions` (POST) | 12 | 1 hour |
+| `/api/submissions/[id]/vouch` | 60 | 1 hour |
+| `/api/submissions/[id]/reject` | 60 | 1 hour |
+
+### Security Headers
+
+The `vercel.json` file configures security headers for all routes:
+
+- `X-Content-Type-Options: nosniff` — prevents MIME type sniffing
+- `X-Frame-Options: DENY/SAMEORIGIN` — prevents clickjacking (DENY for API, SAMEORIGIN for pages)
+- `Strict-Transport-Security` — enforces HTTPS
+- `X-XSS-Protection` — legacy XSS protection (API routes)
+- `Referrer-Policy: strict-origin-when-cross-origin` — controls referrer exposure
+- `Permissions-Policy` — disables unnecessary browser features
+
+### Response Caching
+
+Read-only API endpoints leverage Vercel's edge cache with `Cache-Control` headers:
+
+| Endpoint | `s-maxage` | `stale-while-revalidate` |
+|----------|------------|--------------------------|
+| `/api/wallets` | 60s | 5min |
+| `/api/search` | 30s | 1min |
+| `/api/x-tracker` | 5min | 10min |
+| `/api/x-profiles` | 5min | 10min |
+| `/api/trending` | 30s | 1min |
+| `/api/trades` | 15s | 30s |
+| `/api/submissions` (GET) | 60s | 2min |
+
+This reduces serverless function invocations and improves response times for repeated requests.
+
+### Additional Security
+
+- **Origin validation:** Mutation endpoints check `Origin` header against `BETTER_AUTH_TRUSTED_ORIGINS`
+- **Input validation:** All endpoints validate input with Zod schemas at entry points
+- **Session validation:** Protected routes require valid Better-Auth sessions

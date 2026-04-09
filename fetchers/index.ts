@@ -72,6 +72,7 @@ import { runDune } from "./sources/dune.ts";
 import { runFlipside } from "./sources/flipside.ts";
 import { runBitquery } from "./sources/bitquery.ts";
 import { runSupplemental } from "./sources/supplemental.ts";
+import { runPolymarket } from "./sources/polymarket.ts";
 
 // ────────────────────────────────────────────────────────────
 // Source registry
@@ -91,6 +92,7 @@ const SOURCES: {
   { name: "blockscout",       run: runBlockscout,      requiresKey: false, priority: 2 },
   { name: "gmgn",             run: runGMGN,            requiresKey: false, priority: 1 },
   { name: "kolscan",          run: runKolScan,         requiresKey: false, priority: 1 },
+  { name: "polymarket",       run: runPolymarket,      requiresKey: false, priority: 1 },
   { name: "supplemental",     run: runSupplemental,    requiresKey: false, priority: 3 },
 
   // ── Requires API key ──

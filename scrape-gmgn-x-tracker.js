@@ -1,391 +1,253 @@
 /**
  * GMGN X Tracker Scraper
  *
- * Scrapes X/Twitter accounts from GMGN's X Tracker "Top Subscriptions" list
- * using Playwright to intercept API calls. GMGN tracks ~10,000+ crypto-relevant
- * X accounts with subscriber counts and category tags.
+ * Scrapes X/Twitter accounts from GMGN's X Tracker API directly.
+ * Uses the /vas/api/v1/twitter/user/search endpoint with pagination
+ * to fetch all tracked crypto-relevant X accounts (~10,000+).
  *
- * It also enriches the data with twitter usernames already present in our
- * wallet data files (solwallets.json, bscwallets.json).
+ * It also enriches the data with twitter usernames from our wallet data files.
  *
  * Usage: node scrape-gmgn-x-tracker.js
  * Output: site/data/gmgn-x-tracker.json
  */
 
-const { chromium } = require("playwright");
-const fs = require("fs");
-const path = require("path");
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const OUTPUT_DIR = path.join(__dirname, "site", "data");
 const OUTPUT_FILE = path.join(OUTPUT_DIR, "gmgn-x-tracker.json");
-const SCROLL_DELAY_MS = 1500;
-const MAX_SCROLLS = 200; // Many pages of accounts
 
-const GMGN_URL = "https://gmgn.ai/x";
+// GMGN API configuration
+const API_BASE = "https://gmgn.ai/vas/api/v1/twitter/user/search";
+const USER_TAGS = [
+  "kol",
+  "trader", 
+  "master",
+  "politics",
+  "media",
+  "companies",
+  "founder",
+  "exchange",
+  "celebrity",
+  "binance_square",
+  "other",
+];
+const PAGE_LIMIT = 50;
+const DELAY_BETWEEN_REQUESTS_MS = 500;
+
+// Map GMGN user_tags to display tags
+const TAG_MAP = {
+  kol: "KOL",
+  trader: "Trader",
+  master: "Master",
+  politics: "Politics",
+  media: "Media",
+  companies: "Companies",
+  founder: "Founders",
+  exchange: "Exchanges",
+  celebrity: "Celebrity",
+  binance_square: "Binance Square",
+  other: "Other",
+};
+
+// Generate random device/fingerprint IDs like GMGN uses
+function generateDeviceId() {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = Math.random() * 16 | 0;
+    const v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+}
+
+function generateFpDid() {
+  return [...Array(32)].map(() => Math.floor(Math.random() * 16).toString(16)).join('');
+}
 
 async function scrape() {
-  console.log("Starting GMGN X Tracker scraper...\n");
+  console.log("Starting GMGN X Tracker API scraper...\n");
 
   // Pre-seed from existing wallet data
   const accountMap = new Map();
   seedFromWalletData(accountMap);
   console.log(`Pre-seeded ${accountMap.size} accounts from wallet data.\n`);
 
-  const browser = await chromium.launch({
-    headless: true,
-    args: ["--no-sandbox", "--disable-setuid-sandbox"],
-  });
+  // Generate auth params that GMGN requires
+  const deviceId = generateDeviceId();
+  const fpDid = generateFpDid();
+  const appVer = `${new Date().toISOString().slice(0,10).replace(/-/g, '')}-${Math.floor(Math.random() * 99999)}-${generateFpDid().slice(0,7)}`;
+  
+  const authParams = new URLSearchParams({
+    device_id: deviceId,
+    fp_did: fpDid,
+    client_id: `gmgn_web_${appVer}`,
+    from_app: 'gmgn',
+    app_ver: appVer,
+    tz_name: 'America/Los_Angeles',
+    tz_offset: '-25200',
+    app_lang: 'en-US',
+    os: 'web',
+    worker: '0',
+  }).toString();
 
-  const context = await browser.newContext({
-    userAgent:
-      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
-    viewport: { width: 1440, height: 900 },
-  });
+  // Build query params for all user tags
+  const tagParams = USER_TAGS.map((t) => `user_tags=${t}`).join("&");
+  let pageToken = "";
+  let totalFetched = 0;
+  let pageNum = 0;
+  let consecutiveEmpty = 0;
 
-  const page = await context.newPage();
+  console.log("Fetching accounts from GMGN API...\n");
 
-  // accountMap was pre-seeded above
-  const apiResponses = [];
-
-  // Intercept API responses for X tracker data
-  page.on("response", async (response) => {
-    const url = response.url();
-
-    // Capture GMGN API calls related to X tracker / twitter subscriptions
-    const isTargetApi =
-      url.includes("/api/") &&
-      (url.includes("twitter") ||
-        url.includes("x_tracker") ||
-        url.includes("x-tracker") ||
-        url.includes("subscription") ||
-        url.includes("influencer") ||
-        url.includes("kol") ||
-        url.includes("social"));
-
-    // Also capture any JSON response from gmgn.ai domain
-    const isGmgnApi =
-      url.includes("gmgn.ai") &&
-      (url.includes("/api/") || url.includes("/defi/"));
-
-    if (!isTargetApi && !isGmgnApi) return;
+  while (consecutiveEmpty < 3) {
+    pageNum++;
+    const url = `${API_BASE}?${authParams}&limit=${PAGE_LIMIT}&handle=&${tagParams}${pageToken ? `&page_token=${encodeURIComponent(pageToken)}` : ""}`;
 
     try {
-      const contentType = response.headers()["content-type"] || "";
-      if (!contentType.includes("json")) return;
-
-      const json = await response.json();
-      apiResponses.push({ url, data: json });
-      console.log(`  [API] ${url.substring(0, 140)}`);
-
-      // Extract X tracker accounts from various response shapes
-      extractAccounts(json, accountMap);
-    } catch {
-      // Not JSON or failed to parse — skip
-    }
-  });
-
-  // Navigate to GMGN X Tracker page
-  console.log(`Loading ${GMGN_URL} ...`);
-  try {
-    await page.goto(GMGN_URL, {
-      waitUntil: "networkidle",
-      timeout: 60000,
-    });
-  } catch (e) {
-    console.log(`  Navigation warning: ${e.message}`);
-  }
-  await page.waitForTimeout(3000);
-
-  console.log(`\nPage loaded. Found ${accountMap.size} accounts so far.`);
-
-  // Try to click "Top Subscriptions" or similar tab if available
-  for (const tabText of [
-    "Top Subscriptions",
-    "Top Subscribe",
-    "Featured",
-    "Recommended",
-  ]) {
-    try {
-      const tab = page.locator(`text=${tabText}`).first();
-      if (await tab.isVisible({ timeout: 2000 })) {
-        console.log(`  Clicking "${tabText}" tab...`);
-        await tab.click();
-        await page.waitForTimeout(2000);
-      }
-    } catch {
-      // Tab not found
-    }
-  }
-
-  // Scroll to load all accounts
-  console.log("\nScrolling to load all accounts...");
-  let prevCount = accountMap.size;
-  let staleScrolls = 0;
-
-  // Find the scrollable container
-  const scrollContainer = await page.evaluate(() => {
-    // Try common scroll containers
-    const selectors = [
-      '.x-tracker-list',
-      '[class*="tracker"]',
-      '[class*="subscription"]',
-      '[class*="scroll"]',
-      'main',
-      '#__next > div > div',
-    ];
-    for (const sel of selectors) {
-      const el = document.querySelector(sel);
-      if (el && el.scrollHeight > el.clientHeight) return sel;
-    }
-    return null;
-  });
-
-  for (let i = 0; i < MAX_SCROLLS; i++) {
-    if (scrollContainer) {
-      await page.evaluate(
-        (sel) => {
-          const el = document.querySelector(sel);
-          if (el) el.scrollTop = el.scrollHeight;
+      const res = await fetch(url, {
+        headers: {
+          "User-Agent":
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+          Accept: "application/json",
+          "Accept-Language": "en-US,en;q=0.9",
+          Referer: "https://gmgn.ai/x",
+          Origin: "https://gmgn.ai",
         },
-        scrollContainer,
-      );
-    } else {
-      await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
-    }
+      });
 
-    await page.waitForTimeout(SCROLL_DELAY_MS);
-
-    // Also try to extract data from DOM directly
-    const domAccounts = await extractFromDOM(page);
-    for (const acc of domAccounts) {
-      if (acc.handle && !accountMap.has(acc.handle.toLowerCase())) {
-        accountMap.set(acc.handle.toLowerCase(), acc);
-      }
-    }
-
-    const currentCount = accountMap.size;
-    if (currentCount === prevCount) {
-      staleScrolls++;
-      if (staleScrolls >= 5) {
-        console.log(
-          `  No new accounts after ${staleScrolls} scrolls — stopping.`,
-        );
+      if (!res.ok) {
+        console.log(`  Page ${pageNum}: HTTP ${res.status} - stopping.`);
         break;
       }
-    } else {
-      staleScrolls = 0;
-      console.log(
-        `  Scroll ${i + 1}: ${currentCount} accounts (+${currentCount - prevCount})`,
-      );
-    }
-    prevCount = currentCount;
 
-    // Try "Load More" or "Show More" button
-    try {
-      const loadMore = page
-        .locator('button:has-text("Load More"), button:has-text("Show More"), button:has-text("load more")')
-        .first();
-      if (await loadMore.isVisible({ timeout: 500 })) {
-        await loadMore.click();
-        await page.waitForTimeout(1500);
+      const data = await res.json();
+
+      // Extract accounts from response
+      const users = data?.data?.users || data?.data?.list || data?.data || [];
+      const newPageToken = data?.data?.next_page_token || data?.data?.page_token || "";
+
+      if (!Array.isArray(users) || users.length === 0) {
+        console.log(`  Page ${pageNum}: No users in response.`);
+        consecutiveEmpty++;
+        if (newPageToken && newPageToken !== pageToken) {
+          pageToken = newPageToken;
+          continue;
+        }
+        break;
       }
-    } catch {
-      // No load more button
+
+      consecutiveEmpty = 0;
+      let newCount = 0;
+
+      for (const user of users) {
+        const account = parseUserToAccount(user);
+        if (account && account.handle) {
+          const key = account.handle.toLowerCase();
+          if (!accountMap.has(key)) {
+            newCount++;
+          }
+          // Merge with existing data
+          const existing = accountMap.get(key) || {};
+          accountMap.set(key, {
+            ...existing,
+            ...account,
+            // Keep higher values
+            subscribers: Math.max(existing.subscribers || 0, account.subscribers || 0),
+            followers: Math.max(existing.followers || 0, account.followers || 0),
+          });
+        }
+      }
+
+      totalFetched += users.length;
+      console.log(
+        `  Page ${pageNum}: Got ${users.length} users (+${newCount} new) | Total unique: ${accountMap.size}`,
+      );
+
+      // Get next page token
+      if (!newPageToken || newPageToken === pageToken) {
+        console.log(`  No more pages available.`);
+        break;
+      }
+      pageToken = newPageToken;
+
+      // Rate limiting
+      await sleep(DELAY_BETWEEN_REQUESTS_MS);
+    } catch (err) {
+      console.log(`  Page ${pageNum}: Error - ${err.message}`);
+      consecutiveEmpty++;
+      await sleep(1000);
     }
   }
 
-  // Final DOM extraction pass
-  const finalDom = await extractFromDOM(page);
-  for (const acc of finalDom) {
-    if (acc.handle && !accountMap.has(acc.handle.toLowerCase())) {
-      accountMap.set(acc.handle.toLowerCase(), acc);
-    }
-  }
-
-  console.log(`\nTotal unique X accounts: ${accountMap.size}`);
+  console.log(`\nTotal API responses: ${totalFetched}`);
+  console.log(`Total unique X accounts: ${accountMap.size}`);
 
   // Save results
   const result = {
     meta: {
       scrapedAt: new Date().toISOString(),
-      source: "gmgn.ai/x",
+      source: "gmgn.ai/vas/api/v1/twitter/user/search",
       totalAccounts: accountMap.size,
     },
     accounts: Array.from(accountMap.values()).sort(
-      (a, b) => (b.subscribers || 0) - (a.subscribers || 0),
+      (a, b) => (b.followers || 0) - (a.followers || 0),
     ),
   };
 
   if (!fs.existsSync(OUTPUT_DIR)) fs.mkdirSync(OUTPUT_DIR, { recursive: true });
   fs.writeFileSync(OUTPUT_FILE, JSON.stringify(result, null, 2));
   console.log(`\nSaved to ${OUTPUT_FILE}`);
-
-  // Also save raw API responses for debugging
-  const debugFile = path.join(OUTPUT_DIR, "gmgn-x-tracker-raw.json");
-  fs.writeFileSync(
-    debugFile,
-    JSON.stringify(
-      { responsesCount: apiResponses.length, responses: apiResponses },
-      null,
-      2,
-    ),
-  );
-  console.log(`Debug responses saved to ${debugFile}`);
-
-  await browser.close();
   console.log("\nDone!");
 }
 
 /**
- * Extract X tracker accounts from GMGN API response JSON.
- * Handles various nested response shapes.
+ * Parse a GMGN user object into our XTrackerAccount format.
  */
-function extractAccounts(data, map) {
-  if (!data || typeof data !== "object") return;
+function parseUserToAccount(user) {
+  if (!user || typeof user !== "object") return null;
 
-  // Direct array of accounts
-  if (Array.isArray(data)) {
-    for (const item of data) extractSingleAccount(item, map);
-    return;
-  }
-
-  // { data: [...] } or { data: { list: [...] } }
-  if (data.data) {
-    if (Array.isArray(data.data)) {
-      for (const item of data.data) extractSingleAccount(item, map);
-    } else if (data.data.list && Array.isArray(data.data.list)) {
-      for (const item of data.data.list) extractSingleAccount(item, map);
-    } else if (typeof data.data === "object") {
-      extractAccounts(data.data, map);
-    }
-  }
-
-  // { list: [...] }
-  if (data.list && Array.isArray(data.list)) {
-    for (const item of data.list) extractSingleAccount(item, map);
-  }
-
-  // { items: [...] }
-  if (data.items && Array.isArray(data.items)) {
-    for (const item of data.items) extractSingleAccount(item, map);
-  }
-
-  // { accounts: [...] }
-  if (data.accounts && Array.isArray(data.accounts)) {
-    for (const item of data.accounts) extractSingleAccount(item, map);
-  }
-
-  // { result: [...] }
-  if (data.result && Array.isArray(data.result)) {
-    for (const item of data.result) extractSingleAccount(item, map);
-  }
-}
-
-function extractSingleAccount(item, map) {
-  if (!item || typeof item !== "object") return;
-
-  // Look for twitter handle fields
+  // Extract handle
   const handle =
-    item.twitter_username ||
-    item.screen_name ||
-    item.handle ||
-    item.username ||
-    item.twitter_handle ||
-    (item.twitter_url &&
-      item.twitter_url.match(/(?:x\.com|twitter\.com)\/([A-Za-z0-9_]+)/)?.[1]);
+    user.handle ||
+    user.twitter_username ||
+    user.screen_name ||
+    user.username ||
+    user.twitter_handle;
 
-  if (!handle) return;
-  const key = handle.toLowerCase().replace(/^@/, "");
-  if (!key || key.length === 0) return;
+  if (!handle) return null;
 
-  const existing = map.get(key) || {};
-  map.set(key, {
+  // Extract tag from user_tag or tags array
+  let tag = null;
+  if (user.user_tag) {
+    tag = TAG_MAP[user.user_tag] || user.user_tag;
+  } else if (Array.isArray(user.tags) && user.tags.length > 0) {
+    tag = TAG_MAP[user.tags[0]] || user.tags[0];
+  } else if (user.tag) {
+    tag = TAG_MAP[user.tag] || user.tag;
+  }
+
+  return {
     handle: handle.replace(/^@/, ""),
-    name: item.name || item.display_name || item.twitter_name || existing.name || null,
+    name: user.name || user.display_name || user.twitter_name || null,
     avatar:
-      item.avatar ||
-      item.profile_image_url ||
-      item.twitter_avatar ||
-      item.image ||
-      existing.avatar ||
+      user.avatar ||
+      user.profile_image_url ||
+      user.twitter_avatar ||
+      user.image ||
       null,
-    subscribers: item.subscribers || item.subscriber_count || item.follow_count || existing.subscribers || 0,
-    followers: item.followers || item.followers_count || existing.followers || 0,
-    tag: item.tag || item.category || item.label || item.group || existing.tag || null,
-    verified: item.verified ?? item.is_verified ?? existing.verified ?? false,
-    bio: item.bio || item.description || existing.bio || null,
-    ...existing,
-    // Overwrite with new data
-    handle: handle.replace(/^@/, ""),
-  });
+    subscribers: user.subscribers || user.subscriber_count || user.follow_count || 0,
+    followers: user.followers || user.followers_count || 0,
+    tag,
+    verified: user.verified ?? user.is_verified ?? false,
+    bio: user.bio || user.description || null,
+  };
 }
 
-/**
- * Extract accounts directly from the page DOM as fallback.
- */
-async function extractFromDOM(page) {
-  return page.evaluate(() => {
-    const accounts = [];
-
-    // Look for table rows or list items with X handles
-    const rows = document.querySelectorAll(
-      'tr, [class*="item"], [class*="row"], [class*="account"], [class*="user"]',
-    );
-
-    for (const row of rows) {
-      const text = row.textContent || "";
-      // Look for @handle patterns
-      const handleMatch = text.match(/@([A-Za-z0-9_]{1,15})/);
-      if (!handleMatch) continue;
-
-      const handle = handleMatch[1];
-
-      // Try to find subscriber count (number near the handle)
-      const numbers = text.match(/[\d,]+/g) || [];
-      const subscribers =
-        numbers.length > 0
-          ? parseInt(numbers[0].replace(/,/g, ""), 10) || 0
-          : 0;
-
-      // Try to find tag/category
-      const tagPatterns = [
-        "Binance Square",
-        "Founders",
-        "Politics",
-        "Companies",
-        "Exchanges",
-        "KOL",
-        "Influencer",
-        "Trader",
-        "NFT",
-        "DeFi",
-        "Gaming",
-        "Media",
-        "VC",
-        "Developer",
-        "Analyst",
-      ];
-      let tag = null;
-      for (const t of tagPatterns) {
-        if (text.includes(t)) {
-          tag = t;
-          break;
-        }
-      }
-
-      // Try to find name (text before @handle)
-      const nameMatch = text.match(/^([^@\n]{2,30})@/);
-      const name = nameMatch ? nameMatch[1].trim() : null;
-
-      // Avatar image
-      const img = row.querySelector("img");
-      const avatar = img ? img.src : null;
-
-      accounts.push({ handle, name, avatar, subscribers, tag, verified: false });
-    }
-
-    return accounts;
-  });
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 /**

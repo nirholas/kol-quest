@@ -90,12 +90,19 @@ export async function GET(req: NextRequest) {
   const start = (page - 1) * limit;
   const data = wallets.slice(start, start + limit);
 
-  return NextResponse.json({
-    wallets: data,
-    categories,
-    tags,
-    total,
-    page,
-    totalPages,
-  });
+  return NextResponse.json(
+    {
+      wallets: data,
+      categories,
+      tags,
+      total,
+      page,
+      totalPages,
+    },
+    {
+      headers: {
+        "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300",
+      },
+    }
+  );
 }

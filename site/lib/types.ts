@@ -159,5 +159,127 @@ export interface XTrackerData {
 export type GmgnSortField = "name" | "profit_1d" | "profit_7d" | "profit_30d" | "winrate_7d" | "buys_7d" | "sells_7d";
 export type SortDir = "asc" | "desc";
 export type Timeframe = 1 | 7 | 30;
-export type WalletSource = "kolscan" | "gmgn" | "all";
-export type Chain = "sol" | "bsc";
+export type WalletSource = "kolscan" | "gmgn" | "polymarket" | "all";
+export type Chain = "sol" | "bsc" | "polygon";
+
+// ────────────────────────────────────────────────────────────
+// Polymarket Types
+// ────────────────────────────────────────────────────────────
+
+// Polymarket trader/wallet from leaderboard
+export interface PolymarketTrader {
+  wallet_address: string;        // Polygon address
+  username: string | null;       // Polymarket username
+  display_name: string | null;   // Display name
+  profile_image: string | null;  // Avatar URL
+  bio: string | null;
+  twitter_handle: string | null;
+  rank: number;                  // Leaderboard rank
+  
+  // PnL metrics
+  pnl_total: number;             // All-time PnL in USD
+  pnl_7d: number;
+  pnl_30d: number;
+  pnl_ytd: number;
+  
+  // Volume metrics
+  volume_total: number;          // All-time volume traded
+  volume_7d: number;
+  volume_30d: number;
+  
+  // Trading stats
+  trades_count: number;          // Total number of trades
+  markets_traded: number;        // Number of unique markets
+  positions_count: number;       // Current open positions
+  
+  // Win rate
+  winrate: number;               // Overall win rate (0-1)
+  profit_factor: number;         // Total gains / total losses
+  
+  // Tracking
+  followers_count: number;       // Polymarket followers
+  last_trade_at: string | null;  // ISO timestamp
+  created_at: string | null;     // Account creation date
+  
+  // Tags/categories
+  tags: string[];                // e.g., "whale", "politics_expert", "sports_trader"
+}
+
+// Polymarket market/event
+export interface PolymarketMarket {
+  id: string;                    // Market ID
+  condition_id: string;          // CLOB condition ID
+  slug: string;                  // URL slug
+  question: string;              // Market question
+  description: string | null;
+  category: string;              // politics, sports, crypto, etc.
+  end_date: string | null;       // Resolution date
+  
+  // Outcome options
+  outcomes: string[];            // e.g., ["Yes", "No"] or multiple options
+  outcome_prices: number[];      // Current prices (0-1)
+  
+  // Volume/liquidity
+  volume: number;                // Total volume traded
+  liquidity: number;             // Current liquidity
+  open_interest: number;         // Current open interest
+  
+  // Status
+  active: boolean;
+  closed: boolean;
+  resolved: boolean;
+  resolution_outcome: string | null;
+  
+  // Media
+  image: string | null;
+  icon: string | null;
+}
+
+// Polymarket position for a trader
+export interface PolymarketPosition {
+  trader_address: string;
+  market_id: string;
+  market_question: string;
+  outcome: string;               // Which outcome they hold
+  size: number;                  // Position size in shares
+  avg_price: number;             // Average entry price
+  current_price: number;         // Current price
+  pnl: number;                   // Unrealized PnL
+  pnl_percent: number;           // PnL %
+  created_at: string;
+}
+
+// Polymarket trade
+export interface PolymarketTrade {
+  id: string;
+  trader_address: string;
+  market_id: string;
+  market_question: string;
+  outcome: string;
+  side: "buy" | "sell";
+  price: number;
+  size: number;
+  total: number;
+  timestamp: string;
+}
+
+// Polymarket data file structure
+export interface PolymarketData {
+  meta: {
+    scrapedAt: string;
+    source: string;
+    totalTraders: number;
+    totalMarkets: number;
+  };
+  traders: PolymarketTrader[];
+  markets: PolymarketMarket[];
+}
+
+// Unified wallet extended for Polymarket
+export interface UnifiedWalletExtended extends UnifiedWallet {
+  // Polymarket-specific fields (optional)
+  polymarket_pnl?: number;
+  polymarket_volume?: number;
+  polymarket_rank?: number;
+  polymarket_markets?: number;
+}

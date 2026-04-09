@@ -20,7 +20,14 @@ export async function GET(req: NextRequest) {
     if (!profile) {
       return NextResponse.json({ error: "Profile not found" }, { status: 404 });
     }
-    return NextResponse.json({ profile });
+    return NextResponse.json(
+      { profile },
+      {
+        headers: {
+          "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600",
+        },
+      }
+    );
   }
 
   // Build filtered list
@@ -67,26 +74,33 @@ export async function GET(req: NextRequest) {
   const start = (page - 1) * limit;
   const data = list.slice(start, start + limit);
 
-  return NextResponse.json({
-    profiles: data.map((p) => ({
-      username: p.username,
-      name: p.name,
-      bio: p.bio,
-      avatar: p.avatar,
-      header: p.header,
-      followers: p.followers,
-      following: p.following,
-      tweets: p.tweets,
-      likes: p.likes,
-      verified: p.verified,
-      protected: p.protected,
-      location: p.location,
-      website: p.website,
-      joinDate: p.joinDate,
-      scrapedAt: p.scrapedAt,
-    })),
-    total,
-    page,
-    totalPages,
-  });
+  return NextResponse.json(
+    {
+      profiles: data.map((p) => ({
+        username: p.username,
+        name: p.name,
+        bio: p.bio,
+        avatar: p.avatar,
+        header: p.header,
+        followers: p.followers,
+        following: p.following,
+        tweets: p.tweets,
+        likes: p.likes,
+        verified: p.verified,
+        protected: p.protected,
+        location: p.location,
+        website: p.website,
+        joinDate: p.joinDate,
+        scrapedAt: p.scrapedAt,
+      })),
+      total,
+      page,
+      totalPages,
+    },
+    {
+      headers: {
+        "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600",
+      },
+    }
+  );
 }

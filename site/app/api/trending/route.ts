@@ -37,22 +37,29 @@ export async function GET(req: NextRequest) {
     .orderBy(desc(sql`count(distinct ${trade.walletAddress}) filter (where ${trade.type} = 'buy')`))
     .limit(50);
 
-  return NextResponse.json({
-    tokens: rows.map((r) => ({
-      tokenAddress: r.tokenAddress,
-      tokenSymbol: r.tokenSymbol,
-      tokenName: r.tokenName,
-      tokenLogo: r.tokenLogo,
-      chain: r.chain,
-      buyCount: Number(r.buyCount),
-      sellCount: Number(r.sellCount),
-      uniqueBuyers: Number(r.uniqueBuyers),
-      totalBuyUsd: Number(r.totalBuyUsd),
-      totalSellUsd: Number(r.totalSellUsd),
-      netFlow: Number(r.totalBuyUsd) - Number(r.totalSellUsd),
-      totalPnl: Number(r.totalPnl),
-      firstSeen: r.firstSeen,
-      lastSeen: r.lastSeen,
-    })),
-  });
+  return NextResponse.json(
+    {
+      tokens: rows.map((r) => ({
+        tokenAddress: r.tokenAddress,
+        tokenSymbol: r.tokenSymbol,
+        tokenName: r.tokenName,
+        tokenLogo: r.tokenLogo,
+        chain: r.chain,
+        buyCount: Number(r.buyCount),
+        sellCount: Number(r.sellCount),
+        uniqueBuyers: Number(r.uniqueBuyers),
+        totalBuyUsd: Number(r.totalBuyUsd),
+        totalSellUsd: Number(r.totalSellUsd),
+        netFlow: Number(r.totalBuyUsd) - Number(r.totalSellUsd),
+        totalPnl: Number(r.totalPnl),
+        firstSeen: r.firstSeen,
+        lastSeen: r.lastSeen,
+      })),
+    },
+    {
+      headers: {
+        "Cache-Control": "public, s-maxage=30, stale-while-revalidate=60",
+      },
+    }
+  );
 }

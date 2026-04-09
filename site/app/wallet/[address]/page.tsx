@@ -229,7 +229,7 @@ export default async function WalletPage({ params }: { params: { address: string
                 <div key={`${t.chain}:${t.tokenAddress}`} className="flex items-center justify-between text-sm border-b border-border/50 pb-2 last:border-0 last:pb-0">
                   <div className="min-w-0">
                     <div className="flex items-center gap-1.5">
-                      <span className="text-white truncate">{t.tokenSymbol || t.tokenName || truncateAddr(t.tokenAddress)}</span>
+                      <Link href={`/token/${t.chain}/${t.tokenAddress}`} className="text-white truncate hover:text-accent transition-colors">{t.tokenSymbol || t.tokenName || truncateAddr(t.tokenAddress)}</Link>
                       <span className="text-[9px] uppercase text-zinc-600 bg-zinc-800 px-1 py-0.5 rounded">{t.chain}</span>
                       {t.tokenLaunchpad && (
                         <span className="text-[9px] text-zinc-600 bg-zinc-800/60 px-1 py-0.5 rounded border border-zinc-700/50">
@@ -261,7 +261,7 @@ export default async function WalletPage({ params }: { params: { address: string
                 <div key={t.id} className="flex items-center justify-between text-xs border-b border-border/50 pb-2 last:border-0 last:pb-0">
                   <div>
                     <span className={`font-semibold uppercase ${t.type === "buy" ? "text-buy" : "text-sell"}`}>{t.type}</span>
-                    <span className="text-zinc-400 ml-2">{t.tokenSymbol || truncateAddr(t.tokenAddress)}</span>
+                    <Link href={`/token/${t.chain}/${t.tokenAddress}`} className="text-zinc-400 ml-2 hover:text-accent transition-colors">{t.tokenSymbol || truncateAddr(t.tokenAddress)}</Link>
                     <span className="text-zinc-600 uppercase ml-1.5 text-[10px]">{t.chain}</span>
                   </div>
                   <div className="text-right">

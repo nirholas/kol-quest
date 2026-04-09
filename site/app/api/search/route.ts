@@ -61,5 +61,12 @@ export async function GET(req: NextRequest) {
     if (deduped.length >= limit) break;
   }
 
-  return NextResponse.json({ results: deduped });
+  return NextResponse.json(
+    { results: deduped },
+    {
+      headers: {
+        "Cache-Control": "public, s-maxage=30, stale-while-revalidate=60",
+      },
+    }
+  );
 }

@@ -55,11 +55,18 @@ export async function GET(req: NextRequest) {
   const start = (page - 1) * limit;
   const data = accounts.slice(start, start + limit);
 
-  return NextResponse.json({
-    accounts: data,
-    tags,
-    total,
-    page,
-    totalPages,
-  });
+  return NextResponse.json(
+    {
+      accounts: data,
+      tags,
+      total,
+      page,
+      totalPages,
+    },
+    {
+      headers: {
+        "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600",
+      },
+    }
+  );
 }

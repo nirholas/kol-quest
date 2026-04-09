@@ -17,19 +17,26 @@ export async function GET() {
     .orderBy(desc(walletSubmission.createdAt))
     .limit(500);
 
-  return NextResponse.json({
-    submissions: rows.map((r) => ({
-      id: r.id,
-      walletAddress: r.walletAddress,
-      chain: r.chain,
-      label: r.label,
-      notes: r.notes,
-      twitter: r.twitter,
-      telegram: r.telegram,
-      status: r.status,
-      createdAt: r.createdAt,
-    })),
-  });
+  return NextResponse.json(
+    {
+      submissions: rows.map((r) => ({
+        id: r.id,
+        walletAddress: r.walletAddress,
+        chain: r.chain,
+        label: r.label,
+        notes: r.notes,
+        twitter: r.twitter,
+        telegram: r.telegram,
+        status: r.status,
+        createdAt: r.createdAt,
+      })),
+    },
+    {
+      headers: {
+        "Cache-Control": "public, s-maxage=60, stale-while-revalidate=120",
+      },
+    }
+  );
 }
 
 export async function POST(request: Request) {

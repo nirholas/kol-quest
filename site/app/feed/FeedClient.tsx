@@ -295,18 +295,18 @@ function FeedInner() {
                       </div>
                     </td>
                     <td className="px-4 py-3">
-                      <div className="flex items-center gap-2">
+                      <Link href={`/token/${t.chain}/${t.tokenAddress}`} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
                         {t.tokenLogo && (
                           <TokenLogo src={t.tokenLogo} />
                         )}
                         <div>
-                          <span className="text-sm text-white font-medium">
+                          <span className="text-sm text-white font-medium hover:text-accent transition-colors">
                             {t.tokenSymbol || shortAddr(t.tokenAddress)}
                           </span>
                           {t.tokenName && <span className="text-[11px] text-zinc-600 ml-1.5">{t.tokenName}</span>}
                           {t.tokenLaunchpad && <span className="text-[9px] text-zinc-600 ml-1.5">via {t.tokenLaunchpad}</span>}
                         </div>
-                      </div>
+                      </Link>
                     </td>
                     <td className="px-4 py-3 text-right text-sm tabular-nums font-medium text-zinc-300">
                       {formatUsd(t.amountUsd)}

@@ -27,29 +27,36 @@ export async function GET(req: NextRequest) {
   const hasMore = rows.length > limit;
   const data = hasMore ? rows.slice(0, limit) : rows;
 
-  return NextResponse.json({
-    trades: data.map((t) => ({
-      id: t.id,
-      walletAddress: t.walletAddress,
-      walletLabel: t.walletLabel,
-      walletAvatar: t.walletAvatar,
-      walletTags: t.walletTags,
-      chain: t.chain,
-      type: t.type,
-      tokenAddress: t.tokenAddress,
-      tokenSymbol: t.tokenSymbol,
-      tokenName: t.tokenName,
-      tokenLogo: t.tokenLogo,
-      tokenLaunchpad: t.tokenLaunchpad,
-      amountUsd: t.amountUsd,
-      amountToken: t.amountToken,
-      priceUsd: t.priceUsd,
-      realizedProfit: t.realizedProfit,
-      realizedProfitPnl: t.realizedProfitPnl,
-      txHash: t.txHash,
-      source: t.source,
-      tradedAt: t.tradedAt,
-    })),
-    nextCursor: hasMore ? data[data.length - 1].tradedAt?.toISOString() : null,
-  });
+  return NextResponse.json(
+    {
+      trades: data.map((t) => ({
+        id: t.id,
+        walletAddress: t.walletAddress,
+        walletLabel: t.walletLabel,
+        walletAvatar: t.walletAvatar,
+        walletTags: t.walletTags,
+        chain: t.chain,
+        type: t.type,
+        tokenAddress: t.tokenAddress,
+        tokenSymbol: t.tokenSymbol,
+        tokenName: t.tokenName,
+        tokenLogo: t.tokenLogo,
+        tokenLaunchpad: t.tokenLaunchpad,
+        amountUsd: t.amountUsd,
+        amountToken: t.amountToken,
+        priceUsd: t.priceUsd,
+        realizedProfit: t.realizedProfit,
+        realizedProfitPnl: t.realizedProfitPnl,
+        txHash: t.txHash,
+        source: t.source,
+        tradedAt: t.tradedAt,
+      })),
+      nextCursor: hasMore ? data[data.length - 1].tradedAt?.toISOString() : null,
+    },
+    {
+      headers: {
+        "Cache-Control": "public, s-maxage=15, stale-while-revalidate=30",
+      },
+    }
+  );
 }
