@@ -10,10 +10,11 @@ export async function generateStaticParams() {
   return [...sol, ...bsc].map((w) => ({ address: w.wallet_address }));
 }
 
-export async function generateMetadata({ params }: { params: { address: string } }) {
+export async function generateMetadata({ params: rawParams }: { params: Promise<{ address: string }> }) {
+  const { address } = await rawParams;
   const [sol, bsc] = await Promise.all([getSolGmgnData(), getBscGmgnData()]);
-  const w = [...sol, ...bsc].find((e) => e.wallet_address === params.address);
-  const name = w?.name || params.address.slice(0, 8);
+  const w = [...sol, ...bsc].find((e) => e.wallet_address === address);
+  const name = w?.name || address.slice(0, 8);
   const title = `${name} Wallet`;
   const description = `GMGN smart money profile for ${name} — realized profit, win rate, and token trades.`;
   return {
@@ -23,7 +24,8 @@ export async function generateMetadata({ params }: { params: { address: string }
   };
 }
 
-export default async function GmgnWalletPage({ params }: { params: { address: string } }) {
+export default async function GmgnWalletPage({ params: rawParams }: { params: Promise<{ address: string }> }) {
+  const { address } = await rawParams;
   const [sol, bsc, xProfiles, kolscanData] = await Promise.all([
     getSolGmgnData(),
     getBscGmgnData(),
@@ -31,7 +33,7 @@ export default async function GmgnWalletPage({ params }: { params: { address: st
     getData(),
   ]);
 
-  const wallet = [...sol, ...bsc].find((w) => w.wallet_address === params.address);
+  const wallet = [...sol, ...bsc].find((w) => w.wallet_address === address);
 
   if (!wallet) {
     return (
@@ -47,13 +49,13 @@ export default async function GmgnWalletPage({ params }: { params: { address: st
   const nativeSymbol = chain === "bsc" ? "BNB" : "SOL";
   const explorer = chain === "bsc" ? "https://bscscan.com/address" : "https://solscan.io/account";
 
-  const kolscanExists = kolscanData.some((e) => e.wallet_address === params.address);
+  const kolscanExists = kolscanData.some((e) => e.wallet_address === address);
 
   const quickLinks = [
-    { href: `https://gmgn.ai/${chain === "bsc" ? "bsc" : "sol"}/address/${params.address}?ref=nichxbt`, label: "GMGN" },
-    { href: `https://trade.padre.gg/rk/nich?wallet=${params.address}`, label: "Padre" },
-    { href: `${explorer}/${params.address}`, label: chain === "bsc" ? "BscScan" : "Solscan" },
-    ...(chain === "sol" ? [{ href: `https://birdeye.so/profile/${params.address}?chain=solana`, label: "Birdeye" }] : []),
+    { href: `https://gmgn.ai/${chain === "bsc" ? "bsc" : "sol"}/address/${address}?ref=nichxbt`, label: "GMGN" },
+    { href: `https://trade.padre.gg/rk/nich?wallet=${address}`, label: "Padre" },
+    { href: `${explorer}/${address}`, label: chain === "bsc" ? "BscScan" : "Solscan" },
+    ...(chain === "sol" ? [{ href: `https://birdeye.so/profile/${address}?chain=solana`, label: "Birdeye" }] : []),
   ];
 
   return (
@@ -64,10 +66,10 @@ export default async function GmgnWalletPage({ params }: { params: { address: st
           ← Leaderboard
         </Link>
         <div className="flex items-center gap-2">
-          <ReportButton walletAddress={params.address} />
+          <ReportButton walletAddress={address} />
           <ProfileActions
             profile={{
-              wallet_address: params.address,
+              wallet_address: address,
               name: wallet.name,
               chain: chain as "sol" | "bsc",
               twitter: wallet.twitter_username || undefined,
@@ -82,7 +84,7 @@ export default async function GmgnWalletPage({ params }: { params: { address: st
       <GmgnDashboard
         wallet={wallet}
         nativeSymbol={nativeSymbol}
-        explorerUrl={`${explorer}/${params.address}`}
+        explorerUrl={`${explorer}/${address}`}
         quickLinks={quickLinks}
         xProfileFollowers={xProfile?.followers}
         xProfileAvatar={xProfile?.avatar ?? undefined}
@@ -133,8 +135,8 @@ export default async function GmgnWalletPage({ params }: { params: { address: st
       {/* Full Address */}
       <div className="border border-border/50 rounded-xl p-3 text-center">
         <span className="text-zinc-600 text-[11px] uppercase tracking-wider">Full Address · </span>
-        <a href={`${explorer}/${params.address}`} target="_blank" rel="noopener noreferrer"
-          className="font-mono text-xs text-buy hover:underline break-all">{params.address}</a>
+        <a href={`${explorer}/${address}`} target="_blank" rel="noopener noreferrer"
+          className="font-mono text-xs text-buy hover:underline break-all">{address}</a>
       </div>
     </main>
   );

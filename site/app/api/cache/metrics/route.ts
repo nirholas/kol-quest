@@ -12,7 +12,7 @@ import { auth } from "@/lib/auth";
 import { cache } from "@/lib/cache";
 import { getCacheMetrics, getHitRate, getMissRate, getStaleRate, getErrorRate } from "@/lib/cache/metrics";
 
-export async function GET(request: Request) {
+export async function GET(_request: Request) {
   // Require admin
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session?.user?.id) {

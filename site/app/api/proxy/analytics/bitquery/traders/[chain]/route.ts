@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { BITQUERY_QUERIES, executeBitquery } from "@/lib/proxy/sources/bitquery";
 
 export async function GET(
-  req: NextRequest,
+  _req: NextRequest,
   context: { params: Promise<{ chain: string }> }
 ) {
   const params = await context.params;

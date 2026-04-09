@@ -4,13 +4,11 @@ import { moralisProxy } from "@/lib/proxy/sources/moralis";
 import { debankProxy } from "@/lib/proxy/sources/debank";
 import { alchemyProxy } from "@/lib/proxy/sources/alchemy";
 import { etherscanProxy } from "@/lib/proxy/sources/etherscan";
-import { covalentProxy } from "@/lib/proxy/sources/covalent";
 import {
   getCacheHeaders,
   CACHE_TTL,
   CACHE_STALE,
   MORALIS_CHAIN_NAMES,
-  COVALENT_CHAIN_NAMES,
   CHAIN_IDS,
   type UnifiedEvmWallet,
 } from "@/lib/proxy/types";
@@ -69,19 +67,16 @@ async function unifiedWalletHandler(
   // Per-chain data from Moralis and Alchemy in parallel
   const chainFetches = chains.map(async (chain) => {
     const moralisChain = MORALIS_CHAIN_NAMES[chain] || chain;
-    const covalentChain = COVALENT_CHAIN_NAMES[chain] || `${chain}-mainnet`;
     const chainId = CHAIN_IDS[chain] ?? 1;
 
     const [
       moralisNetWorthResult,
       moralisTokensResult,
-      alchemyBalancesResult,
       alchemyNftsResult,
       etherscanBalResult,
     ] = await Promise.allSettled([
       moralisProxy.getWalletNetWorth(address, moralisChain),
       moralisProxy.getWalletTokens(address, moralisChain),
-      alchemyProxy.getWalletBalances(address, chain).catch(() => null),
       alchemyProxy.getWalletNfts(address, chain).catch(() => null),
       etherscanProxy.getAccountBalance(address, chainId),
     ]);

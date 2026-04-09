@@ -23,6 +23,7 @@ export async function GET(
   context: { params: Promise<{ address: string }> }
 ) {
   const params = await context.params;
+  const params = await context.params;
   return proxyHandler({
     source: 'birdeye',
     endpoint: `/v1/wallet/tx_list`,

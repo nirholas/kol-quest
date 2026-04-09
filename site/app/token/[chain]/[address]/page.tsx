@@ -4,19 +4,19 @@ import TokenPageClient from "./TokenPageClient";
 import { getAllSolanaWallets, getBscWallets } from "@/lib/data";
 
 interface Props {
-  params: { chain: string; address: string };
+  params: Promise<{ chain: string; address: string }>;
 }
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { chain, address } = params;
+export async function generateMetadata({ params: rawParams }: Props): Promise<Metadata> {
+  const { chain, address } = await rawParams;
   return {
     title: `Token ${address.slice(0, 8)}… | KOL Quest`,
     description: `KOL activity and price data for ${address} on ${chain === "sol" ? "Solana" : "BSC"}`,
   };
 }
 
-export default async function TokenPage({ params }: Props) {
-  const { chain, address } = params;
+export default async function TokenPage({ params: rawParams }: Props) {
+  const { chain, address } = await rawParams;
 
   if (chain !== "sol" && chain !== "bsc") notFound();
   if (!address || address.length < 20) notFound();

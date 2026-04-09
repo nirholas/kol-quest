@@ -7,11 +7,12 @@ import PortfolioDashboard from "./PortfolioDashboard";
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
-  params,
+  params: rawParams,
 }: {
-  params: { address: string };
+  params: Promise<{ address: string }>;
 }): Promise<Metadata> {
-  const addr = decodeURIComponent(params.address);
+  const { address: resolvedAddress } = await rawParams;
+  const addr = decodeURIComponent(resolvedAddress);
   const short = truncateAddr(addr);
   return {
     title: `Portfolio — ${short}`,
@@ -20,11 +21,12 @@ export async function generateMetadata({
 }
 
 export default async function PortfolioAddressPage({
-  params,
+  params: rawParams,
 }: {
-  params: { address: string };
+  params: Promise<{ address: string }>;
 }) {
-  const address = decodeURIComponent(params.address);
+  const { address: rawAddress } = await rawParams;
+  const address = decodeURIComponent(rawAddress);
   const chains = detectChains(address);
 
   if (chains.length === 0) {

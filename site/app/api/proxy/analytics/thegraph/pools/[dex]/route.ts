@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { GRAPH_QUERIES, executeGraphQuery, SUBGRAPHS } from "@/lib/proxy/sources/thegraph";
 
 export async function GET(
-  req: NextRequest,
+  _req: NextRequest,
   context: { params: Promise<{ dex: string }> }
 ) {
   const params = await context.params;

@@ -15,12 +15,13 @@ async function getScanData(address: string, chain: string) {
 }
 
 interface PageProps {
-  params: { address: string };
-  searchParams: { chain?: string };
+  params: Promise<{ address: string }>;
+  searchParams: Promise<{ chain?: string }>;
 }
 
-export default async function TokenDetailPage({ params, searchParams }: PageProps) {
-  const { address } = params;
+export default async function TokenDetailPage({ params: rawParams, searchParams: rawSearchParams }: PageProps) {
+  const { address } = await rawParams;
+  const searchParams = await rawSearchParams;
   const chain = searchParams.chain || 'solana';
 
   let scanData: any = null;

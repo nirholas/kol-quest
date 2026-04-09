@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { getEnrichedSolanaWallets, filterSolanaWallets, enrichWallet, fetchWalletExpandData } from "@/lib/data";
-import type { EnrichedSolanaWallet, EnrichedSortField, SortDir } from "@/lib/types";
+import type { EnrichedSortField, SortDir } from "@/lib/types";
 
 const GetWalletsQuery = z.object({
   page: z.coerce.number().min(1).default(1),

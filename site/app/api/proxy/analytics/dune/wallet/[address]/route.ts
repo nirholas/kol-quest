@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getDuneWallet } from "@/lib/proxy/sources/dune";
 
 export async function GET(
-  req: NextRequest,
+  _req: NextRequest,
   context: { params: Promise<{ address: string }> }
 ) {
   const params = await context.params;

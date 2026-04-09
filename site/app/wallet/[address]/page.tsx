@@ -40,8 +40,9 @@ function getExplorerLinks(address: string, chain: string) {
   ];
 }
 
-export async function generateMetadata({ params }: { params: { address: string } }) {
-  const detail = await getWalletDetail(params.address);
+export async function generateMetadata({ params: rawParams }: { params: Promise<{ address: string }> }) {
+  const { address: paramAddress } = await rawParams;
+  const detail = await getWalletDetail(paramAddress);
   const name = detail.wallet?.name || truncateAddr(detail.address);
   const title = `${name} Wallet`;
   const description = `Wallet profile for ${name}. Unified Solana and EVM wallet details, performance, and recent activity.`;
@@ -52,8 +53,9 @@ export async function generateMetadata({ params }: { params: { address: string }
   };
 }
 
-export default async function WalletPage({ params }: { params: { address: string } }) {
-  const detail = await getWalletDetail(params.address);
+export default async function WalletPage({ params: rawParams }: { params: Promise<{ address: string }> }) {
+  const { address: paramAddress } = await rawParams;
+  const detail = await getWalletDetail(paramAddress);
 
   if (!detail.isValidAddress && !detail.hasTrackedData) {
     return (

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getFlipsideQueryResults } from "@/lib/proxy/sources/flipside";
 
 export async function GET(
-  req: NextRequest,
+  _req: NextRequest,
   context: { params: Promise<{ queryRunId: string }> }
 ) {
   const params = await context.params;

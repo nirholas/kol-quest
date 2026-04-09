@@ -6,7 +6,7 @@ import { db } from "@/drizzle/db";
 import { apiKey as apiKeyTable } from "@/drizzle/db/schema";
 import { getQuotaUsage, getTierConfig, type RateLimitTier, isValidTier } from "@/lib/rate-limit";
 
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest) {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

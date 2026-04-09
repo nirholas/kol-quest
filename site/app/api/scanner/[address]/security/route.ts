@@ -6,7 +6,7 @@ export async function GET(
 ) {
   const params = await context.params;
   const { searchParams } = new URL(request.url);
-  const chain = searchParams.get('chain');
+  const _chain = searchParams.get('chain');
   const address = params.address;
 
   if (!address) {
