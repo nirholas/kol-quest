@@ -212,13 +212,17 @@ async function loadGmgnFile(localName: string, remoteUrl: string, chain: "sol" |
   return [];
 }
 
-export async function getSolGmgnData(): Promise<GmgnWallet[]> {
-  return loadGmgnFile("solwallets.json", SOL_DATA_URL, "sol");
-}
+export const getSolGmgnData = unstable_cache(
+  (): Promise<GmgnWallet[]> => loadGmgnFile("solwallets.json", SOL_DATA_URL, "sol"),
+  ["gmgn-sol"],
+  { revalidate: 3600 },
+);
 
-export async function getBscGmgnData(): Promise<GmgnWallet[]> {
-  return loadGmgnFile("bscwallets.json", BSC_DATA_URL, "bsc");
-}
+export const getBscGmgnData = unstable_cache(
+  (): Promise<GmgnWallet[]> => loadGmgnFile("bscwallets.json", BSC_DATA_URL, "bsc"),
+  ["gmgn-bsc"],
+  { revalidate: 3600 },
+);
 
 // --- Unified Data ---
 function kolscanToUnified(entries: KolEntry[]): UnifiedWallet[] {
@@ -288,81 +292,87 @@ function gmgnToUnified(wallets: GmgnWallet[]): UnifiedWallet[] {
   }));
 }
 
-export async function getAllSolanaWallets(): Promise<UnifiedWallet[]> {
-  const [kolscan, gmgn, xProfiles] = await Promise.all([getData(), getSolGmgnData(), getXProfiles()]);
-  const kolUnified = kolscanToUnified(kolscan);
-  const gmgnUnified = gmgnToUnified(gmgn);
+export const getAllSolanaWallets = unstable_cache(
+  async (): Promise<UnifiedWallet[]> => {
+    const [kolscan, gmgn, xProfiles] = await Promise.all([getData(), getSolGmgnData(), getXProfiles()]);
+    const kolUnified = kolscanToUnified(kolscan);
+    const gmgnUnified = gmgnToUnified(gmgn);
 
-  // Merge — deduplicate by address, preferring GMGN data (richer)
-  const map = new Map<string, UnifiedWallet>();
-  for (const w of kolUnified) map.set(w.wallet_address, w);
-  for (const w of gmgnUnified) {
-    if (map.has(w.wallet_address)) {
-      map.set(w.wallet_address, {
-        ...w,
-        tags: [...new Set([...w.tags, "kolscan"])],
-      });
-    } else {
-      map.set(w.wallet_address, w);
+    // Merge — deduplicate by address, preferring GMGN data (richer)
+    const map = new Map<string, UnifiedWallet>();
+    for (const w of kolUnified) map.set(w.wallet_address, w);
+    for (const w of gmgnUnified) {
+      if (map.has(w.wallet_address)) {
+        map.set(w.wallet_address, {
+          ...w,
+          tags: [...new Set([...w.tags, "kolscan"])],
+        });
+      } else {
+        map.set(w.wallet_address, w);
+      }
     }
-  }
 
-  // Enrich avatars from X profiles where missing
-  for (const w of map.values()) {
-    if (!w.avatar && w.twitter) {
-      const xp = getXProfile(xProfiles, w.twitter);
-      if (xp?.avatar) w.avatar = xp.avatar;
+    // Enrich avatars from X profiles where missing
+    for (const w of map.values()) {
+      if (!w.avatar && w.twitter) {
+        const xp = getXProfile(xProfiles, w.twitter);
+        if (xp?.avatar) w.avatar = xp.avatar;
+      }
     }
-  }
 
-  return Array.from(map.values());
-}
+    return Array.from(map.values());
+  },
+  ["all-solana-wallets"],
+  { revalidate: 3600 },
+);
 
-export async function getBscWallets(): Promise<UnifiedWallet[]> {
-  const [bsc, xProfiles] = await Promise.all([getBscGmgnData(), getXProfiles()]);
-  const wallets = gmgnToUnified(bsc);
-  for (const w of wallets) {
-    if (!w.avatar && w.twitter) {
-      const xp = getXProfile(xProfiles, w.twitter);
-      if (xp?.avatar) w.avatar = xp.avatar;
+export const getBscWallets = unstable_cache(
+  async (): Promise<UnifiedWallet[]> => {
+    const [bsc, xProfiles] = await Promise.all([getBscGmgnData(), getXProfiles()]);
+    const wallets = gmgnToUnified(bsc);
+    for (const w of wallets) {
+      if (!w.avatar && w.twitter) {
+        const xp = getXProfile(xProfiles, w.twitter);
+        if (xp?.avatar) w.avatar = xp.avatar;
+      }
     }
-  }
-  return wallets;
-}
+    return wallets;
+  },
+  ["bsc-wallets"],
+  { revalidate: 3600 },
+);
 
 // --- X Profile Data ---
 const X_PROFILES_URL =
   "https://raw.githubusercontent.com/nirholas/scrape-kolscan-wallets/main/site/data/x-profiles.json";
 
-let xProfilesCache: Record<string, XProfile> | null = null;
-
-export async function getXProfiles(): Promise<Record<string, XProfile>> {
-  if (xProfilesCache) return xProfilesCache;
-
-  try {
-    const fs = await import("fs");
-    const path = await import("path");
-    const filePath = path.join(process.cwd(), "data", "x-profiles.json");
-    if (fs.existsSync(filePath)) {
-      xProfilesCache = JSON.parse(fs.readFileSync(filePath, "utf-8"));
-      return xProfilesCache!;
+export const getXProfiles = unstable_cache(
+  async (): Promise<Record<string, XProfile>> => {
+    try {
+      const fs = await import("fs");
+      const path = await import("path");
+      const filePath = path.join(process.cwd(), "data", "x-profiles.json");
+      if (fs.existsSync(filePath)) {
+        return JSON.parse(fs.readFileSync(filePath, "utf-8"));
+      }
+    } catch {
+      // fs not available
     }
-  } catch {
-    // fs not available
-  }
 
-  try {
-    const res = await fetch(X_PROFILES_URL);
-    if (res.ok) {
-      xProfilesCache = await res.json();
-      return xProfilesCache!;
+    try {
+      const res = await fetch(X_PROFILES_URL);
+      if (res.ok) {
+        return res.json();
+      }
+    } catch {
+      // fetch failed
     }
-  } catch {
-    // fetch failed
-  }
 
-  return {};
-}
+    return {};
+  },
+  ["x-profiles"],
+  { revalidate: 3600 },
+);
 
 /** Look up an X profile by twitter URL or username */
 export function getXProfile(
@@ -383,35 +393,33 @@ export function getXProfile(
 const X_TRACKER_URL =
   "https://raw.githubusercontent.com/nirholas/scrape-kolscan-wallets/main/site/data/gmgn-x-tracker.json";
 
-let xTrackerCache: XTrackerData | null = null;
-
-export async function getXTrackerData(): Promise<XTrackerData> {
-  if (xTrackerCache) return xTrackerCache;
-
-  try {
-    const fs = await import("fs");
-    const path = await import("path");
-    const filePath = path.join(process.cwd(), "data", "gmgn-x-tracker.json");
-    if (fs.existsSync(filePath)) {
-      xTrackerCache = JSON.parse(fs.readFileSync(filePath, "utf-8"));
-      return xTrackerCache!;
+export const getXTrackerData = unstable_cache(
+  async (): Promise<XTrackerData> => {
+    try {
+      const fs = await import("fs");
+      const path = await import("path");
+      const filePath = path.join(process.cwd(), "data", "gmgn-x-tracker.json");
+      if (fs.existsSync(filePath)) {
+        return JSON.parse(fs.readFileSync(filePath, "utf-8"));
+      }
+    } catch {
+      // fs not available
     }
-  } catch {
-    // fs not available
-  }
 
-  try {
-    const res = await fetch(X_TRACKER_URL);
-    if (res.ok) {
-      xTrackerCache = await res.json();
-      return xTrackerCache!;
+    try {
+      const res = await fetch(X_TRACKER_URL);
+      if (res.ok) {
+        return res.json();
+      }
+    } catch {
+      // fetch failed
     }
-  } catch {
-    // fetch failed
-  }
 
-  return { meta: { scrapedAt: "", source: "", totalAccounts: 0 }, accounts: [] };
-}
+    return { meta: { scrapedAt: "", source: "", totalAccounts: 0 }, accounts: [] };
+  },
+  ["x-tracker-data"],
+  { revalidate: 3600 },
+);
 
 export async function getXTrackerAccounts(): Promise<XTrackerAccount[]> {
   const data = await getXTrackerData();

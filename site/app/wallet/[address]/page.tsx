@@ -5,19 +5,9 @@ import ReportButton from "@/app/components/ReportButton";
 import GmgnDashboard from "@/app/components/GmgnDashboard";
 import { HeaderImg } from "@/app/components/FallbackImg";
 import { getWalletDetail } from "@/lib/wallet-detail";
+import { truncateAddr, formatUsd } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
-
-function truncate(addr: string) {
-  if (addr.length <= 12) return addr;
-  return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
-}
-
-function formatUsd(v: number) {
-  if (Math.abs(v) >= 1_000_000) return `$${(v / 1_000_000).toFixed(2)}M`;
-  if (Math.abs(v) >= 1_000) return `$${(v / 1_000).toFixed(1)}K`;
-  return `$${v.toFixed(2)}`;
-}
 
 function formatDate(iso: string | null): string {
   if (!iso) return "—";
@@ -53,7 +43,7 @@ function getExplorerLinks(address: string, chain: string) {
 
 export async function generateMetadata({ params }: { params: { address: string } }) {
   const detail = await getWalletDetail(params.address);
-  const name = detail.wallet?.name || truncate(detail.address);
+  const name = detail.wallet?.name || truncateAddr(detail.address);
   const title = `${name} Wallet`;
   const description = `Wallet profile for ${name}. Unified Solana and EVM wallet details, performance, and recent activity.`;
   return {
@@ -77,7 +67,7 @@ export default async function WalletPage({ params }: { params: { address: string
 
   const address = detail.address;
   const wallet = detail.wallet;
-  const name = wallet?.name || `Wallet ${truncate(address)}`;
+  const name = wallet?.name || `Wallet ${truncateAddr(address)}`;
   const chain = detail.chain === "unknown" ? "evm" : detail.chain;
   const links = getExplorerLinks(address, chain);
   const winRate = pct(detail.tradeStats.totalBuys, detail.tradeStats.totalTrades);
@@ -123,7 +113,7 @@ export default async function WalletPage({ params }: { params: { address: string
             </div>
 
             <div className="flex items-center gap-1.5 text-xs text-zinc-500">
-              <span className="font-mono">{truncate(address)}</span>
+              <span className="font-mono">{truncateAddr(address)}</span>
               <CopyButton text={address} className="text-zinc-600 hover:text-white transition-colors text-xs leading-none" />
             </div>
 
@@ -241,8 +231,13 @@ export default async function WalletPage({ params }: { params: { address: string
                 <div key={`${t.chain}:${t.tokenAddress}`} className="flex items-center justify-between text-sm border-b border-border/50 pb-2 last:border-0 last:pb-0">
                   <div className="min-w-0">
                     <div className="flex items-center gap-1.5">
-                      <span className="text-white truncate">{t.tokenSymbol || t.tokenName || truncate(t.tokenAddress)}</span>
+                      <span className="text-white truncate">{t.tokenSymbol || t.tokenName || truncateAddr(t.tokenAddress)}</span>
                       <span className="text-[9px] uppercase text-zinc-600 bg-zinc-800 px-1 py-0.5 rounded">{t.chain}</span>
+                      {t.tokenLaunchpad && (
+                        <span className="text-[9px] text-zinc-600 bg-zinc-800/60 px-1 py-0.5 rounded border border-zinc-700/50">
+                          {t.tokenLaunchpad}
+                        </span>
+                      )}
                     </div>
                     <div className="text-zinc-600 text-xs">{t.trades} trade{t.trades !== 1 ? "s" : ""}</div>
                   </div>
@@ -268,7 +263,7 @@ export default async function WalletPage({ params }: { params: { address: string
                 <div key={t.id} className="flex items-center justify-between text-xs border-b border-border/50 pb-2 last:border-0 last:pb-0">
                   <div>
                     <span className={`font-semibold uppercase ${t.type === "buy" ? "text-buy" : "text-sell"}`}>{t.type}</span>
-                    <span className="text-zinc-400 ml-2">{t.tokenSymbol || truncate(t.tokenAddress)}</span>
+                    <span className="text-zinc-400 ml-2">{t.tokenSymbol || truncateAddr(t.tokenAddress)}</span>
                     <span className="text-zinc-600 uppercase ml-1.5 text-[10px]">{t.chain}</span>
                   </div>
                   <div className="text-right">
