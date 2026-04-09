@@ -1,191 +1,238 @@
 import Link from "next/link";
+import { getData, getSolGmgnData, getBscGmgnData } from "@/lib/data";
 
-function StatCard({ value, label, sub }: { value: string; label: string; sub: string }) {
-  return (
-    <div className="group relative bg-bg-card rounded-2xl p-5 border border-border hover:border-border-light transition-all duration-300 gradient-border">
-      <div className="text-3xl font-bold text-white tracking-tight tabular-nums">{value}</div>
-      <div className="text-buy text-sm font-semibold mt-1">{label}</div>
-      <div className="text-zinc-500 text-xs mt-0.5">{sub}</div>
-    </div>
-  );
-}
+export default async function Home() {
+  const [kolscanData, solGmgn, bscGmgn] = await Promise.all([
+    getData(),
+    getSolGmgnData(),
+    getBscGmgnData(),
+  ]);
 
-function ViewCard({ href, title, description, accent }: { href: string; title: string; description: string; accent: string }) {
-  return (
-    <Link href={href} className={`group bg-bg-card rounded-2xl p-6 border border-border hover:border-${accent}/30 transition-all duration-300 shadow-card hover:shadow-elevated`}>
-      <h3 className="text-white font-semibold text-base mb-1.5 group-hover:text-buy transition-colors">{title}</h3>
-      <p className="text-zinc-500 text-sm leading-relaxed">{description}</p>
-      <span className="inline-flex items-center gap-1 text-xs text-zinc-600 group-hover:text-buy mt-3 transition-colors">
-        View →
-      </span>
-    </Link>
-  );
-}
+  const dailyEntries = kolscanData.filter((e) => e.timeframe === 1);
+  const topByProfit = [...dailyEntries].sort((a, b) => b.profit - a.profit).slice(0, 5);
+  const topByWinRate = [...dailyEntries]
+    .filter((e) => e.wins + e.losses >= 5)
+    .sort((a, b) => {
+      const ar = a.wins / (a.wins + a.losses);
+      const br = b.wins / (b.wins + b.losses);
+      return br - ar;
+    })
+    .slice(0, 5);
+  const kolscanWallets = new Set(kolscanData.map((e) => e.wallet_address)).size;
 
-export default function Home() {
+  const topGmgnSol = [...solGmgn].sort((a, b) => b.realized_profit_7d - a.realized_profit_7d).slice(0, 5);
+  const topGmgnBsc = [...bscGmgn].sort((a, b) => b.realized_profit_7d - a.realized_profit_7d).slice(0, 5);
+
+  // Combined unique Solana wallets
+  const allSolAddresses = new Set([
+    ...kolscanData.map((e) => e.wallet_address),
+    ...solGmgn.map((w) => w.wallet_address),
+  ]);
+
   return (
-    <main className="max-w-5xl mx-auto px-6 animate-fade-in">
+    <main className="animate-fade-in">
       {/* Hero */}
-      <div className="text-center py-20 sm:py-28">
-        <div className="inline-flex items-center gap-2 bg-bg-card border border-border rounded-full px-4 py-1.5 mb-6">
-          <div className="w-1.5 h-1.5 rounded-full bg-buy animate-pulse" />
-          <span className="text-xs text-zinc-400 font-medium">Open Source Intelligence</span>
-        </div>
-        <h1 className="text-4xl sm:text-[3.5rem] font-extrabold text-white mb-5 tracking-tight leading-[1.1]">
-          Solana KOL<br />
-          <span className="gradient-text">Wallet Intelligence</span>
-        </h1>
-        <p className="text-zinc-400 text-lg max-w-2xl mx-auto mb-10 leading-relaxed">
-          472 KOL wallets reverse-engineered from KolScan.io — sortable leaderboards,
-          per-wallet analytics, and one-click import to{" "}
-          <a href="https://gmgn.ai/r/nichxbt" target="_blank" rel="noopener noreferrer" className="text-amber-400 hover:text-amber-300 transition-colors">GMGN</a>
-          {" "}and{" "}
-          <a href="https://trade.padre.gg/rk/nich" target="_blank" rel="noopener noreferrer" className="text-purple-400 hover:text-purple-300 transition-colors">Padre</a>.
-        </p>
-        <div className="flex items-center justify-center gap-3 flex-wrap">
-          <Link
-            href="/leaderboard"
-            className="inline-flex items-center gap-2 bg-buy hover:bg-buy-light text-black font-semibold px-6 py-2.5 rounded-xl transition-all duration-200 shadow-glow hover:shadow-glow-lg text-sm"
-          >
-            Explore Leaderboard
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
-          </Link>
-          <a
-            href="https://gmgn.ai/r/nichxbt"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/20 text-amber-400 font-medium px-5 py-2.5 rounded-xl transition-all duration-200 text-sm"
-          >
-            Open GMGN
-          </a>
-          <a
-            href="https://trade.padre.gg/rk/nich"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/20 text-purple-400 font-medium px-5 py-2.5 rounded-xl transition-all duration-200 text-sm"
-          >
-            Trade on Padre
-          </a>
-        </div>
-      </div>
-
-      {/* Stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-16">
-        <StatCard value="472" label="Wallets" sub="unique addresses" />
-        <StatCard value="1,304" label="Entries" sub="across timeframes" />
-        <StatCard value="3" label="Timeframes" sub="daily · weekly · monthly" />
-        <StatCard value="100%" label="Open Source" sub="fully documented" />
-      </div>
-
-      {/* Views Grid */}
-      <div className="mb-16">
-        <h2 className="text-xl font-bold text-white mb-1">Explore the Data</h2>
-        <p className="text-zinc-500 text-sm mb-6">Multiple views to analyze KOL performance across Solana.</p>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          <ViewCard
-            href="/leaderboard"
-            title="Full Leaderboard"
-            description="All 472 wallets with sortable columns — profit, wins, losses, win rate."
-            accent="buy"
-          />
-          <ViewCard
-            href="/top-performers"
-            title="Top Win Rate"
-            description="KOLs ranked by win percentage — find the most consistent traders."
-            accent="buy"
-          />
-          <ViewCard
-            href="/most-profitable"
-            title="Most Profitable"
-            description="Ranked by total profit in SOL — the biggest earners on-chain."
-            accent="buy"
-          />
-        </div>
-      </div>
-
-      {/* Tools */}
-      <div className="mb-16">
-        <h2 className="text-xl font-bold text-white mb-1">Trading Tools</h2>
-        <p className="text-zinc-500 text-sm mb-6">Track KOL wallets and copy-trade with these platforms.</p>
-        <div className="grid sm:grid-cols-2 gap-4">
-          <a
-            href="https://gmgn.ai/r/nichxbt"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="group relative bg-bg-card rounded-2xl p-6 border border-border hover:border-amber-500/30 transition-all duration-300 overflow-hidden"
-          >
-            <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 to-transparent pointer-events-none" />
-            <div className="relative">
-              <h3 className="text-white font-semibold text-base mb-1.5">GMGN.ai</h3>
-              <p className="text-zinc-500 text-sm leading-relaxed mb-3">
-                Import all 472 wallets for real-time tracking, copy-trading, and alerts. Pre-formatted JSON ready to paste.
-              </p>
-              <span className="inline-flex items-center gap-1 text-xs text-amber-400 group-hover:text-amber-300 transition-colors font-medium">
-                Open GMGN →
-              </span>
-            </div>
-          </a>
-          <a
-            href="https://trade.padre.gg/rk/nich"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="group relative bg-bg-card rounded-2xl p-6 border border-border hover:border-purple-500/30 transition-all duration-300 overflow-hidden"
-          >
-            <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-transparent pointer-events-none" />
-            <div className="relative">
-              <h3 className="text-white font-semibold text-base mb-1.5">Padre</h3>
-              <p className="text-zinc-500 text-sm leading-relaxed mb-3">
-                Advanced Solana trading terminal — execute trades, track wallets, and manage positions.
-              </p>
-              <span className="inline-flex items-center gap-1 text-xs text-purple-400 group-hover:text-purple-300 transition-colors font-medium">
-                Trade on Padre →
-              </span>
-            </div>
-          </a>
-        </div>
-      </div>
-
-      {/* Writeup CTA */}
-      <div className="relative bg-bg-card rounded-2xl p-6 sm:p-8 mb-16 border border-border overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-buy/5 to-transparent pointer-events-none" />
-        <div className="relative flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div>
-            <h2 className="text-white font-semibold text-lg">How we built this</h2>
-            <p className="text-zinc-500 text-sm mt-1">Full reverse-engineering writeup — from finding the hidden POST API to extracting 1,304 entries with Playwright.</p>
+      <div className="border-b border-border">
+        <div className="max-w-7xl mx-auto px-6 py-20 sm:py-28">
+          <h1 className="text-4xl sm:text-[3.5rem] font-extrabold text-white tracking-tight leading-[1.08] mb-5">
+            Track the smartest<br />
+            <span className="text-zinc-500">crypto wallets.</span>
+          </h1>
+          <p className="text-zinc-500 text-lg max-w-xl mb-10 leading-relaxed">
+            {allSolAddresses.size.toLocaleString()} Solana + {bscGmgn.length.toLocaleString()} BSC wallets tracked.
+            KolScan KOLs, GMGN smart money, snipers, degens, and more.
+          </p>
+          <div className="flex items-center gap-3 flex-wrap">
+            <Link
+              href="/all-solana"
+              className="inline-flex items-center gap-2 bg-white hover:bg-zinc-200 text-black font-semibold px-6 py-2.5 rounded-lg transition-colors text-sm"
+            >
+              All Solana Wallets
+            </Link>
+            <Link
+              href="/bsc"
+              className="inline-flex items-center gap-2 border border-border hover:border-zinc-600 text-zinc-300 hover:text-white font-medium px-5 py-2.5 rounded-lg transition-colors text-sm"
+            >
+              BSC Wallets
+            </Link>
+            <a
+              href="https://gmgn.ai/r/nichxbt"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 border border-border hover:border-zinc-600 text-zinc-300 hover:text-white font-medium px-5 py-2.5 rounded-lg transition-colors text-sm"
+            >
+              Track on GMGN
+            </a>
           </div>
-          <Link
-            href="/writeup"
-            className="inline-flex items-center gap-2 bg-bg-hover hover:bg-bg-elevated border border-border text-white font-medium px-5 py-2.5 rounded-xl transition-all duration-200 whitespace-nowrap text-sm"
-          >
-            Read Writeup
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
-          </Link>
+        </div>
+      </div>
+
+      {/* Stats bar */}
+      <div className="border-b border-border">
+        <div className="max-w-7xl mx-auto px-6 py-6 flex items-center gap-8 sm:gap-16 overflow-x-auto">
+          {[
+            { value: kolscanWallets.toString(), label: "KolScan KOLs" },
+            { value: solGmgn.length.toLocaleString(), label: "GMGN Solana" },
+            { value: bscGmgn.length.toLocaleString(), label: "GMGN BSC" },
+            { value: allSolAddresses.size.toLocaleString(), label: "Total Solana" },
+          ].map((s) => (
+            <div key={s.label} className="shrink-0">
+              <div className="text-2xl font-bold text-white tabular-nums">{s.value}</div>
+              <div className="text-xs text-zinc-600 mt-0.5">{s.label}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Three-column preview tables */}
+      <div className="max-w-7xl mx-auto px-6 py-16">
+        <div className="grid lg:grid-cols-3 gap-8">
+          {/* KolScan Top Profit */}
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h2 className="text-sm font-semibold text-white uppercase tracking-wider">KolScan KOLs</h2>
+                <p className="text-[11px] text-zinc-600 mt-0.5">Top profit today</p>
+              </div>
+              <Link href="/leaderboard" className="text-xs text-zinc-600 hover:text-white transition-colors">View all →</Link>
+            </div>
+            <div className="border border-border rounded-lg overflow-hidden">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-border">
+                    <th className="px-3 py-2.5 text-left text-[11px] font-medium text-zinc-600 uppercase tracking-wider">#</th>
+                    <th className="px-3 py-2.5 text-left text-[11px] font-medium text-zinc-600 uppercase tracking-wider">Name</th>
+                    <th className="px-3 py-2.5 text-right text-[11px] font-medium text-zinc-600 uppercase tracking-wider">PnL</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {topByProfit.map((e, i) => (
+                    <tr key={e.wallet_address} className="border-b border-border/50 last:border-b-0 hover:bg-bg-card transition-colors">
+                      <td className="px-3 py-2.5 text-xs text-zinc-600 tabular-nums">{i + 1}</td>
+                      <td className="px-3 py-2.5">
+                        <Link href={`/wallet/${e.wallet_address}`} className="text-sm text-white hover:text-accent transition-colors">
+                          {e.name}
+                        </Link>
+                      </td>
+                      <td className={`px-3 py-2.5 text-sm text-right tabular-nums font-medium ${e.profit > 0 ? "text-buy" : "text-sell"}`}>
+                        {e.profit > 0 ? "+" : ""}{e.profit.toFixed(2)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* GMGN Solana Top */}
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h2 className="text-sm font-semibold text-white uppercase tracking-wider">GMGN Solana</h2>
+                <p className="text-[11px] text-zinc-600 mt-0.5">Top profit 7D</p>
+              </div>
+              <Link href="/gmgn-sol" className="text-xs text-zinc-600 hover:text-white transition-colors">View all →</Link>
+            </div>
+            <div className="border border-border rounded-lg overflow-hidden">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-border">
+                    <th className="px-3 py-2.5 text-left text-[11px] font-medium text-zinc-600 uppercase tracking-wider">#</th>
+                    <th className="px-3 py-2.5 text-left text-[11px] font-medium text-zinc-600 uppercase tracking-wider">Name</th>
+                    <th className="px-3 py-2.5 text-right text-[11px] font-medium text-zinc-600 uppercase tracking-wider">7D PnL</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {topGmgnSol.map((w, i) => (
+                    <tr key={w.wallet_address} className="border-b border-border/50 last:border-b-0 hover:bg-bg-card transition-colors">
+                      <td className="px-3 py-2.5 text-xs text-zinc-600 tabular-nums">{i + 1}</td>
+                      <td className="px-3 py-2.5">
+                        <Link href={`/gmgn-wallet/${w.wallet_address}?chain=sol`} className="text-sm text-white hover:text-accent transition-colors">
+                          {w.name}
+                        </Link>
+                      </td>
+                      <td className={`px-3 py-2.5 text-sm text-right tabular-nums font-medium ${w.realized_profit_7d > 0 ? "text-buy" : "text-sell"}`}>
+                        {w.realized_profit_7d > 0 ? "+" : ""}{w.realized_profit_7d >= 1000 ? `${(w.realized_profit_7d / 1000).toFixed(1)}k` : w.realized_profit_7d.toFixed(2)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* GMGN BSC Top */}
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h2 className="text-sm font-semibold text-white uppercase tracking-wider">GMGN BSC</h2>
+                <p className="text-[11px] text-zinc-600 mt-0.5">Top profit 7D</p>
+              </div>
+              <Link href="/bsc" className="text-xs text-zinc-600 hover:text-white transition-colors">View all →</Link>
+            </div>
+            <div className="border border-border rounded-lg overflow-hidden">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-border">
+                    <th className="px-3 py-2.5 text-left text-[11px] font-medium text-zinc-600 uppercase tracking-wider">#</th>
+                    <th className="px-3 py-2.5 text-left text-[11px] font-medium text-zinc-600 uppercase tracking-wider">Name</th>
+                    <th className="px-3 py-2.5 text-right text-[11px] font-medium text-zinc-600 uppercase tracking-wider">7D PnL</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {topGmgnBsc.map((w, i) => (
+                    <tr key={w.wallet_address} className="border-b border-border/50 last:border-b-0 hover:bg-bg-card transition-colors">
+                      <td className="px-3 py-2.5 text-xs text-zinc-600 tabular-nums">{i + 1}</td>
+                      <td className="px-3 py-2.5">
+                        <Link href={`/gmgn-wallet/${w.wallet_address}?chain=bsc`} className="text-sm text-white hover:text-accent transition-colors">
+                          {w.name}
+                        </Link>
+                      </td>
+                      <td className={`px-3 py-2.5 text-sm text-right tabular-nums font-medium ${w.realized_profit_7d > 0 ? "text-buy" : "text-sell"}`}>
+                        {w.realized_profit_7d > 0 ? "+" : ""}{w.realized_profit_7d >= 1000 ? `${(w.realized_profit_7d / 1000).toFixed(1)}k` : w.realized_profit_7d.toFixed(2)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Source cards */}
+      <div className="border-t border-border">
+        <div className="max-w-7xl mx-auto px-6 py-16">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {[
+              { title: "KolScan Leaderboard", desc: `${kolscanWallets} KOL wallets. Scraped from kolscan.io with Playwright.`, href: "/leaderboard", tag: "SOL" },
+              { title: "GMGN Solana", desc: `${solGmgn.length.toLocaleString()} smart money wallets — degens, snipers, KOLs, launchpad traders.`, href: "/gmgn-sol", tag: "SOL" },
+              { title: "GMGN BSC", desc: `${bscGmgn.length.toLocaleString()} BNB Chain wallets — smart degens, KOLs, snipers.`, href: "/bsc", tag: "BSC" },
+              { title: "All Solana Combined", desc: `${allSolAddresses.size.toLocaleString()} unique wallets. KolScan + GMGN deduplicated.`, href: "/all-solana", tag: "SOL" },
+            ].map((f) => (
+              <Link key={f.title} href={f.href} className="bg-bg-card border border-border rounded-xl p-5 hover:border-zinc-600 transition-all group">
+                <div className="flex items-center gap-2 mb-2">
+                  <h3 className="text-white text-sm font-semibold group-hover:text-accent transition-colors">{f.title}</h3>
+                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-500 border border-zinc-700">{f.tag}</span>
+                </div>
+                <p className="text-zinc-600 text-xs leading-relaxed">{f.desc}</p>
+              </Link>
+            ))}
+          </div>
         </div>
       </div>
 
       {/* Footer */}
-      <footer className="pt-8 pb-12 border-t border-border text-center">
-        <p className="text-zinc-500 text-sm">
-          Built by{" "}
-          <a href="https://github.com/nirholas" className="text-zinc-300 hover:text-buy transition-colors">
-            @nirholas
-          </a>{" "}
-          ·{" "}
-          <a
-            href="https://github.com/nirholas/scrape-kolscan-wallets"
-            className="text-zinc-300 hover:text-buy transition-colors"
-          >
-            Source on GitHub
-          </a>{" "}
-          ·{" "}
-          <a href="https://gmgn.ai/r/nichxbt" target="_blank" rel="noopener noreferrer" className="text-amber-400 hover:text-amber-300 transition-colors">
-            GMGN
-          </a>{" "}
-          ·{" "}
-          <a href="https://trade.padre.gg/rk/nich" target="_blank" rel="noopener noreferrer" className="text-purple-400 hover:text-purple-300 transition-colors">
-            Padre
-          </a>
-        </p>
+      <footer className="border-t border-border">
+        <div className="max-w-7xl mx-auto px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <span className="text-zinc-600 text-xs">KolQuest</span>
+          <div className="flex items-center gap-6 text-xs text-zinc-600">
+            <a href="https://gmgn.ai/r/nichxbt" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">GMGN</a>
+            <a href="https://trade.padre.gg/rk/nich" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Padre</a>
+            <Link href="/writeup" className="hover:text-white transition-colors">Writeup</Link>
+            <a href="https://github.com/nirholas/scrape-kolscan-wallets" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">GitHub</a>
+          </div>
+        </div>
       </footer>
     </main>
   );

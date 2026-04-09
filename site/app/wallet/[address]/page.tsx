@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getData } from "@/lib/data";
+import PnlCalendar from "@/app/components/PnlCalendar";
 
 function truncate(addr: string) {
   return addr.slice(0, 6) + "..." + addr.slice(-4);
@@ -237,6 +238,12 @@ export default async function WalletPage({ params }: { params: { address: string
             );
           })}
         </div>
+      </div>
+
+      {/* PnL Calendar */}
+      <div className="mb-8">
+        <h2 className="text-base font-bold text-white tracking-tight mb-4">PnL Calendar</h2>
+        <PnlCalendar entries={entries} walletAddress={params.address} walletName={name} />
       </div>
 
       {/* Quick Actions */}
