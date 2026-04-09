@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import TokenPageClient from "./TokenPageClient";
+import { getAllSolanaWallets, getBscWallets } from "@/lib/data";
 
 interface Props {
   params: { chain: string; address: string };
@@ -14,11 +15,23 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default function TokenPage({ params }: Props) {
+export default async function TokenPage({ params }: Props) {
   const { chain, address } = params;
 
   if (chain !== "sol" && chain !== "bsc") notFound();
   if (!address || address.length < 20) notFound();
+
+  // Load known KOL wallets for holder cross-referencing
+  const allWallets = chain === "sol"
+    ? await getAllSolanaWallets()
+    : await getBscWallets();
+
+  const knownWallets = allWallets.map((w) => ({
+    wallet_address: w.wallet_address,
+    name: w.name,
+    avatar: w.avatar ?? null,
+    twitter_username: "twitter_username" in w ? (w as any).twitter_username ?? null : null,
+  }));
 
   return (
     <main className="max-w-6xl mx-auto px-4 py-8">
@@ -31,7 +44,11 @@ export default function TokenPage({ params }: Props) {
           <span className="text-zinc-400 font-mono">{address.slice(0, 8)}…</span>
         </nav>
       </div>
-      <TokenPageClient chain={chain as "sol" | "bsc"} address={address} />
+      <TokenPageClient
+        chain={chain as "sol" | "bsc"}
+        address={address}
+        knownWallets={knownWallets}
+      />
     </main>
   );
 }
