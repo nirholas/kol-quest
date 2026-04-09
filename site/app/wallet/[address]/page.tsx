@@ -1,7 +1,9 @@
 import Link from "next/link";
 import CopyButton from "@/app/components/CopyButton";
 import ProfileActions from "@/app/components/ProfileActions";
+import ReportButton from "@/app/components/ReportButton";
 import { getWalletDetail } from "@/lib/wallet-detail";
+import { HeaderImg } from "@/app/components/FallbackImg";
 
 export const dynamic = "force-dynamic";
 
@@ -14,6 +16,15 @@ function formatUsd(v: number) {
   if (Math.abs(v) >= 1_000_000) return `$${(v / 1_000_000).toFixed(2)}M`;
   if (Math.abs(v) >= 1_000) return `$${(v / 1_000).toFixed(1)}K`;
   return `$${v.toFixed(2)}`;
+}
+
+function formatDate(iso: string | null): string {
+  if (!iso) return "—";
+  return new Date(iso).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
 }
 
 function pct(v: number, total: number) {
@@ -120,23 +131,26 @@ export default async function WalletPage({ params }: { params: { address: string
             )}
           </div>
 
-          <div className="flex flex-wrap gap-1.5">
-            {links.map((link) => (
-              <a
-                key={link.label}
-                href={link.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="bg-bg-secondary border border-border rounded px-2 py-1 text-[11px] font-mono text-zinc-500 hover:text-white hover:border-zinc-600 transition-all"
-              >
-                {link.label}
-              </a>
-            ))}
+          <div className="flex flex-col gap-2 items-end">
+            <div className="flex flex-wrap gap-1.5 justify-end">
+              {links.map((link) => (
+                <a
+                  key={link.label}
+                  href={link.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-bg-secondary border border-border rounded px-2 py-1 text-[11px] font-mono text-zinc-500 hover:text-white hover:border-zinc-600 transition-all"
+                >
+                  {link.label}
+                </a>
+              ))}
+            </div>
+            <ReportButton walletAddress={address} />
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 mb-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
         <div className="bg-bg-card border border-border rounded p-3">
           <div className="text-zinc-600 text-[11px] uppercase tracking-wider mb-1">Trades</div>
           <div className="text-white text-2xl font-bold tabular-nums">{detail.tradeStats.totalTrades.toLocaleString()}</div>
@@ -165,6 +179,18 @@ export default async function WalletPage({ params }: { params: { address: string
             {detail.tradeStats.totalRealizedProfit >= 0 ? "+" : ""}
             {formatUsd(detail.tradeStats.totalRealizedProfit)}
           </div>
+        </div>
+        <div className="bg-bg-card border border-border rounded p-3">
+          <div className="text-zinc-600 text-[11px] uppercase tracking-wider mb-1">Unique Tokens</div>
+          <div className="text-white text-2xl font-bold tabular-nums">{detail.tradeStats.uniqueTokens.toLocaleString()}</div>
+        </div>
+        <div className="bg-bg-card border border-border rounded p-3">
+          <div className="text-zinc-600 text-[11px] uppercase tracking-wider mb-1">First Trade</div>
+          <div className="text-white text-sm font-semibold tabular-nums mt-1">{formatDate(detail.tradeStats.firstTrade)}</div>
+        </div>
+        <div className="bg-bg-card border border-border rounded p-3">
+          <div className="text-zinc-600 text-[11px] uppercase tracking-wider mb-1">Last Trade</div>
+          <div className="text-white text-sm font-semibold tabular-nums mt-1">{formatDate(detail.tradeStats.lastTrade)}</div>
         </div>
       </div>
 

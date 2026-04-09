@@ -213,7 +213,7 @@ async function GmgnSolPreview() {
               <tr key={w.wallet_address} className="border-b border-zinc-900 last:border-b-0 hover:bg-bg-card transition-colors">
                 <td className="px-3 py-2 text-[11px] text-zinc-700 font-mono tabular-nums">{i + 1}</td>
                 <td className="px-3 py-2">
-                  <Link href={`/gmgn-wallet/${w.wallet_address}?chain=sol`} className="flex items-center gap-1.5 text-xs text-zinc-300 hover:text-white transition-colors">
+                  <Link href={`/wallet/${w.wallet_address}`} className="flex items-center gap-1.5 text-xs text-zinc-300 hover:text-white transition-colors">
                     <Avatar src={w.avatar} name={w.name} />
                     {w.name}
                   </Link>
@@ -257,7 +257,7 @@ async function GmgnBscPreview() {
               <tr key={w.wallet_address} className="border-b border-zinc-900 last:border-b-0 hover:bg-bg-card transition-colors">
                 <td className="px-3 py-2 text-[11px] text-zinc-700 font-mono tabular-nums">{i + 1}</td>
                 <td className="px-3 py-2">
-                  <Link href={`/gmgn-wallet/${w.wallet_address}?chain=bsc`} className="flex items-center gap-1.5 text-xs text-zinc-300 hover:text-white transition-colors">
+                  <Link href={`/wallet/${w.wallet_address}`} className="flex items-center gap-1.5 text-xs text-zinc-300 hover:text-white transition-colors">
                     <Avatar src={w.avatar} name={w.name} />
                     {w.name}
                   </Link>

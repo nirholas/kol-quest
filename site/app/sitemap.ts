@@ -49,7 +49,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ];
     for (const addr of gmgnAddresses) {
       entries.push({
-        url: `${baseUrl}/gmgn-wallet/${addr}`,
+        url: `${baseUrl}/wallet/${addr}`,
         lastModified: new Date(),
         changeFrequency: "weekly",
         priority: 0.6,

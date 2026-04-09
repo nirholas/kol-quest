@@ -12,14 +12,18 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  let body: any;
+  let body: unknown;
   try {
     body = await req.json();
   } catch {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
-  const trades: any[] = body.trades;
+  if (typeof body !== "object" || body === null || !("trades" in body)) {
+    return NextResponse.json({ error: "trades array is required" }, { status: 400 });
+  }
+
+  const trades = (body as { trades: unknown }).trades;
 
   if (!Array.isArray(trades) || trades.length === 0) {
     return NextResponse.json({ error: "trades array is required" }, { status: 400 });

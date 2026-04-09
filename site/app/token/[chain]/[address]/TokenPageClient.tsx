@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import NextImage from "next/image";
 import { getChartEmbedUrl } from "@/lib/token-api";
+import { timeAgo, shortAddr, explorerUrl, walletHref } from "@/lib/format";
 
 interface TokenData {
   address: string;

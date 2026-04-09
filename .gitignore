@@ -19,3 +19,7 @@ output/axiom-smart-wallets.json
 output/axiom-wallets.txt
 output/wallets.txt
 output/axiom-debug.png
+output/gmgn-rewards.json
+
+# GMGN auth state (contains session cookies)
+.gmgn-auth-state.json

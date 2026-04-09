@@ -17,9 +17,14 @@ export interface WalletDetailResult {
     name: string | null;
     bio: string | null;
     avatar: string | null;
+    header: string | null;
     followers: number;
     following: number;
     tweets: number;
+    likes: number;
+    media: number;
+    location: string | null;
+    website: string | null;
     verified: boolean;
     joinDate: string | null;
   } | null;
@@ -195,9 +200,14 @@ export async function getWalletDetail(addressRaw: string): Promise<WalletDetailR
           name: xProfileSource.name,
           bio: xProfileSource.bio,
           avatar: xProfileSource.avatar,
+          header: xProfileSource.header,
           followers: xProfileSource.followers,
           following: xProfileSource.following,
           tweets: xProfileSource.tweets,
+          likes: xProfileSource.likes,
+          media: xProfileSource.media,
+          location: xProfileSource.location,
+          website: xProfileSource.website,
           verified: xProfileSource.verified,
           joinDate: xProfileSource.joinDate,
         }
