@@ -309,11 +309,7 @@ function UnifiedTableInner({
                         </div>
                         <div className="min-w-0">
                           <Link
-                            href={
-                              w.source === "kolscan"
-                                ? `/wallet/${w.wallet_address}`
-                                : `/gmgn-wallet/${w.wallet_address}?chain=${w.chain}`
-                            }
+                            href={`/wallet/${w.wallet_address}`}
                             className="text-white text-sm font-medium hover:text-buy transition-colors"
                           >
                             {w.name}

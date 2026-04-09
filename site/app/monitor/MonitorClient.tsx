@@ -211,10 +211,7 @@ function WalletCard({ group }: { group: WalletGroup }) {
   const catClass = CATEGORY_COLORS[category] || "bg-zinc-700/30 text-zinc-400 border-zinc-600/30";
   const catLabel = CATEGORY_LABELS[category] || category;
 
-  const walletHref =
-    (info?.chain || latest?.chain) === "bsc"
-      ? `/gmgn-wallet/${walletAddress}?chain=bsc`
-      : `/wallet/${walletAddress}`;
+  const walletHref = `/wallet/${walletAddress}`;
 
   const tokenHref = (chain: string, addr: string) =>
     chain === "bsc"
@@ -414,10 +411,7 @@ function WalletSidebar({
         {activeWallets.map((g) => {
           const info = g.info;
           const name = info?.name || g.trades[0]?.walletLabel || shortAddr(g.walletAddress);
-          const walletHref =
-            (info?.chain || g.trades[0]?.chain) === "bsc"
-              ? `/gmgn-wallet/${g.walletAddress}?chain=bsc`
-              : `/wallet/${g.walletAddress}`;
+          const walletHref = `/wallet/${g.walletAddress}`;
 
           return (
             <Link

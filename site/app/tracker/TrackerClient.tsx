@@ -455,11 +455,7 @@ export default function TrackerClient({
                               </div>
                               <div>
                                 <Link
-                                  href={
-                                    wallet?.source === "gmgn"
-                                      ? `/gmgn-wallet/${entry.walletAddress}`
-                                      : `/wallet/${entry.walletAddress}`
-                                  }
+                                    href={`/wallet/${entry.walletAddress}`}
                                   className="text-white hover:text-accent transition-colors font-medium"
                                 >
                                   {entry.label || wallet?.name || truncate(entry.walletAddress)}

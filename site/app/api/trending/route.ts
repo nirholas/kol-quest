@@ -1,10 +1,14 @@
-import { NextResponse } from "next/server";
-import { desc, sql, gte } from "drizzle-orm";
+import { NextRequest, NextResponse } from "next/server";
+import { and, desc, sql, gte, eq } from "drizzle-orm";
 import { db } from "@/drizzle/db";
 import { trade } from "@/drizzle/db/schema";
 
-export async function GET() {
-  const since = new Date(Date.now() - 24 * 60 * 60 * 1000); // last 24h
+export async function GET(req: NextRequest) {
+  const { searchParams } = req.nextUrl;
+  const hoursParam = parseFloat(searchParams.get("hours") ?? "24");
+  const hours = isFinite(hoursParam) && hoursParam > 0 ? Math.min(hoursParam, 168) : 24;
+  const chainParam = searchParams.get("chain");
+  const since = new Date(Date.now() - hours * 60 * 60 * 1000);
 
   // Aggregate: which tokens are being bought most by tracked wallets
   const rows = await db
@@ -24,7 +28,11 @@ export async function GET() {
       lastSeen: sql<string>`max(${trade.tradedAt})`,
     })
     .from(trade)
-    .where(gte(trade.tradedAt, since))
+    .where(
+      chainParam === "sol" || chainParam === "bsc"
+        ? and(gte(trade.tradedAt, since), eq(trade.chain, chainParam))
+        : gte(trade.tradedAt, since),
+    )
     .groupBy(trade.tokenAddress, trade.tokenSymbol, trade.tokenName, trade.tokenLogo, trade.chain)
     .orderBy(desc(sql`count(distinct ${trade.walletAddress}) filter (where ${trade.type} = 'buy')`))
     .limit(50);

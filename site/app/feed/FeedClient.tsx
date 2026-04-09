@@ -124,8 +124,7 @@ function FeedInner() {
   const explorerUrl = (c: string, txHash: string) =>
     c === "bsc" ? `https://bscscan.com/tx/${txHash}` : `https://solscan.io/tx/${txHash}`;
 
-  const walletHref = (c: string, addr: string) =>
-    c === "bsc" ? `/gmgn-wallet/${addr}?chain=bsc` : `/wallet/${addr}`;
+  const walletHref = (_c: string, addr: string) => `/wallet/${addr}`;
 
   return (
     <div className="animate-fade-in">

@@ -49,7 +49,6 @@ export function explorerUrl(chain: string, txHash: string): string {
   return `https://solscan.io/tx/${txHash}`;
 }
 
-export function walletHref(chain: string, addr: string): string {
-  if (chain === "bsc") return `/gmgn-wallet/${addr}?chain=bsc`;
+export function walletHref(_chain: string, addr: string): string {
   return `/wallet/${addr}`;
 }

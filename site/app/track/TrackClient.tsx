@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect, useRef } from "react";
+import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import ShareButtons from "../components/ShareButtons";
 
@@ -20,7 +20,15 @@ interface TrendingToken {
   lastSeen: string;
 }
 
-type TimeFilter = "1h" | "6h" | "24h";
+type TimeFilter = "5m" | "1h" | "6h" | "24h";
+type ChainFilter = "all" | "sol" | "bsc";
+
+const TIME_HOURS: Record<TimeFilter, number> = {
+  "5m": 5 / 60,
+  "1h": 1,
+  "6h": 6,
+  "24h": 24,
+};
 
 function formatInflow(v: number): string {
   const abs = Math.abs(v);
@@ -42,32 +50,50 @@ function timeAgo(date: string): string {
 
 export default function TrackClient() {
   const [timeFilter, setTimeFilter] = useState<TimeFilter>("24h");
+  const [chainFilter, setChainFilter] = useState<ChainFilter>("all");
   const [search, setSearch] = useState("");
   const [advOpen, setAdvOpen] = useState(false);
   const [tokens, setTokens] = useState<TrendingToken[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [minBuyers, setMinBuyers] = useState("");
   const [minNetFlow, setMinNetFlow] = useState("");
-  const refreshRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [countdown, setCountdown] = useState(30);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const fetchTokens = () => {
-    setLoading(true);
-    fetch("/api/trending")
-      .then((r) => r.json())
-      .then((d) => {
-        setTokens(d.tokens ?? []);
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
-  };
+  const fetchTokens = useCallback(async () => {
+    setError(null);
+    try {
+      const params = new URLSearchParams({ hours: String(TIME_HOURS[timeFilter]) });
+      if (chainFilter !== "all") params.set("chain", chainFilter);
+      const res = await fetch(`/api/trending?${params}`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      setTokens(data.tokens ?? []);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to load");
+    } finally {
+      setLoading(false);
+    }
+  }, [timeFilter, chainFilter]);
 
   useEffect(() => {
+    setLoading(true);
+    setTokens([]);
     fetchTokens();
-    refreshRef.current = setInterval(fetchTokens, 30_000);
-    return () => {
-      if (refreshRef.current) clearInterval(refreshRef.current);
-    };
-  }, []);
+  }, [fetchTokens]);
+
+  useEffect(() => {
+    setCountdown(30);
+    if (intervalRef.current) clearInterval(intervalRef.current);
+    intervalRef.current = setInterval(() => {
+      setCountdown((c) => {
+        if (c <= 1) { fetchTokens(); return 30; }
+        return c - 1;
+      });
+    }, 1000);
+    return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
+  }, [fetchTokens]);
 
   const filtered = useMemo(() => {
     let list = tokens;
@@ -93,12 +119,15 @@ export default function TrackClient() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl font-bold text-white">Track</h1>
-          <p className="text-sm text-zinc-500 mt-0.5">Tokens spotted by tracked wallets in the last 24h</p>
+          <p className="text-sm text-zinc-500 mt-0.5">
+            Tokens spotted by tracked wallets in the last{" "}
+            {timeFilter === "5m" ? "5 minutes" : timeFilter === "1h" ? "hour" : timeFilter === "6h" ? "6 hours" : "24 hours"}
+          </p>
         </div>
 
         {/* Time filter + Advanced */}
         <div className="flex items-center gap-2">
-          {(["1h", "6h", "24h"] as TimeFilter[]).map((t) => (
+          {(["5m", "1h", "6h", "24h"] as TimeFilter[]).map((t) => (
             <button
               key={t}
               onClick={() => setTimeFilter(t)}
@@ -124,6 +153,21 @@ export default function TrackClient() {
               <path d="M3 4h18M7 8h10M11 12h2" />
             </svg>
           </button>
+          <div className="flex items-center gap-1.5">
+            {(["all", "sol", "bsc"] as ChainFilter[]).map((c) => (
+              <button
+                key={c}
+                onClick={() => setChainFilter(c)}
+                className={`px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 uppercase ${
+                  chainFilter === c
+                    ? "bg-accent text-white"
+                    : "bg-bg-card text-zinc-500 hover:text-white hover:bg-bg-hover border border-border"
+                }`}
+              >
+                {c}
+              </button>
+            ))}
+          </div>
           <ShareButtons title="KolQuest Token Tracker" />
         </div>
       </div>
@@ -173,7 +217,21 @@ export default function TrackClient() {
       {/* Table */}
       <div className="overflow-x-auto rounded-xl border border-border">
         {loading ? (
-          <div className="px-4 py-12 text-center text-zinc-600 text-sm">Loading tokens…</div>
+          <div className="space-y-px">
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="h-14 bg-bg-card/60 animate-pulse" />
+            ))}
+          </div>
+        ) : error ? (
+          <div className="px-4 py-12 text-center">
+            <p className="text-zinc-500 text-sm mb-3">{error}</p>
+            <button
+              onClick={() => { setLoading(true); fetchTokens(); }}
+              className="px-4 py-1.5 rounded-lg text-xs font-medium bg-bg-card border border-border text-zinc-300 hover:text-white hover:border-accent transition-all"
+            >
+              Retry
+            </button>
+          </div>
         ) : (
         <table className="w-full text-sm">
           <thead>
@@ -257,7 +315,9 @@ export default function TrackClient() {
             {filtered.length === 0 && (
               <tr>
                 <td colSpan={6} className="px-4 py-12 text-center text-zinc-600">
-                  {tokens.length === 0 ? "No token activity in the last 24h." : "No tokens match your filters."}
+                  {tokens.length === 0
+                    ? `No token activity in the last ${timeFilter}.`
+                    : "No tokens match your filters."}
                 </td>
               </tr>
             )}
@@ -269,7 +329,7 @@ export default function TrackClient() {
       {/* Footer stats */}
       <div className="flex items-center justify-between text-[11px] text-zinc-600 px-1">
         <span>{filtered.length} token{filtered.length !== 1 ? "s" : ""}</span>
-        <span>Auto-refreshes every 30s</span>
+        <span>Refreshing in {countdown}s</span>
       </div>
     </div>
   );
