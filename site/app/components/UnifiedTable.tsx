@@ -5,6 +5,7 @@ import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import Link from "next/link";
 import type { UnifiedWallet, GmgnSortField, SortDir, Timeframe } from "@/lib/types";
 import ExportButton from "./ExportButton";
+import ShareButtons from "./ShareButtons";
 import CopyButton from "./CopyButton";
 
 function truncate(addr: string) {
@@ -243,6 +244,7 @@ function UnifiedTableInner({
             )}
           </div>
           <ExportButton wallets={filtered} filename={`kolquest-${chain || "sol"}-wallets`} />
+          <ShareButtons title={`KolQuest ${title}`} />
         </div>
       </div>
 

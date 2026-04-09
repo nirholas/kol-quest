@@ -4,6 +4,7 @@ import Link from "next/link";
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 import MobileNav from "./components/MobileNav";
+import SearchBar from "./components/SearchBar";
 import DesktopNavLinks from "./components/DesktopNavLinks";
 
 export const metadata: Metadata = {
@@ -73,6 +74,7 @@ async function Nav() {
           <DesktopNavLinks />
         </div>
         <div className="flex items-center gap-2">
+          <SearchBar />
           <MobileNav userLabel={session?.user ? `Account (${(session.user as Record<string, unknown>).username || session.user.name || "user"})` : undefined} />
           <Link
             href="/submit"

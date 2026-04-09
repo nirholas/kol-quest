@@ -4,6 +4,8 @@ import { Suspense, useState, useEffect, useRef } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import Link from "next/link";
 import { timeAgo, shortAddr, formatUsd } from "@/lib/format";
+import ExportButton from "../components/ExportButton";
+import ShareButtons from "../components/ShareButtons";
 
 interface Trade {
   id: string;
@@ -193,6 +195,12 @@ function FeedInner() {
             />
             Live
           </button>
+          <div className="w-px h-5 bg-border mx-1" />
+          <ExportButton
+            wallets={[...new Map(trades.map((t) => [t.walletAddress, { wallet_address: t.walletAddress, name: t.walletLabel || t.walletAddress, chain: (t.chain === "bsc" ? "bsc" : "sol") as "sol" | "bsc" }])).values()]}
+            filename="kolquest-feed-wallets"
+          />
+          <ShareButtons title="KolQuest Live Trade Feed" />
         </div>
       </div>
 

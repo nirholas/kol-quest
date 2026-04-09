@@ -1,5 +1,6 @@
 import { getSolGmgnData, getBscGmgnData, getXProfiles, getXProfile, getData } from "@/lib/data";
 import GmgnDashboard from "@/app/components/GmgnDashboard";
+import ProfileActions from "@/app/components/ProfileActions";
 import Link from "next/link";
 
 export async function generateStaticParams() {
@@ -56,9 +57,22 @@ export default async function GmgnWalletPage({ params }: { params: { address: st
   return (
     <main className="max-w-6xl mx-auto px-4 py-6 animate-fade-in">
       {/* Back link */}
-      <Link href="/all-solana" className="inline-flex items-center gap-1 text-zinc-500 hover:text-white text-xs mb-4 transition-colors">
-        ← Leaderboard
-      </Link>
+      <div className="flex items-center justify-between mb-4">
+        <Link href="/all-solana" className="inline-flex items-center gap-1 text-zinc-500 hover:text-white text-xs transition-colors">
+          ← Leaderboard
+        </Link>
+        <ProfileActions
+          profile={{
+            wallet_address: params.address,
+            name: wallet.name,
+            chain: chain as "sol" | "bsc",
+            twitter: wallet.twitter_username || undefined,
+            profit: wallet.realized_profit_30d,
+            winrate: wallet.winrate_30d,
+          }}
+          shareTitle={`${wallet.name} wallet on KolQuest`}
+        />
+      </div>
 
       <GmgnDashboard
         wallet={wallet}
@@ -77,7 +91,7 @@ export default async function GmgnWalletPage({ params }: { params: { address: st
           <div className="flex items-start gap-4">
             {xProfile.header && (
               <div className="flex-shrink-0 w-24 h-14 rounded-lg overflow-hidden">
-                <img src={xProfile.header} alt="" className="w-full h-full object-cover" />
+                <img src={xProfile.header} alt="" className="w-full h-full object-cover" onError={(e) => { (e.currentTarget.parentElement as HTMLElement).style.display = 'none'; }} />
               </div>
             )}
             <div className="flex-1 min-w-0">

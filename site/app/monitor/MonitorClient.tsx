@@ -4,6 +4,8 @@ import { useState, useEffect, useCallback, useMemo, Suspense } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import Link from "next/link";
 import { timeAgo, shortAddr, formatUsd } from "@/lib/format";
+import ExportButton from "../components/ExportButton";
+import ShareButtons from "../components/ShareButtons";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -610,6 +612,11 @@ function MonitorInner({ walletMap }: Props) {
                 <span className="text-zinc-400 font-medium">{trades.length}</span> trades
               </span>
             </div>
+            <ExportButton
+              wallets={[...new Map(trades.map((t) => [t.walletAddress, { wallet_address: t.walletAddress, name: t.walletLabel || t.walletAddress, chain: (t.chain === "bsc" ? "bsc" : "sol") as "sol" | "bsc" }])).values()]}
+              filename="kolquest-monitor-wallets"
+            />
+            <ShareButtons title="KolQuest Wallet Monitor" />
           </div>
         </div>
 

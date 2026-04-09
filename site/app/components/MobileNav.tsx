@@ -18,6 +18,7 @@ const NAV_SECTIONS = [
     items: [
       { href: "/gmgn-sol", label: "Solana Wallets", desc: "Smart money on Solana", live: false },
       { href: "/bsc", label: "BSC Wallets", desc: "Smart money on BNB Chain", live: false },
+      { href: "/x-tracker", label: "X Tracker", desc: "10K+ crypto X accounts", live: false },
     ],
   },
   {

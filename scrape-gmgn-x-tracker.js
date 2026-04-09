@@ -5,6 +5,9 @@
  * using Playwright to intercept API calls. GMGN tracks ~10,000+ crypto-relevant
  * X accounts with subscriber counts and category tags.
  *
+ * It also enriches the data with twitter usernames already present in our
+ * wallet data files (solwallets.json, bscwallets.json).
+ *
  * Usage: node scrape-gmgn-x-tracker.js
  * Output: site/data/gmgn-x-tracker.json
  */
@@ -23,6 +26,11 @@ const GMGN_URL = "https://gmgn.ai/x";
 async function scrape() {
   console.log("Starting GMGN X Tracker scraper...\n");
 
+  // Pre-seed from existing wallet data
+  const accountMap = new Map();
+  seedFromWalletData(accountMap);
+  console.log(`Pre-seeded ${accountMap.size} accounts from wallet data.\n`);
+
   const browser = await chromium.launch({
     headless: true,
     args: ["--no-sandbox", "--disable-setuid-sandbox"],
@@ -36,8 +44,7 @@ async function scrape() {
 
   const page = await context.newPage();
 
-  // Collect all intercepted X tracker accounts
-  const accountMap = new Map(); // handle -> data (dedup by handle)
+  // accountMap was pre-seeded above
   const apiResponses = [];
 
   // Intercept API responses for X tracker data
@@ -379,6 +386,84 @@ async function extractFromDOM(page) {
 
     return accounts;
   });
+}
+
+/**
+ * Pre-seed accounts from existing wallet JSON files.
+ * This ensures we capture all twitter usernames from our GMGN wallet data
+ * even if the X Tracker page doesn't show them all.
+ */
+function seedFromWalletData(map) {
+  const walletFiles = [
+    path.join(__dirname, "site", "data", "solwallets.json"),
+    path.join(__dirname, "solwallets.json"),
+    path.join(__dirname, "site", "data", "bscwallets.json"),
+    path.join(__dirname, "bscwallets.json"),
+  ];
+
+  for (const filepath of walletFiles) {
+    if (!fs.existsSync(filepath)) continue;
+    try {
+      const raw = JSON.parse(fs.readFileSync(filepath, "utf-8"));
+      const processWallets = (wallets, category) => {
+        if (!Array.isArray(wallets)) return;
+        for (const w of wallets) {
+          if (!w.twitter_username) continue;
+          const key = w.twitter_username.toLowerCase();
+          if (map.has(key)) continue;
+          map.set(key, {
+            handle: w.twitter_username,
+            name: w.twitter_name || w.name || w.nickname || null,
+            avatar: w.avatar || null,
+            subscribers: w.follow_count || 0,
+            followers: 0,
+            tag: category === "kol" ? "KOL" : category === "smart_degen" ? "Smart Degen" : null,
+            verified: false,
+            bio: null,
+          });
+        }
+      };
+
+      if (raw.smartMoney?.wallets) {
+        for (const [cat, list] of Object.entries(raw.smartMoney.wallets)) {
+          processWallets(list, cat);
+        }
+      }
+      if (raw.kol?.wallets) processWallets(raw.kol.wallets, "kol");
+
+      // Also scan interceptorRaw for more wallets
+      if (raw.interceptorRaw?.walletsAll) {
+        processWallets(raw.interceptorRaw.walletsAll, "trader");
+      }
+    } catch (e) {
+      console.log(`  Warning: Failed to parse ${filepath}: ${e.message}`);
+    }
+  }
+
+  // Also load existing x-profiles.json for enrichment
+  const xProfilesPath = path.join(__dirname, "site", "data", "x-profiles.json");
+  if (fs.existsSync(xProfilesPath)) {
+    try {
+      const profiles = JSON.parse(fs.readFileSync(xProfilesPath, "utf-8"));
+      for (const [key, p] of Object.entries(profiles)) {
+        if (p.error) continue;
+        const handle = p.username || key;
+        const existing = map.get(key) || {};
+        map.set(key, {
+          handle: handle,
+          name: p.name || existing.name || null,
+          avatar: p.avatar || existing.avatar || null,
+          subscribers: existing.subscribers || 0,
+          followers: p.followers || existing.followers || 0,
+          tag: existing.tag || null,
+          verified: p.verified || existing.verified || false,
+          bio: p.bio || existing.bio || null,
+        });
+      }
+    } catch {
+      // ignore
+    }
+  }
 }
 
 scrape().catch(console.error);

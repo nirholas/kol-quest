@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import ExportButton from "../components/ExportButton";
+import ShareButtons from "../components/ShareButtons";
 import type { CommunityWallet } from "./page";
 
 const CHAIN_OPTIONS = ["all", "sol", "bsc"] as const;
@@ -48,6 +49,7 @@ export default function CommunityClient({ wallets }: { wallets: CommunityWallet[
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           <ExportButton wallets={exportData} filename="kolquest-community-wallets" />
+          <ShareButtons title="KolQuest Community Wallets" />
           <a href="/submit" className="px-3 py-2 rounded-lg bg-white text-black text-sm font-medium">
             Submit wallet
           </a>

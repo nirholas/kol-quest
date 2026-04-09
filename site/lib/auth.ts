@@ -26,10 +26,22 @@ function createAuth() {
           },
         },
       },
-      trustedOrigins: (process.env.BETTER_AUTH_TRUSTED_ORIGINS || process.env.NEXT_PUBLIC_URL || "http://localhost:3000")
-        .split(",")
-        .map((o) => o.trim())
-        .filter(Boolean),
+      trustedOrigins: (request: Request) => {
+        const configured = (process.env.BETTER_AUTH_TRUSTED_ORIGINS || process.env.NEXT_PUBLIC_URL || "http://localhost:3000")
+          .split(",")
+          .map((o) => o.trim().replace(/\/$/, ""))
+          .filter(Boolean);
+        // Auto-trust the origin derived from the forwarded host (Codespaces / dev containers)
+        const fwdHost = request.headers.get("x-forwarded-host") || request.headers.get("host");
+        if (fwdHost) {
+          const proto = request.headers.get("x-forwarded-proto") || "https";
+          const derived = `${proto}://${fwdHost}`.replace(/\/$/, "");
+          if (!configured.includes(derived)) {
+            configured.push(derived);
+          }
+        }
+        return configured;
+      },
       plugins: [
         admin(),
         username({

@@ -5,6 +5,7 @@ import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import Link from "next/link";
 import type { KolEntry, SortField, SortDir, Timeframe } from "@/lib/types";
 import ExportButton from "../components/ExportButton";
+import ShareButtons from "../components/ShareButtons";
 
 function formatProfit(v: number): string {
   const abs = Math.abs(v);
@@ -153,6 +154,7 @@ function LeaderboardInner({
             }))}
             filename="kolquest-kolscan-wallets"
           />
+          <ShareButtons title={`KolQuest ${title}`} />
         </div>
       </div>
 

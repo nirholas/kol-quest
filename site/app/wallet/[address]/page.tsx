@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getData, getXProfiles, getXProfile, getSolGmgnData } from "@/lib/data";
 import PnlCalendar from "@/app/components/PnlCalendar";
 import CopyButton from "@/app/components/CopyButton";
+import ProfileActions from "@/app/components/ProfileActions";
 
 function truncate(addr: string) {
   return addr.slice(0, 6) + "..." + addr.slice(-4);
@@ -149,7 +150,21 @@ export default async function WalletPage({ params }: { params: { address: string
           </div>
         </div>
 
-        <div className="flex gap-1.5 flex-shrink-0 flex-wrap justify-end">
+        <div className="flex gap-1.5 flex-shrink-0 flex-wrap justify-end items-center">
+          <ProfileActions
+            profile={{
+              wallet_address: params.address,
+              name,
+              chain: "sol",
+              twitter: twitter || undefined,
+              telegram: telegram || undefined,
+              profit: totalProfit,
+              wins: totalWins,
+              losses: totalLosses,
+              winrate: winRatePct,
+            }}
+            shareTitle={`${name} wallet on KolQuest`}
+          />
           {quickLinks.map((link) => (
             <a key={link.label} href={link.href} target="_blank" rel="noopener noreferrer"
               className="bg-bg-card border border-border rounded px-2 py-1 text-[11px] font-mono text-zinc-600 hover:text-white hover:border-zinc-600 transition-all">
@@ -259,7 +274,7 @@ export default async function WalletPage({ params }: { params: { address: string
               <div className="text-zinc-500 text-[11px] uppercase tracking-wider mb-3">X / Twitter</div>
               {xProfile.header && (
                 <div className="overflow-hidden mb-3 -mx-4 -mt-4">
-                  <img src={xProfile.header} alt="" className="w-full h-20 object-cover" />
+                  <img src={xProfile.header} alt="" className="w-full h-20 object-cover" onError={(e) => { (e.currentTarget.parentElement as HTMLElement).style.display = 'none'; }} />
                 </div>
               )}
               <div className="grid grid-cols-2 gap-y-2.5 gap-x-4 text-xs mb-3">

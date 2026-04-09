@@ -110,6 +110,7 @@ export default function DesktopNavLinks() {
         items={[
           { href: "/gmgn-sol", label: "Solana Wallets", desc: "Smart money on Solana" },
           { href: "/bsc", label: "BSC Wallets", desc: "Smart money on BNB Chain" },
+          { href: "/x-tracker", label: "X Tracker", desc: "10K+ crypto X accounts" },
         ]}
       />
       <NavDropdown
