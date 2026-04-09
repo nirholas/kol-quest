@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import Link from "next/link";
 import type { UnifiedWallet, GmgnSortField, SortDir, Timeframe } from "@/lib/types";
+import ExportButton from "./ExportButton";
 
 function truncate(addr: string) {
   if (addr.startsWith("0x")) return addr.slice(0, 6) + "..." + addr.slice(-4);
@@ -183,6 +184,9 @@ export default function UnifiedTable({
               className="bg-bg-card border border-border rounded-xl pl-9 pr-3 py-2 text-sm text-white placeholder:text-zinc-600 outline-none focus:border-buy/40 focus:ring-1 focus:ring-buy/20 w-44 transition-all"
             />
           </div>
+
+          {/* Export */}
+          <ExportButton wallets={filtered} filename={`kolquest-${chain || "sol"}-wallets`} />
         </div>
       </div>
 

@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import Link from "next/link";
 import type { KolEntry, SortField, SortDir, Timeframe } from "@/lib/types";
+import ExportButton from "../components/ExportButton";
 
 function WinRate({ wins, losses }: { wins: number; losses: number }) {
   const total = wins + losses;
@@ -130,6 +131,12 @@ export default function LeaderboardClient({
               className="bg-bg-card border border-border rounded-xl pl-9 pr-3 py-2 text-sm text-white placeholder:text-zinc-600 outline-none focus:border-buy/40 focus:ring-1 focus:ring-buy/20 w-44 transition-all"
             />
           </div>
+
+          {/* Export */}
+          <ExportButton
+            wallets={filtered.map((e) => ({ wallet_address: e.wallet_address, name: e.name, chain: "sol" as const }))}
+            filename="kolquest-kolscan-wallets"
+          />
         </div>
       </div>
 
