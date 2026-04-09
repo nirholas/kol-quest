@@ -3,6 +3,7 @@ import { getData, getXProfiles, getXProfile, getSolGmgnData } from "@/lib/data";
 import PnlCalendar from "@/app/components/PnlCalendar";
 import CopyButton from "@/app/components/CopyButton";
 import ProfileActions from "@/app/components/ProfileActions";
+import { AvatarImg, HeaderImg } from "@/app/components/FallbackImg";
 
 function truncate(addr: string) {
   return addr.slice(0, 6) + "..." + addr.slice(-4);
@@ -93,7 +94,7 @@ export default async function WalletPage({ params }: { params: { address: string
       {/* ── Compact Header ── */}
       <div className="flex items-center gap-3 mb-5">
         {xProfile?.avatar ? (
-          <img src={xProfile.avatar} alt="" className="w-10 h-10 rounded-full flex-shrink-0" onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.nextElementSibling?.classList.remove('hidden'); }} />
+          <AvatarImg src={xProfile.avatar} fallbackChar={name.charAt(0)} className="w-10 h-10 rounded-full flex-shrink-0" />
         ) : null}
         <div className={`w-10 h-10 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center text-base font-mono font-bold text-zinc-400 flex-shrink-0 ${xProfile?.avatar ? 'hidden' : ''}`}>
           {name.charAt(0).toUpperCase()}
@@ -262,7 +263,7 @@ export default async function WalletPage({ params }: { params: { address: string
               <div className="text-zinc-500 text-[11px] uppercase tracking-wider mb-3">X / Twitter</div>
               {xProfile.header && (
                 <div className="overflow-hidden mb-3 -mx-4 -mt-4">
-                  <img src={xProfile.header} alt="" className="w-full h-20 object-cover" onError={(e) => { (e.currentTarget.parentElement as HTMLElement).style.display = 'none'; }} />
+                  <HeaderImg src={xProfile.header} className="w-full h-20 object-cover" />
                 </div>
               )}
               <div className="grid grid-cols-2 gap-y-2.5 gap-x-4 text-xs mb-3">

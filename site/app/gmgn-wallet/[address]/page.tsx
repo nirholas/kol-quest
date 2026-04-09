@@ -1,6 +1,7 @@
 import { getSolGmgnData, getBscGmgnData, getXProfiles, getXProfile, getData } from "@/lib/data";
 import GmgnDashboard from "@/app/components/GmgnDashboard";
 import ProfileActions from "@/app/components/ProfileActions";
+import { HeaderImg } from "@/app/components/FallbackImg";
 import Link from "next/link";
 
 export async function generateStaticParams() {
@@ -91,7 +92,7 @@ export default async function GmgnWalletPage({ params }: { params: { address: st
           <div className="flex items-start gap-4">
             {xProfile.header && (
               <div className="flex-shrink-0 w-24 h-14 rounded-lg overflow-hidden">
-                <img src={xProfile.header} alt="" className="w-full h-full object-cover" onError={(e) => { (e.currentTarget.parentElement as HTMLElement).style.display = 'none'; }} />
+                <HeaderImg src={xProfile.header} className="w-full h-full object-cover" />
               </div>
             )}
             <div className="flex-1 min-w-0">
