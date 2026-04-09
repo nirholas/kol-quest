@@ -255,17 +255,16 @@ export default function TokenPageClient({
             )}
             <div className="text-[10px] text-zinc-600 mt-0.5">via {token.source}</div>
           </div>
-        </div>
+
           {/* Share */}
-          <div className="flex-shrink-0">
-            <button
-              onClick={handleShare}
-              className="px-3 py-1.5 rounded-lg text-xs font-medium bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white transition-colors border border-border"
-            >
-              Share ↗
-            </button>
-          </div>
+          <button
+            onClick={handleShare}
+            className="px-3 py-1.5 rounded-lg text-xs font-medium bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white transition-colors border border-border flex-shrink-0"
+          >
+            Share ↗
+          </button>
         </div>
+
         {/* Stats row */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-5 pt-4 border-t border-border">
           {[
@@ -403,11 +402,13 @@ export default function TokenPageClient({
       {/* ── KOL Activity / Trades ── */}
       <div className="bg-bg-card border border-border rounded-xl overflow-hidden">
         {/* Tab bar */}
-        <div className="flex items-center border-b border-border px-4">
+        <div className="flex items-center border-b border-border px-4 overflow-x-auto">
           {([
-            { id: "kols", label: `KOL Activity (${kols.length})` },
-            { id: "trades", label: `Trades (${trades.length})` },
-          ] as { id: "kols" | "trades"; label: string }[]).map((tab) => (
+            { id: "kols", label: `KOL Holdings (${kols.length})` },
+            { id: "trades", label: `KOL Trades (${trades.length})` },
+            { id: "livefeed", label: "Live Feed" },
+            { id: "holders", label: "Holders" },
+          ] as { id: "kols" | "trades" | "livefeed" | "holders"; label: string }[]).map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
@@ -430,6 +431,16 @@ export default function TokenPageClient({
             </div>
           )}
         </div>
+
+        {/* Live Feed tab */}
+        {activeTab === "livefeed" && (
+          <TradesFeed chain={chain} address={address} />
+        )}
+
+        {/* Holders tab */}
+        {activeTab === "holders" && (
+          <HolderList chain={chain} address={address} knownWallets={knownWallets} />
+        )}
 
         {/* KOL tab */}
         {activeTab === "kols" && (

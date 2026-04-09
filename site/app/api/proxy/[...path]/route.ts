@@ -1,32 +1,22 @@
 
 import { NextRequest, NextResponse } from "next/server";
-import { proxyRequest } from "@/lib/proxy/handler";
-import { heliusConfig } from "@/lib/proxy/sources/helius";
 
+// Catch-all fallback for unmatched proxy routes
 export async function GET(
-  req: NextRequest,
-  { params }: { params: { path: string[] } }
+  _req: NextRequest,
+  { params }: { params: Promise<{ path: string[] }> }
 ) {
-  const path = params.path.join("/");
-
-  // This is a simple example. In a real-world scenario, you'd
-  // have a more robust way of mapping paths to configs.
-  if (path.startsWith("solana/helius")) {
-    return proxyRequest(req, heliusConfig, path.replace('solana/helius/', ''));
-  }
-
-  return NextResponse.json({ error: "Not Found" }, { status: 404 });
+  const { path } = await params;
+  return NextResponse.json(
+    {
+      error: "Not Found",
+      message: `No proxy route found for: /api/proxy/${path.join("/")}`,
+      docs: "/api/proxy/docs",
+    },
+    { status: 404 }
+  );
 }
 
-export async function POST(
-  req: NextRequest,
-  { params }: { params: { path: string[] } }
-) {
-  const path = params.path.join("/");
-
-  if (path.startsWith("solana/helius")) {
-    return proxyRequest(req, heliusConfig, path.replace('solana/helius/', ''));
-  }
-
-  return NextResponse.json({ error: "Not Found" }, { status: 404 });
-}
+export const POST = GET;
+export const PUT = GET;
+export const DELETE = GET;
