@@ -1,29 +1,58 @@
 /**
- * GMGN X Tracker Browser Console Scraper (v3 - Crash-Resistant)
+ * GMGN X Tracker Browser Console Scraper (v4 - Paginated + Crash-Safe)
  * 
  * INSTRUCTIONS:
- * 1. Go to https://gmgn.ai/follow?chain=sol in your browser
+ * 1. Go to https://gmgn.ai/follow?chain=sol in your browser (must be logged in)
  * 2. Open DevTools (F12) → Console tab
  * 3. Paste this entire script and press Enter
- * 4. Scroll the page, or run autoScroll() to gather data.
- * 5. If the page feels slow, run pauseScraper(). Run resumeScraper() to continue.
- * 6. When done, run: downloadData()
+ * 4. Run fetchAll() to paginate through the API directly — no scrolling needed!
+ *    OR scroll manually to capture data as the page loads.
+ * 5. Run downloadData() when done.
  * 
- * Commands available after pasting:
- *   autoScroll()    - Gently auto-scrolls to load all data.
- *   pauseScraper()  - Pause capturing data to reduce page load.
- *   resumeScraper() - Resume capturing data.
- *   clearData()     - Clears all captured data to start fresh.
+ * Data is saved to localStorage automatically — safe across page crashes.
+ * 
+ * Commands:
+ *   fetchAll()      - Fetch all pages via API directly (recommended).
  *   downloadData()  - Download captured accounts as JSON.
  *   getStats()      - Show current capture stats.
+ *   clearData()     - Clears all captured data (including localStorage).
+ *   pauseScraper()  - Pause data capture.
+ *   resumeScraper() - Resume data capture.
  */
 
 (function() {
-  // Initialize global state to avoid conflicts and allow pausing
+  const STORAGE_KEY = '__xTrackerData';
+
+  // Load persisted accounts from localStorage (survives page refreshes/crashes)
+  function loadFromStorage() {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const arr = JSON.parse(saved);
+        return new Map(arr.map(a => [a.handle.toLowerCase(), a]));
+      }
+    } catch(e) {}
+    return new Map();
+  }
+
+  function saveToStorage(accounts) {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(Array.from(accounts.values())));
+    } catch(e) {
+      console.warn('localStorage save failed (quota?):', e.message);
+    }
+  }
+
+  // Initialize global state
   window.__xTrackerScraper = window.__xTrackerScraper || {
-    accounts: new Map(),
+    accounts: loadFromStorage(),
     isPaused: false,
   };
+
+  const loaded = window.__xTrackerScraper.accounts.size;
+  if (loaded > 0) {
+    console.log(`📂 Restored ${loaded} accounts from localStorage.`);
+  }
   
   const TAG_MAP = {
     kol: "KOL",

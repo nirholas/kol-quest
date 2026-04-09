@@ -23,3 +23,6 @@ output/gmgn-rewards.json
 
 # GMGN auth state (contains session cookies)
 .gmgn-auth-state.json
+
+# Scraped X tracker data (managed locally, not in git)
+site/data/gmgn-x-tracker.json
