@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { headers } from "next/headers";
+import { randomUUID } from "crypto";
 import { and, desc, eq } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { db } from "@/drizzle/db";
@@ -79,7 +80,7 @@ export async function POST(request: Request) {
   const [created] = await db
     .insert(walletSubmission)
     .values({
-    id: crypto.randomUUID(),
+    id: randomUUID(),
     walletAddress: parsed.data.walletAddress.trim(),
     chain: parsed.data.chain,
     label: parsed.data.label.trim(),

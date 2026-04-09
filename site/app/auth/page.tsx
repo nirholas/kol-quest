@@ -2,7 +2,7 @@
 
 import { Suspense, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { signIn, signUp, signOut, useSession, authClient } from "@/lib/auth-client";
+import { signOut, useSession, authClient } from "@/lib/auth-client";
 
 export default function AuthPage() {
   return (
@@ -53,14 +53,14 @@ function AuthContent() {
 
     try {
       if (tab === "signin") {
-        const result = await signIn.username({ username, password });
+        const result = await authClient.signIn.username({ username, password });
         if (result?.error) throw new Error(result.error.message || "Sign in failed");
         await tryBootstrapAdmin();
         setMessage("Signed in — redirecting...");
         window.location.href = redirectTo;
         return;
       } else {
-        const result = await signUp.username({
+        const result = await authClient.signUp.username({
           username,
           password,
           name: username,
