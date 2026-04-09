@@ -1,8 +1,8 @@
 import { desc, sql } from "drizzle-orm";
 import { db } from "@/drizzle/db";
 import { trade, walletSubmission, walletVouch } from "@/drizzle/db/schema";
-import { getAllSolanaWallets, getBscWallets, getXProfile, getXProfiles } from "@/lib/data";
-import type { UnifiedWallet } from "@/lib/types";
+import { getAllSolanaWallets, getBscWallets, getXProfile, getXProfiles, getSolGmgnData, getBscGmgnData } from "@/lib/data";
+import type { UnifiedWallet, GmgnWallet } from "@/lib/types";
 
 export type WalletChain = "sol" | "bsc" | "evm" | "unknown";
 
@@ -12,6 +12,7 @@ export interface WalletDetailResult {
   isValidAddress: boolean;
   hasTrackedData: boolean;
   wallet: UnifiedWallet | null;
+  gmgnWallet: GmgnWallet | null;
   xProfile: {
     username: string;
     name: string | null;

@@ -1,6 +1,7 @@
 import { getSolGmgnData, getBscGmgnData, getXProfiles, getXProfile, getData } from "@/lib/data";
 import GmgnDashboard from "@/app/components/GmgnDashboard";
 import ProfileActions from "@/app/components/ProfileActions";
+import ReportButton from "@/app/components/ReportButton";
 import { HeaderImg } from "@/app/components/FallbackImg";
 import Link from "next/link";
 
@@ -62,17 +63,20 @@ export default async function GmgnWalletPage({ params }: { params: { address: st
         <Link href="/all-solana" className="inline-flex items-center gap-1 text-zinc-500 hover:text-white text-xs transition-colors">
           ← Leaderboard
         </Link>
-        <ProfileActions
-          profile={{
-            wallet_address: params.address,
-            name: wallet.name,
-            chain: chain as "sol" | "bsc",
-            twitter: wallet.twitter_username || undefined,
-            profit: wallet.realized_profit_30d,
-            winrate: wallet.winrate_30d,
-          }}
-          shareTitle={`${wallet.name} wallet on KolQuest`}
-        />
+        <div className="flex items-center gap-2">
+          <ReportButton walletAddress={params.address} />
+          <ProfileActions
+            profile={{
+              wallet_address: params.address,
+              name: wallet.name,
+              chain: chain as "sol" | "bsc",
+              twitter: wallet.twitter_username || undefined,
+              profit: wallet.realized_profit_30d,
+              winrate: wallet.winrate_30d,
+            }}
+            shareTitle={`${wallet.name} wallet on KolQuest`}
+          />
+        </div>
       </div>
 
       <GmgnDashboard

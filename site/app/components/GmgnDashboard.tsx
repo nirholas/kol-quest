@@ -3,6 +3,7 @@
 import { useState } from "react";
 import CopyButton from "./CopyButton";
 import { AvatarFallback } from "./FallbackImg";
+import { truncateAddr } from "@/lib/format";
 import type { GmgnWallet } from "@/lib/types";
 
 type TF = "1d" | "7d" | "30d";
@@ -59,11 +60,6 @@ function relativeTime(ts: number): string {
   if (h >= 1) return `${Math.floor(h)}h ago`;
   if (m >= 1) return `${Math.floor(m)}m ago`;
   return "just now";
-}
-
-function truncate(addr: string) {
-  if (addr.startsWith("0x")) return addr.slice(0, 6) + "..." + addr.slice(-4);
-  return addr.slice(0, 4) + "..." + addr.slice(-4);
 }
 
 interface Props {
@@ -189,7 +185,7 @@ export default function GmgnDashboard({
           <div className="flex items-center gap-1.5 mt-0.5">
             <a href={explorerUrl} target="_blank" rel="noopener noreferrer"
               className="font-mono text-[11px] text-zinc-600 hover:text-buy transition-colors">
-              {truncate(wallet.wallet_address)}
+              {truncateAddr(wallet.wallet_address)}
             </a>
             <CopyButton text={wallet.wallet_address}
               className="text-zinc-600 hover:text-white transition-colors text-xs leading-none" />

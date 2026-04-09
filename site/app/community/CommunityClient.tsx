@@ -1,8 +1,10 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import Link from "next/link";
 import ExportButton from "../components/ExportButton";
 import ShareButtons from "../components/ShareButtons";
+import CopyButton from "../components/CopyButton";
 import type { CommunityWallet } from "./page";
 
 const CHAIN_OPTIONS = ["all", "sol", "bsc"] as const;
@@ -109,8 +111,17 @@ export default function CommunityClient({ wallets }: { wallets: CommunityWallet[
                 <tr key={w.wallet_address} className="border-b border-border/50 hover:bg-bg-hover/40">
                   <td className="py-3 px-4 text-zinc-600 text-xs">{i + 1}</td>
                   <td className="py-3 px-4 text-zinc-200">{w.label}</td>
-                  <td className="py-3 px-4 text-zinc-400 font-mono text-xs">
-                    {w.wallet_address.slice(0, 6)}...{w.wallet_address.slice(-4)}
+                  <td className="py-3 px-4">
+                    <div className="flex items-center gap-2 group">
+                      <Link
+                        href={`/wallet/${w.wallet_address}`}
+                        className="font-mono text-xs text-zinc-400 hover:text-accent transition-colors"
+                        title={w.wallet_address}
+                      >
+                        {w.wallet_address.slice(0, 6)}...{w.wallet_address.slice(-4)}
+                      </Link>
+                      <CopyButton text={w.wallet_address} className="opacity-0 group-hover:opacity-100 transition-opacity text-zinc-600 hover:text-white text-xs leading-none" />
+                    </div>
                   </td>
                   <td className="py-3 px-4 text-zinc-400 uppercase text-xs">{w.chain}</td>
                   <td className="py-3 px-4">

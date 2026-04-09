@@ -130,6 +130,9 @@ export default function DesktopNavLinks() {
       <Link href="/community" className={linkCls("/community")}>
         Community
       </Link>
+      <Link href="/feedback" className={linkCls("/feedback")} title="Submit feedback or request wallet removal">
+        Feedback
+      </Link>
     </div>
   );
 }

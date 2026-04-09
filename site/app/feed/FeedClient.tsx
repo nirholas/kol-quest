@@ -92,6 +92,10 @@ function FeedInner() {
         setCursor(data.nextCursor);
         setHasMore(!!data.nextCursor);
         setLoading(false);
+      })
+      .catch((err) => {
+        console.error("Feed fetch error:", err);
+        setLoading(false);
       });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chain, type]);
@@ -136,7 +140,8 @@ function FeedInner() {
         setTrades((prev) => [...prev, ...data.trades]);
         setCursor(data.nextCursor);
         setHasMore(!!data.nextCursor);
-      });
+      })
+      .catch(console.error);
   }
 
   const explorerUrl = (c: string, txHash: string) =>

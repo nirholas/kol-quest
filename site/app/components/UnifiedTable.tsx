@@ -8,18 +8,7 @@ import ExportButton from "./ExportButton";
 import ShareButtons from "./ShareButtons";
 import CopyButton from "./CopyButton";
 import { AvatarFallback } from "./FallbackImg";
-
-function truncate(addr: string) {
-  if (addr.startsWith("0x")) return addr.slice(0, 6) + "..." + addr.slice(-4);
-  return addr.slice(0, 4) + "..." + addr.slice(-4);
-}
-
-function formatProfit(v: number) {
-  if (Math.abs(v) >= 1_000_000) return `${v >= 0 ? "+" : ""}${(v / 1_000_000).toFixed(1)}M`;
-  const abs = Math.abs(v);
-  const str = abs >= 1000 ? `${(abs / 1000).toFixed(1)}k` : abs.toFixed(2);
-  return `${v >= 0 ? "+" : "-"}${str}`;
-}
+import { truncateAddr, formatProfit } from "@/lib/format";
 
 function SortIcon({ field, current, dir }: { field: string; current: string; dir: SortDir }) {
   if (field !== current) return <span className="text-zinc-700 ml-1 text-[10px]">↕</span>;
@@ -350,7 +339,7 @@ function UnifiedTableInner({
                           className="font-mono text-xs text-zinc-500 hover:text-buy transition-colors"
                           title={w.wallet_address}
                         >
-                          {truncate(w.wallet_address)}
+                          {truncateAddr(w.wallet_address)}
                         </a>
                         <CopyButton
                           text={w.wallet_address}

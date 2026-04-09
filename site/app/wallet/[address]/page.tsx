@@ -215,8 +215,11 @@ export default async function WalletPage({ params }: { params: { address: string
               {detail.topTokens.map((t) => (
                 <div key={`${t.chain}:${t.tokenAddress}`} className="flex items-center justify-between text-sm border-b border-border/50 pb-2 last:border-0 last:pb-0">
                   <div className="min-w-0">
-                    <div className="text-white truncate">{t.tokenSymbol || t.tokenName || truncate(t.tokenAddress)}</div>
-                    <div className="text-zinc-600 text-xs uppercase">{t.chain}</div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-white truncate">{t.tokenSymbol || t.tokenName || truncate(t.tokenAddress)}</span>
+                      <span className="text-[9px] uppercase text-zinc-600 bg-zinc-800 px-1 py-0.5 rounded">{t.chain}</span>
+                    </div>
+                    <div className="text-zinc-600 text-xs">{t.trades} trade{t.trades !== 1 ? "s" : ""}</div>
                   </div>
                   <div className="text-right ml-2">
                     <div className="text-zinc-300 tabular-nums">{formatUsd(t.totalVolume)}</div>
@@ -241,10 +244,15 @@ export default async function WalletPage({ params }: { params: { address: string
                   <div>
                     <span className={`font-semibold uppercase ${t.type === "buy" ? "text-buy" : "text-sell"}`}>{t.type}</span>
                     <span className="text-zinc-400 ml-2">{t.tokenSymbol || truncate(t.tokenAddress)}</span>
+                    <span className="text-zinc-600 uppercase ml-1.5 text-[10px]">{t.chain}</span>
                   </div>
                   <div className="text-right">
-                    <div className="text-zinc-300 tabular-nums">{t.amountUsd == null ? "-" : formatUsd(t.amountUsd)}</div>
-                    <div className="text-zinc-600 uppercase">{t.chain}</div>
+                    <div className="text-zinc-300 tabular-nums">{t.amountUsd == null ? "—" : formatUsd(t.amountUsd)}</div>
+                    {t.realizedProfit != null && t.realizedProfit !== 0 && (
+                      <div className={`text-[10px] tabular-nums ${t.realizedProfit >= 0 ? "text-buy" : "text-sell"}`}>
+                        {t.realizedProfit >= 0 ? "+" : ""}{formatUsd(t.realizedProfit)}
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
@@ -252,6 +260,77 @@ export default async function WalletPage({ params }: { params: { address: string
           )}
         </div>
       </div>
+
+      {detail.xProfile && (
+        <div className="bg-bg-card border border-border rounded-xl p-4 mt-4">
+          <div className="text-zinc-500 text-[11px] uppercase tracking-wider mb-3">X / Twitter Profile</div>
+          <div className="flex items-start gap-4">
+            {detail.xProfile.header && (
+              <div className="flex-shrink-0 w-24 h-14 rounded-lg overflow-hidden">
+                <HeaderImg src={detail.xProfile.header} className="w-full h-full object-cover" />
+              </div>
+            )}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-1">
+                {detail.xProfile.avatar && (
+                  <img src={detail.xProfile.avatar} alt="" className="w-8 h-8 rounded-full flex-shrink-0" />
+                )}
+                <div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-white font-semibold text-sm">{detail.xProfile.name || detail.xProfile.username}</span>
+                    {detail.xProfile.verified && (
+                      <span className="text-blue-400 text-xs" title="Verified">✓</span>
+                    )}
+                  </div>
+                  <a
+                    href={`https://x.com/${detail.xProfile.username}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-zinc-500 text-xs hover:text-white transition-colors"
+                  >
+                    @{detail.xProfile.username}
+                  </a>
+                </div>
+              </div>
+              {detail.xProfile.bio && (
+                <p className="text-zinc-400 text-xs mb-3 max-w-2xl">{detail.xProfile.bio}</p>
+              )}
+              <div className="flex flex-wrap gap-x-5 gap-y-1.5 text-xs">
+                {[
+                  { label: "Followers", value: detail.xProfile.followers.toLocaleString() },
+                  { label: "Following", value: detail.xProfile.following.toLocaleString() },
+                  { label: "Tweets", value: detail.xProfile.tweets.toLocaleString() },
+                  { label: "Likes", value: detail.xProfile.likes.toLocaleString() },
+                  { label: "Media", value: detail.xProfile.media.toLocaleString() },
+                ].map((s) => (
+                  <div key={s.label}>
+                    <span className="text-white font-bold tabular-nums">{s.value}</span>
+                    <span className="text-zinc-600 ml-1">{s.label}</span>
+                  </div>
+                ))}
+                {detail.xProfile.location && (
+                  <span className="text-zinc-500">📍 {detail.xProfile.location}</span>
+                )}
+                {detail.xProfile.website && (
+                  <a
+                    href={detail.xProfile.website}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-zinc-500 hover:text-white transition-colors truncate max-w-xs"
+                  >
+                    🔗 {detail.xProfile.website.replace(/^https?:\/\//, "")}
+                  </a>
+                )}
+                {detail.xProfile.joinDate && (
+                  <span className="text-zinc-500">
+                    Joined {new Date(detail.xProfile.joinDate).toLocaleDateString("en-US", { month: "short", year: "numeric" })}
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }

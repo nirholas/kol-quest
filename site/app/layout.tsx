@@ -109,6 +109,7 @@ function SiteFooter() {
             <Link href="/all-solana" className="hover:text-zinc-400 transition-colors">Solana</Link>
             <Link href="/bsc" className="hover:text-zinc-400 transition-colors">BSC</Link>
             <Link href="/docs" className="hover:text-zinc-400 transition-colors">Docs</Link>
+            <Link href="/feedback" className="hover:text-zinc-400 transition-colors">Feedback</Link>
             <a href="https://github.com/nirholas/scrape-kolscan-wallets" target="_blank" rel="noopener noreferrer" className="hover:text-zinc-400 transition-colors">GitHub</a>
           </div>
         </div>

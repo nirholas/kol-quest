@@ -37,6 +37,7 @@ const NAV_SECTIONS = [
       { href: "/docs", label: "Docs", desc: "API & data documentation", live: false },
       { href: "/community", label: "Community", desc: "", live: false },
       { href: "/submit", label: "Submit Wallet", desc: "Add a wallet to track", live: false },
+      { href: "/feedback", label: "Feedback", desc: "Submit feedback or request removal", live: false },
     ],
   },
 ];

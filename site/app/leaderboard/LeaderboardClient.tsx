@@ -7,6 +7,7 @@ import type { KolEntry, SortField, SortDir, Timeframe } from "@/lib/types";
 import ExportButton from "../components/ExportButton";
 import ShareButtons from "../components/ShareButtons";
 import { AvatarFallback } from "../components/FallbackImg";
+import CopyButton from "../components/CopyButton";
 
 function formatProfit(v: number): string {
   const abs = Math.abs(v);
@@ -215,15 +216,18 @@ function LeaderboardInner({
                     </div>
                   </td>
                   <td className="px-4 py-2">
-                    <a
-                      href={`https://solscan.io/account/${entry.wallet_address}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="font-mono text-xs text-zinc-500 hover:text-buy transition-colors"
-                      title={entry.wallet_address}
-                    >
-                      {truncate(entry.wallet_address)}
-                    </a>
+                    <div className="flex items-center gap-2">
+                      <a
+                        href={`https://solscan.io/account/${entry.wallet_address}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-mono text-xs text-zinc-500 hover:text-buy transition-colors"
+                        title={entry.wallet_address}
+                      >
+                        {truncate(entry.wallet_address)}
+                      </a>
+                      <CopyButton text={entry.wallet_address} className="opacity-0 group-hover:opacity-100 transition-opacity text-zinc-600 hover:text-white text-xs leading-none" />
+                    </div>
                   </td>
                   <td
                     className={`px-4 py-2 text-xs font-semibold tabular-nums font-mono ${

@@ -76,7 +76,11 @@ export default function SearchBar() {
     setQuery("");
     setResults([]);
     if (r.type === "wallet") {
-      router.push(`/wallet/${r.address}`);
+      if (r.chain === "bsc") {
+        router.push(`/gmgn-wallet/${r.address}?chain=bsc`);
+      } else {
+        router.push(`/wallet/${r.address}`);
+      }
     } else {
       router.push(`/token/${r.chain}/${r.address}`);
     }
