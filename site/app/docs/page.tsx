@@ -264,12 +264,213 @@ export default function DocsPage() {
 
       <SectionNav
         items={[
+          { id: "getting-started", label: "Getting Started" },
+          { id: "authentication", label: "Authentication" },
+          { id: "rate-limits", label: "Rate Limits" },
           { id: "playground", label: "Playground" },
-          { id: "api", label: "REST API" },
+          { id: "endpoints", label: "Endpoints" },
+          { id: "errors", label: "Error Codes" },
           { id: "mcp", label: "MCP Server" },
           { id: "writeup", label: "Technical Writeup" },
         ]}
       />
+
+      {/* ═══════════════════════════════════════════════ */}
+      {/*  Getting Started                               */}
+      {/* ═══════════════════════════════════════════════ */}
+      <section id="getting-started" className="mb-20 scroll-mt-24">
+        <h2 className="text-2xl font-bold text-white mb-2">Getting Started</h2>
+        <p className="text-zinc-400 text-sm mb-6">
+          KolQuest provides a unified API for crypto wallet intelligence — KOL tracking, smart money analysis, and token data.
+        </p>
+
+        <div className="grid gap-4 sm:grid-cols-2 mb-8">
+          <InfoCard icon="🌐" title="Base URL">
+            <code className="text-buy">https://kol.quest/api</code>
+            <p className="mt-1 text-xs">All endpoints are relative to this base URL.</p>
+          </InfoCard>
+          <InfoCard icon="📦" title="Response Format">
+            All responses are JSON with consistent structure.
+            <p className="mt-1 text-xs text-zinc-500">Content-Type: application/json</p>
+          </InfoCard>
+        </div>
+
+        <h3 className="text-lg font-semibold text-white mb-3">Quick Example</h3>
+        <CodeTabs
+          examples={[
+            {
+              language: "curl",
+              code: `# Get trending tokens
+curl "https://kol.quest/api/trending?chain=sol&limit=10"
+
+# Search wallets
+curl "https://kol.quest/api/wallets?search=cented&limit=5"
+
+# Get wallet details
+curl "https://kol.quest/api/wallets/CyaE1Vxv..."`,
+            },
+            {
+              language: "javascript",
+              code: `// Fetch trending tokens
+const trending = await fetch("https://kol.quest/api/trending?chain=sol")
+  .then(res => res.json());
+
+console.log(trending.tokens);
+
+// Search for a KOL
+const wallets = await fetch("https://kol.quest/api/wallets?search=satsdart")
+  .then(res => res.json());
+
+console.log(wallets.wallets[0]);`,
+            },
+            {
+              language: "python",
+              code: `import requests
+
+# Get trending tokens
+trending = requests.get("https://kol.quest/api/trending", 
+    params={"chain": "sol", "limit": 10}
+).json()
+
+print(trending["tokens"])
+
+# Search wallets
+wallets = requests.get("https://kol.quest/api/wallets",
+    params={"search": "satsdart"}
+).json()
+
+print(wallets["wallets"][0])`,
+            },
+          ]}
+        />
+
+        <div className="mt-8 p-4 rounded-xl bg-violet-500/5 border border-violet-500/20">
+          <div className="flex items-start gap-3">
+            <span className="text-xl">📄</span>
+            <div>
+              <h4 className="font-semibold text-white text-sm mb-1">OpenAPI Specification</h4>
+              <p className="text-zinc-400 text-sm">
+                Full OpenAPI 3.0 spec available at{" "}
+                <a href="/api/openapi.json" target="_blank" className="text-accent hover:underline">
+                  /api/openapi.json
+                </a>
+                {" "}— import into Postman, Insomnia, or generate client SDKs.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════════ */}
+      {/*  Authentication                                */}
+      {/* ═══════════════════════════════════════════════ */}
+      <section id="authentication" className="mb-20 scroll-mt-24">
+        <h2 className="text-2xl font-bold text-white mb-2">Authentication</h2>
+        <p className="text-zinc-400 text-sm mb-6">
+          Most read endpoints are public. Write operations and user-specific features require authentication.
+        </p>
+
+        <div className="space-y-4 mb-8">
+          <InfoCard icon="🔓" title="Public Endpoints">
+            <p>Wallet listings, trending tokens, search, and token data are publicly accessible without authentication.</p>
+          </InfoCard>
+          <InfoCard icon="🔐" title="Authenticated Endpoints">
+            <p>Watchlist, submissions, vouching, and admin features require a valid session cookie from signing in.</p>
+          </InfoCard>
+        </div>
+
+        <h3 className="text-lg font-semibold text-white mb-3">Session-Based Auth</h3>
+        <p className="text-zinc-400 text-sm mb-4">
+          KolQuest uses session cookies for authentication. Sign in via the web UI using Solana wallet, Ethereum (SIWE), or email/password.
+        </p>
+
+        <CodeBlock
+          language="bash"
+          title="Check session"
+          code={`# The session cookie is automatically sent by browsers
+# For programmatic access, include credentials:
+
+curl -X GET "https://kol.quest/api/watchlist" \\
+  -b "session=your-session-cookie"`}
+        />
+
+        <div className="mt-6 p-4 rounded-xl bg-amber-500/5 border border-amber-500/20">
+          <div className="flex items-start gap-3">
+            <span className="text-xl">🔑</span>
+            <div>
+              <h4 className="font-semibold text-white text-sm mb-1">API Keys (Coming Soon)</h4>
+              <p className="text-zinc-400 text-sm">
+                API key authentication for external integrations and bots is on the roadmap.
+                Keys will be managed from your profile dashboard.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════════ */}
+      {/*  Rate Limits                                   */}
+      {/* ═══════════════════════════════════════════════ */}
+      <section id="rate-limits" className="mb-20 scroll-mt-24">
+        <h2 className="text-2xl font-bold text-white mb-2">Rate Limits</h2>
+        <p className="text-zinc-400 text-sm mb-6">
+          Requests are rate-limited to ensure fair usage and service stability.
+        </p>
+
+        <div className="overflow-x-auto mb-6">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="text-left border-b border-border">
+                <th className="pb-3 pr-4 text-zinc-500 font-medium">Tier</th>
+                <th className="pb-3 pr-4 text-zinc-500 font-medium">Limit</th>
+                <th className="pb-3 text-zinc-500 font-medium">Notes</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border">
+              <tr>
+                <td className="py-3 pr-4 text-white">Anonymous</td>
+                <td className="py-3 pr-4 text-zinc-400">60 req/min</td>
+                <td className="py-3 text-zinc-500">Per IP address</td>
+              </tr>
+              <tr>
+                <td className="py-3 pr-4 text-white">Authenticated</td>
+                <td className="py-3 pr-4 text-zinc-400">120 req/min</td>
+                <td className="py-3 text-zinc-500">Per user account</td>
+              </tr>
+              <tr>
+                <td className="py-3 pr-4 text-white">Search</td>
+                <td className="py-3 pr-4 text-zinc-400">30 req/min</td>
+                <td className="py-3 text-zinc-500">Search endpoints only</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3 className="text-lg font-semibold text-white mb-3">Rate Limit Headers</h3>
+        <p className="text-zinc-400 text-sm mb-4">
+          Check response headers to monitor your rate limit status.
+        </p>
+
+        <CodeBlock
+          language="bash"
+          code={`X-RateLimit-Limit: 60
+X-RateLimit-Remaining: 45
+X-RateLimit-Reset: 1712678400`}
+        />
+
+        <div className="mt-6 p-4 rounded-xl bg-red-500/5 border border-red-500/20">
+          <div className="flex items-start gap-3">
+            <span className="text-xl">⚠️</span>
+            <div>
+              <h4 className="font-semibold text-white text-sm mb-1">429 Too Many Requests</h4>
+              <p className="text-zinc-400 text-sm">
+                If you exceed the rate limit, you&apos;ll receive a 429 response.
+                Wait for the reset time before retrying.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* ═══════════════════════════════════════════════ */}
       {/*  API Playground                                */}
@@ -277,7 +478,7 @@ export default function DocsPage() {
       <section id="playground" className="mb-20 scroll-mt-24">
         <h2 className="text-2xl font-bold text-white mb-2">API Playground</h2>
         <p className="text-zinc-400 text-sm mb-6">
-          Try the API live. Start the server with <code className="text-buy bg-bg-hover px-1.5 py-0.5 rounded text-xs font-mono">bun api/index.ts</code> then pick an endpoint and hit Send.
+          Try the API live. Pick an endpoint, customize parameters, and send requests directly from your browser.
         </p>
         <div className="bg-bg-card rounded-2xl border border-border p-5 sm:p-6">
           <ApiPlayground />
@@ -285,96 +486,306 @@ export default function DocsPage() {
       </section>
 
       {/* ═══════════════════════════════════════════════ */}
-      {/*  REST API                                      */}
+      {/*  API Endpoints                                 */}
       {/* ═══════════════════════════════════════════════ */}
-      <section id="api" className="mb-20 scroll-mt-24">
-        <h2 className="text-2xl font-bold text-white mb-2">REST API</h2>
-        <p className="text-zinc-400 text-sm mb-3">
-          Standalone Bun server. All endpoints are <code className="text-buy">GET</code> requests with JSON responses and CORS enabled.
+      <section id="endpoints" className="mb-20 scroll-mt-24">
+        <h2 className="text-2xl font-bold text-white mb-2">API Endpoints</h2>
+        <p className="text-zinc-400 text-sm mb-6">
+          Complete endpoint reference. Click an endpoint to expand details, parameters, and code examples.
         </p>
-        <Code>{`# Start the API server
-bun api/index.ts          # default port 3002
-API_PORT=8080 bun api/index.ts`}</Code>
 
-        <div className="mt-8 space-y-8">
-          {/* KolScan */}
-          <div>
-            <h3 className="text-lg font-semibold text-white mb-1">KolScan Endpoints</h3>
-            <p className="text-zinc-500 text-xs mb-4">Scraped KOL wallet data — profit, wins, losses across daily / weekly / monthly timeframes.</p>
-            <div className="space-y-4">
-              <Endpoint
-                method="GET"
-                path="/health"
-                desc="Health check with data counts."
-              />
-              <Endpoint
-                method="GET"
-                path="/api/leaderboard"
-                desc="Paginated KOL leaderboard with search, sorting, and timeframe filtering."
-                params={[
-                  { name: "timeframe", type: "number", desc: "1 = daily, 7 = weekly, 30 = monthly", default: "all" },
-                  { name: "sort", type: "string", desc: "Sort field: profit, wins, losses, winrate, name", default: "profit" },
-                  { name: "order", type: "string", desc: "asc or desc", default: "desc" },
-                  { name: "page", type: "number", desc: "Page number (1-indexed)", default: "1" },
-                  { name: "limit", type: "number", desc: "Results per page (max 500)", default: "50" },
-                  { name: "search", type: "string", desc: "Filter by name or wallet address" },
-                ]}
-              />
-              <Endpoint method="GET" path="/api/wallets" desc="List all unique wallet addresses." />
-              <Endpoint
-                method="GET"
-                path="/api/wallet/:address"
-                desc="Detailed stats for a specific wallet — profit, rankings, and per-timeframe data."
-              />
-              <Endpoint
-                method="GET"
-                path="/api/top"
-                desc="Top KOLs for a given timeframe."
-                params={[
-                  { name: "timeframe", type: "number", desc: "1 = daily, 7 = weekly, 30 = monthly", default: "1" },
-                  { name: "sort", type: "string", desc: "Sort field", default: "profit" },
-                  { name: "limit", type: "number", desc: "Max results (1-100)", default: "10" },
-                ]}
-              />
-              <Endpoint method="GET" path="/api/stats" desc="Aggregate statistics — entry counts, top daily performer, timeframes." />
-              <Endpoint method="GET" path="/api/export/gmgn" desc="All wallets formatted for GMGN bulk import." />
-            </div>
-          </div>
-
-          {/* GMGN */}
-          <div>
-            <h3 className="text-lg font-semibold text-white mb-1">GMGN Endpoints</h3>
-            <p className="text-zinc-500 text-xs mb-4">Smart money wallet data from GMGN — Solana and BSC chains.</p>
-            <div className="space-y-4">
-              <Endpoint
-                method="GET"
-                path="/api/gmgn/sol"
-                desc="Solana smart money wallets with category filtering."
-                params={[
-                  { name: "sort", type: "string", desc: "Sort field", default: "realized_profit_7d" },
-                  { name: "order", type: "string", desc: "asc or desc", default: "desc" },
-                  { name: "page", type: "number", desc: "Page number", default: "1" },
-                  { name: "limit", type: "number", desc: "Results per page (max 500)", default: "50" },
-                  { name: "category", type: "string", desc: "smart_degen, kol, snipe_bot, launchpad_smart, fresh_wallet, etc." },
-                  { name: "search", type: "string", desc: "Search by name, address, or twitter" },
-                ]}
-              />
-              <Endpoint
-                method="GET"
-                path="/api/gmgn/bsc"
-                desc="BSC smart money wallets. Same params as /api/gmgn/sol."
-              />
-              <Endpoint method="GET" path="/api/gmgn/wallet/:address" desc="Detailed GMGN data for a specific wallet." />
-              <Endpoint
-                method="GET"
-                path="/api/gmgn/categories"
-                desc="List categories and wallet counts."
-                params={[{ name: "chain", type: "string", desc: "sol or bsc", default: "sol" }]}
-              />
-              <Endpoint method="GET" path="/api/gmgn/stats" desc="GMGN aggregate stats with top performers per chain." />
-            </div>
+        {/* Wallets */}
+        <div className="mb-10">
+          <h3 className="text-lg font-semibold text-white mb-1">Wallets</h3>
+          <p className="text-zinc-500 text-xs mb-4">KOL and smart money wallet data from KolScan and GMGN.</p>
+          <div className="space-y-3">
+            <EndpointDoc
+              method="GET"
+              path="/api/wallets"
+              description="List all wallets with filtering, sorting, and pagination."
+              params={[
+                { name: "chain", type: "string", description: "Filter by chain (sol, bsc, all)", default: "all" },
+                { name: "source", type: "string", description: "Filter by source (kolscan, gmgn, all)", default: "all" },
+                { name: "category", type: "string", description: "Filter by category (kol, smart_degen, etc.)" },
+                { name: "search", type: "string", description: "Search by name, address, or twitter" },
+                { name: "sort", type: "string", description: "Sort field (profit_7d, winrate_7d, etc.)", default: "profit_7d" },
+                { name: "order", type: "string", description: "Sort order (asc, desc)", default: "desc" },
+                { name: "page", type: "number", description: "Page number", default: "1" },
+                { name: "limit", type: "number", description: "Results per page (max 100)", default: "50" },
+                { name: "minProfit", type: "number", description: "Minimum 7-day profit threshold" },
+                { name: "tag", type: "string", description: "Filter by tag (e.g., kolscan)" },
+              ]}
+              responses={[
+                { code: 200, description: "Success — returns wallets array with pagination metadata" },
+              ]}
+            />
+            <EndpointDoc
+              method="GET"
+              path="/api/wallets/{address}"
+              description="Get detailed data for a specific wallet including trades and PnL."
+              params={[
+                { name: "address", type: "string", required: true, description: "Wallet address" },
+              ]}
+              responses={[
+                { code: 200, description: "Wallet data with trades" },
+                { code: 404, description: "Wallet not found" },
+              ]}
+            />
+            <EndpointDoc
+              method="GET"
+              path="/api/search"
+              description="Global search across wallets and tokens."
+              params={[
+                { name: "q", type: "string", required: true, description: "Search query" },
+                { name: "type", type: "string", description: "Type filter (wallet, token, all)", default: "all" },
+                { name: "limit", type: "number", description: "Max results", default: "20" },
+              ]}
+              responses={[
+                { code: 200, description: "Search results" },
+              ]}
+            />
           </div>
         </div>
+
+        {/* Tokens */}
+        <div className="mb-10">
+          <h3 className="text-lg font-semibold text-white mb-1">Tokens</h3>
+          <p className="text-zinc-500 text-xs mb-4">Token data — trending, security analysis, smart money activity.</p>
+          <div className="space-y-3">
+            <EndpointDoc
+              method="GET"
+              path="/api/trending"
+              description="Get trending tokens based on smart money activity."
+              params={[
+                { name: "source", type: "string", description: "Data source (aggregated, db)", default: "aggregated" },
+                { name: "chain", type: "string", description: "Filter by chain (sol, bsc, eth)" },
+                { name: "category", type: "string", description: "Token category filter" },
+                { name: "timeframe", type: "string", description: "Trending period (1h, 24h, 7d)", default: "24h" },
+                { name: "limit", type: "number", description: "Number of results (max 100)", default: "50" },
+                { name: "minLiquidity", type: "number", description: "Minimum liquidity filter ($USD)" },
+                { name: "hideRugs", type: "boolean", description: "Hide flagged tokens", default: "false" },
+              ]}
+              responses={[
+                { code: 200, description: "Trending tokens with source metadata" },
+              ]}
+            />
+            <EndpointDoc
+              method="GET"
+              path="/api/token"
+              description="Get smart money trading activity for a specific token."
+              params={[
+                { name: "token", type: "string", required: true, description: "Token contract address" },
+                { name: "chain", type: "string", description: "Blockchain", default: "sol" },
+              ]}
+              responses={[
+                { code: 200, description: "Token activity with wallet breakdown" },
+                { code: 400, description: "Token param required" },
+              ]}
+            />
+            <EndpointDoc
+              method="GET"
+              path="/api/token/{chain}/{address}"
+              description="Comprehensive token details — price, holders, trading history."
+              params={[
+                { name: "chain", type: "string", required: true, description: "Blockchain (sol, bsc, eth)" },
+                { name: "address", type: "string", required: true, description: "Token contract address" },
+              ]}
+              responses={[
+                { code: 200, description: "Token details" },
+                { code: 404, description: "Token not found" },
+              ]}
+            />
+            <EndpointDoc
+              method="GET"
+              path="/api/token/{chain}/{address}/security"
+              description="Security analysis — honeypot detection, holder distribution, contract risks."
+              params={[
+                { name: "chain", type: "string", required: true, description: "Blockchain" },
+                { name: "address", type: "string", required: true, description: "Token contract address" },
+              ]}
+              responses={[
+                { code: 200, description: "Security analysis results" },
+              ]}
+            />
+          </div>
+        </div>
+
+        {/* Trades */}
+        <div className="mb-10">
+          <h3 className="text-lg font-semibold text-white mb-1">Trades</h3>
+          <p className="text-zinc-500 text-xs mb-4">Real-time trade feed from tracked smart money wallets.</p>
+          <div className="space-y-3">
+            <EndpointDoc
+              method="GET"
+              path="/api/trades"
+              description="Get recent trades from tracked wallets."
+              params={[
+                { name: "chain", type: "string", description: "Filter by chain (sol, bsc)" },
+                { name: "wallet", type: "string", description: "Filter by wallet address" },
+                { name: "token", type: "string", description: "Filter by token address" },
+                { name: "type", type: "string", description: "Trade type (buy, sell)" },
+                { name: "limit", type: "number", description: "Max results", default: "50" },
+                { name: "since", type: "string", description: "ISO timestamp — trades after this time" },
+              ]}
+              responses={[
+                { code: 200, description: "Trade feed" },
+              ]}
+            />
+          </div>
+        </div>
+
+        {/* Social */}
+        <div className="mb-10">
+          <h3 className="text-lg font-semibold text-white mb-1">Social</h3>
+          <p className="text-zinc-500 text-xs mb-4">X/Twitter integration for KOL tracking.</p>
+          <div className="space-y-3">
+            <EndpointDoc
+              method="GET"
+              path="/api/x-tracker"
+              description="Get KOLs tracked via GMGN's X tracker — smart money linked to X accounts."
+              responses={[
+                { code: 200, description: "X tracker data" },
+              ]}
+            />
+            <EndpointDoc
+              method="GET"
+              path="/api/x-profiles"
+              description="X profile metadata for tracked KOLs."
+              responses={[
+                { code: 200, description: "X profiles" },
+              ]}
+            />
+          </div>
+        </div>
+
+        {/* User */}
+        <div className="mb-10">
+          <h3 className="text-lg font-semibold text-white mb-1">User (Authenticated)</h3>
+          <p className="text-zinc-500 text-xs mb-4">Authenticated user features — requires session cookie.</p>
+          <div className="space-y-3">
+            <EndpointDoc
+              method="GET"
+              path="/api/watchlist"
+              description="Get the authenticated user's watchlist."
+              responses={[
+                { code: 200, description: "Watchlist entries" },
+                { code: 401, description: "Unauthorized" },
+              ]}
+            />
+            <EndpointDoc
+              method="POST"
+              path="/api/watchlist"
+              description="Add a wallet to the user's watchlist."
+              bodyParams={[
+                { name: "walletAddress", type: "string", required: true, description: "Wallet address to watch" },
+                { name: "chain", type: "string", required: true, description: "Blockchain (sol, bsc)" },
+                { name: "label", type: "string", description: "Custom label" },
+                { name: "groupName", type: "string", description: "Group name for organization" },
+              ]}
+              responses={[
+                { code: 200, description: "Added to watchlist" },
+                { code: 401, description: "Unauthorized" },
+              ]}
+            />
+            <EndpointDoc
+              method="DELETE"
+              path="/api/watchlist"
+              description="Remove a wallet from the user's watchlist."
+              bodyParams={[
+                { name: "walletAddress", type: "string", required: true, description: "Wallet address to remove" },
+              ]}
+              responses={[
+                { code: 200, description: "Removed" },
+                { code: 401, description: "Unauthorized" },
+              ]}
+            />
+          </div>
+        </div>
+
+        {/* Community */}
+        <div className="mb-10">
+          <h3 className="text-lg font-semibold text-white mb-1">Community</h3>
+          <p className="text-zinc-500 text-xs mb-4">Community wallet submissions and vouching.</p>
+          <div className="space-y-3">
+            <EndpointDoc
+              method="GET"
+              path="/api/submissions"
+              description="List community-submitted wallets."
+              responses={[
+                { code: 200, description: "Submissions list" },
+              ]}
+            />
+            <EndpointDoc
+              method="POST"
+              path="/api/submissions"
+              description="Submit a new wallet for community review."
+              bodyParams={[
+                { name: "walletAddress", type: "string", required: true, description: "Wallet address" },
+                { name: "chain", type: "string", required: true, description: "Blockchain" },
+                { name: "label", type: "string", required: true, description: "Wallet label/name" },
+                { name: "notes", type: "string", description: "Additional notes" },
+                { name: "twitter", type: "string", description: "Twitter handle" },
+                { name: "telegram", type: "string", description: "Telegram channel" },
+              ]}
+              responses={[
+                { code: 201, description: "Submission created" },
+                { code: 401, description: "Unauthorized" },
+              ]}
+            />
+            <EndpointDoc
+              method="POST"
+              path="/api/submissions/{id}/vouch"
+              description="Vouch for a pending wallet submission."
+              params={[
+                { name: "id", type: "string", required: true, description: "Submission ID" },
+              ]}
+              responses={[
+                { code: 200, description: "Vouched" },
+                { code: 401, description: "Unauthorized" },
+              ]}
+            />
+          </div>
+        </div>
+
+        {/* System */}
+        <div>
+          <h3 className="text-lg font-semibold text-white mb-1">System</h3>
+          <p className="text-zinc-500 text-xs mb-4">Health and status endpoints.</p>
+          <div className="space-y-3">
+            <EndpointDoc
+              method="GET"
+              path="/api/health"
+              description="API health check with data source status."
+              responses={[
+                { code: 200, description: "Healthy" },
+              ]}
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════════ */}
+      {/*  Error Codes                                   */}
+      {/* ═══════════════════════════════════════════════ */}
+      <section id="errors" className="mb-20 scroll-mt-24">
+        <h2 className="text-2xl font-bold text-white mb-2">Error Codes</h2>
+        <p className="text-zinc-400 text-sm mb-6">
+          Standard HTTP status codes with consistent error response format.
+        </p>
+
+        <div className="bg-bg-card rounded-xl border border-border p-5 sm:p-6 mb-6">
+          <ErrorCodeTable />
+        </div>
+
+        <h3 className="text-lg font-semibold text-white mb-3">Error Response Format</h3>
+        <CodeBlock
+          language="json"
+          code={`{
+  "error": "RATE_LIMITED",
+  "message": "Too many requests. Please slow down.",
+  "retryAfter": 30
+}`}
+        />
       </section>
 
       {/* ═══════════════════════════════════════════════ */}

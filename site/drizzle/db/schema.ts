@@ -63,6 +63,37 @@ export const verification = pgTable("verification", {
   updatedAt: timestamp("updated_at"),
 });
 
+// --- API Keys ---
+
+export const apiKey = pgTable(
+  "api_key",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    name: varchar("name", { length: 60 }).notNull(), // "My Bot", "Trading Script"
+    keyHash: text("key_hash").notNull(), // SHA-256 hash of the actual key
+    keyPrefix: varchar("key_prefix", { length: 12 }).notNull(), // First 8 chars for display: "kq_abc123..."
+    scopes: text("scopes"), // JSON array of permitted scopes
+    rateLimit: integer("rate_limit").notNull().default(60), // requests per minute
+    tier: text("tier").notNull().default("free"), // "free", "pro", "enterprise"
+    lastUsedAt: timestamp("last_used_at"),
+    requestCount: integer("request_count").notNull().default(0),
+    expiresAt: timestamp("expires_at"), // optional expiration
+    revokedAt: timestamp("revoked_at"), // null if active
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  },
+  (table) => {
+    return {
+      userIdx: index("api_key_user_idx").on(table.userId),
+      prefixIdx: index("api_key_prefix_idx").on(table.keyPrefix),
+      hashIdx: index("api_key_hash_idx").on(table.keyHash),
+    };
+  },
+);
+
 export const walletSubmission = pgTable(
   "wallet_submission",
   {

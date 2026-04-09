@@ -537,11 +537,11 @@ function computeMomentum(token: RawTrendingItem): "rising" | "falling" | "stable
   return "stable";
 }
 
-function computeRiskLevel(token: RawTrendingItem): "low" | "medium" | "high" {
+function computeRiskLevel(token: RawTrendingItem, isNew: boolean): "low" | "medium" | "high" {
   // Risk based on liquidity and age
   if (token.liquidity < 10_000) return "high";
   if (token.liquidity < 100_000) return "medium";
-  if (token.isNew) return "medium";
+  if (isNew) return "medium";
   return "low";
 }
 
@@ -639,7 +639,7 @@ export async function fetchTrendingTokens(filters: TrendingFilters = {}): Promis
       sources: item.sourceRanks,
       trendingScore,
       momentum: computeMomentum(item),
-      riskLevel: computeRiskLevel({ ...item, isNew }),
+      riskLevel: computeRiskLevel(item, isNew),
       launchedAt: item.launchedAt,
       isNew,
       categories: item.categories,
