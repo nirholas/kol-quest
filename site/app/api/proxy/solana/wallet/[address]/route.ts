@@ -75,7 +75,7 @@ export async function GET(
   const txArray = Array.isArray(txData) ? txData : [];
   const holdings: unknown[] = (birdeyeData as any)?.data?.items ?? [];
   const portfolioValue: number = (birdeyeData as any)?.data?.totalUsd ?? 0;
-  const solBalance: number = (balData as any)?.nativeBalance ?? (solscanData as any)?.data?.lamports / 1e9 ?? 0;
+  const solBalance: number = (balData as any)?.nativeBalance ?? (((solscanData as any)?.data?.lamports ?? 0) / 1e9);
   const txCount: number = (solscanData as any)?.data?.txs ?? 0;
 
   const response = {
