@@ -3,12 +3,11 @@
 import { Suspense, useState, useEffect, useRef } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import Link from "next/link";
-import { timeAgo, shortAddr, formatUsd, formatNumber, formatPercent } from "@/lib/format";
+import { timeAgo, shortAddr, formatUsd, formatNumber, formatProfit } from "@/lib/format";
 import { AvatarFallback } from "@/app/components/FallbackImg";
 import NextImage from "next/image";
 import type { SmartMoneyActivity } from "@/lib/smart-money-tracker";
 import { cn } from "@/lib/utils";
-import { RefreshCcw, ArrowRight } from "lucide-react";
 
 function TokenLogo({ src, alt }: { src: string; alt: string }) {
   const [failed, setFailed] = useState(false);
@@ -86,12 +85,12 @@ function FeedItem({ activity }: { activity: SmartMoneyActivity }) {
         <div className="flex items-center justify-between text-xs mt-1">
           <p className="text-gray-500 dark:text-gray-400">
             {formatUsd(activity.usdValue)}
-            {activity.priceUsd && <span className="text-gray-400"> · Entry: {formatUsd(activity.priceUsd, { notation: 'compact' })}</span>}
+            {activity.priceUsd && <span className="text-gray-400"> · Entry: {formatUsd(activity.priceUsd)}</span>}
             {activity.realizedPnl != null && (
               <span className={pnlColor}>
                 {" · PnL: "}
-                {formatUsd(activity.realizedPnl)}
-                {activity.realizedPnlPercent != null && ` (${formatPercent(activity.realizedPnlPercent)})`}
+                {formatProfit(activity.realizedPnl)}
+                {activity.realizedPnlPercent != null && ` (${(activity.realizedPnlPercent * 100).toFixed(1)}%)`}
               </span>
             )}
           </p>

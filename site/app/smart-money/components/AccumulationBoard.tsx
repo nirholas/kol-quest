@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { formatUsd, formatNumber, shortAddr } from "@/lib/format";
+import { formatUsd, formatNumber } from "@/lib/format";
 import type { SmartMoneySignal } from "@/lib/smart-money-tracker";
 import { cn } from "@/lib/utils";
 
@@ -104,9 +104,9 @@ export default function AccumulationBoard() {
                       </div>
                     </Link>
                   </td>
-                  <td className="px-6 py-4 text-right text-green-500">{formatUsd(signal.totalBuyUsd, { notation: 'compact' })}</td>
-                  <td className="px-6 py-4 text-right text-red-500">{formatUsd(signal.totalSellUsd, { notation: 'compact' })}</td>
-                  <td className={cn("px-6 py-4 text-right font-semibold", netColor)}>{formatUsd(signal.netFlowUsd, { notation: 'compact' })}</td>
+                  <td className="px-6 py-4 text-right text-green-500">{formatUsd(signal.totalBuyUsd)}</td>
+                  <td className="px-6 py-4 text-right text-red-500">{formatUsd(signal.totalSellUsd)}</td>
+                  <td className={cn("px-6 py-4 text-right font-semibold", netColor)}>{formatUsd(signal.netFlowUsd)}</td>
                   <td className="px-6 py-4 text-center">{formatNumber(signal.walletCount)}</td>
                 </tr>
               );
