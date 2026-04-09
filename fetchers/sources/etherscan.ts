@@ -1,7 +1,6 @@
 /**
- * Etherscan-family fetcher — free API key required (5 req/sec per key)
- * Same API shape for: Etherscan, BscScan, BaseScan, ArbScan, PolygonScan
- * Docs: https://docs.etherscan.io/api-endpoints
+ * Etherscan V2 API fetcher — single API key works for 60+ EVM chains
+ * Docs: https://docs.etherscan.io/etherscan-v2
  *
  * Endpoints hit per wallet:
  * - account/balance
@@ -13,8 +12,7 @@
  * Global endpoints:
  * - stats/ethsupply
  * - stats/ethprice
- * - gastracker/gasestimate
- * - blocks/getblocknobytime
+ * - gastracker/gasoracle
  */
 
 import { fetchJSON, saveArchive, log, sleep, env, hasKey } from "../lib/utils.ts";
@@ -22,6 +20,26 @@ import { loadEvmWallets, loadTopWallets } from "../lib/wallets.ts";
 
 const SRC = "etherscan";
 
+// Etherscan V2 API — single endpoint, chainid parameter
+const V2_BASE = "https://api.etherscan.io/v2/api";
+
+// Chain IDs for V2 API (one key works for all)
+const CHAINS_V2: { chain: string; chainid: number }[] = [
+  { chain: "ethereum", chainid: 1 },
+  { chain: "bsc", chainid: 56 },
+  { chain: "base", chainid: 8453 },
+  { chain: "arbitrum", chainid: 42161 },
+  { chain: "polygon", chainid: 137 },
+  { chain: "optimism", chainid: 10 },
+  { chain: "avalanche", chainid: 43114 },
+  { chain: "fantom", chainid: 250 },
+  { chain: "gnosis", chainid: 100 },
+  { chain: "linea", chainid: 59144 },
+  { chain: "scroll", chainid: 534352 },
+  { chain: "blast", chainid: 81457 },
+];
+
+// Fallback to legacy endpoints if V2 doesn't work
 const EXPLORERS: {
   key: string;
   envKey: string;
@@ -37,34 +55,46 @@ const EXPLORERS: {
   {
     chain: "bsc",
     base: "https://api.bscscan.com/api",
-    envKey: "BSCSCAN_API_KEY",
+    envKey: "ETHERSCAN_API_KEY", // V2: same key works
     key: "",
   },
   {
     chain: "base",
     base: "https://api.basescan.org/api",
-    envKey: "BASESCAN_API_KEY",
+    envKey: "ETHERSCAN_API_KEY", // V2: same key works
     key: "",
   },
   {
     chain: "arbitrum",
     base: "https://api.arbiscan.io/api",
-    envKey: "ARBISCAN_API_KEY",
+    envKey: "ETHERSCAN_API_KEY", // V2: same key works
     key: "",
   },
   {
     chain: "polygon",
     base: "https://api.polygonscan.com/api",
-    envKey: "POLYGONSCAN_API_KEY",
+    envKey: "ETHERSCAN_API_KEY", // V2: same key works
     key: "",
   },
   {
     chain: "optimism",
     base: "https://api-optimistic.etherscan.io/api",
-    envKey: "OPTIMISMSCAN_API_KEY",
+    envKey: "ETHERSCAN_API_KEY", // V2: same key works
     key: "",
   },
 ];
+
+async function fetchV2(
+  chainid: number,
+  module: string,
+  action: string,
+  params: Record<string, string>,
+  apikey: string,
+  source: string
+) {
+  const qs = new URLSearchParams({ chainid: String(chainid), module, action, ...params, apikey }).toString();
+  return fetchJSON(`${V2_BASE}?${qs}`, { source, delayMs: 220 });
+}
 
 async function fetchExplorer(
   base: string,
