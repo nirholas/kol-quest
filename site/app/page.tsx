@@ -287,7 +287,7 @@ export default function Home() {
             "@type": "WebApplication",
             name: "KolQuest",
             url: "https://kol.quest",
-            description: "Track the smartest crypto wallets — KolScan KOLs, GMGN smart money, Solana & BSC. Leaderboards, analytics, and copy-trade tools.",
+            description: "See what the top crypto wallets are trading before everyone else. Real-time tracking across Solana & BSC — leaderboards, PnL analytics, and alerts.",
             applicationCategory: "FinanceApplication",
             operatingSystem: "Web",
             offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },

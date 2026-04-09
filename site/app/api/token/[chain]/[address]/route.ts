@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { desc, eq, and, sql } from "drizzle-orm";
+import { desc, eq, and } from "drizzle-orm";
 import { db } from "@/drizzle/db";
 import { trade } from "@/drizzle/db/schema";
 import { getTokenData } from "@/lib/token-api";

@@ -9,11 +9,11 @@ import DesktopNavLinks from "./components/DesktopNavLinks";
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || "https://kol.quest"),
   title: {
-    default: "KolQuest — Smart Wallet Intelligence",
+    default: "KolQuest — Follow the Smart Money",
     template: "%s | KolQuest",
   },
   description:
-    "Track the smartest crypto wallets — KolScan KOLs, GMGN smart money, Solana & BSC. Leaderboards, analytics, and copy-trade tools.",
+    "See what the top crypto wallets are trading before everyone else. Real-time tracking across Solana & BSC — leaderboards, PnL analytics, and alerts.",
   keywords: [
     "crypto wallet tracker",
     "smart money",
@@ -35,16 +35,16 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     siteName: "KolQuest",
-    title: "KolQuest — Smart Wallet Intelligence",
+    title: "KolQuest — Follow the Smart Money",
     description:
-      "Track the smartest crypto wallets. KolScan KOLs, GMGN smart money, Solana & BSC leaderboards.",
+      "See what the top crypto wallets are trading before everyone else. Real-time leaderboards, PnL analytics, and wallet alerts across Solana & BSC.",
     images: [{ url: "/api/og", width: 1200, height: 630, alt: "KolQuest" }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "KolQuest — Smart Wallet Intelligence",
+    title: "KolQuest — Follow the Smart Money",
     description:
-      "Track the smartest crypto wallets. KolScan KOLs, GMGN smart money, Solana & BSC leaderboards.",
+      "See what the top crypto wallets are trading before everyone else. Real-time leaderboards, PnL analytics, and wallet alerts across Solana & BSC.",
     images: ["/api/og"],
   },
 };
