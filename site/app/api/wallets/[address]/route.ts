@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { desc, eq, sql, and } from "drizzle-orm";
+import { desc, eq, sql } from "drizzle-orm";
 import { db } from "@/drizzle/db";
 import { trade, walletSubmission, walletVouch } from "@/drizzle/db/schema";
 import { getAllSolanaWallets, getBscWallets, getXProfiles, getXProfile } from "@/lib/data";

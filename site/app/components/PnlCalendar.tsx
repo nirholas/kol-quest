@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import Link from "next/link";
 import type { KolEntry } from "@/lib/types";
 
 interface CalendarProps {
