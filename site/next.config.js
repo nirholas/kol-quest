@@ -26,6 +26,7 @@ const nextConfig = {
 
     return [
       {
+        // x402 discovery: advertise the discovery document on all responses
         source: "/(.*)",
         headers: [
           { key: "X-Frame-Options", value: "DENY" },
@@ -33,6 +34,10 @@ const nextConfig = {
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
           { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
           { key: "Content-Security-Policy", value: csp },
+          {
+            key: "Link",
+            value: '</.well-known/x402.json>; rel="x402-discovery"',
+          },
         ],
       },
     ];
