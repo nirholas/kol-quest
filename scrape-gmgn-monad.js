@@ -1,22 +1,23 @@
 /**
- * GMGN Monad Smart Wallets Scraper
+ * GMGN Monad Smart Wallets — Browser Console Scraper (v1)
  *
- * Scrapes smart wallet / top trader data from https://gmgn.ai/trade?chain=monad
- * using Playwright to intercept API calls, then also attempts direct rank API.
+ * INSTRUCTIONS:
+ * 1. Go to https://gmgn.ai/trade?chain=monad in your browser
+ * 2. Open DevTools (F12) → Console tab
+ * 3. Paste this entire script and press Enter
+ * 4. Run fetchAll() to pull all smart money categories automatically
+ * 5. Run downloadData() when done — saves monad-smart-wallets.json
  *
- * Usage: node scrape-gmgn-monad.js
- * Output:
- *   output/monad-smart-wallets.json
- *   output/monad-wallets.txt
+ * Commands:
+ *   fetchAll()      - Fetch all categories + timeframes via API (recommended)
+ *   downloadData()  - Download captured wallets as JSON
+ *   getStats()      - Show capture statistics
+ *   clearData()     - Clear all data (including localStorage)
+ *   pauseScraper()  - Pause active fetch
+ *   resumeScraper() - Resume passive capture
  */
 
-import { chromium } from "playwright";
-import fs from "fs";
-import path from "path";
-import { fileURLToPath } from "url";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// ---- PASTE EVERYTHING BELOW THIS LINE INTO THE BROWSER CONSOLE ----
 
 const OUTPUT_DIR = path.join(__dirname, "output");
 const OUTPUT_FILE = path.join(OUTPUT_DIR, "monad-smart-wallets.json");
