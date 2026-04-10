@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect, useCallback } from "react";
+import { useState, useMemo, useEffect } from "react";
 import type { WalletTransaction } from "@/lib/wallet-aggregator";
 import { formatUsd } from "@/lib/format";
 

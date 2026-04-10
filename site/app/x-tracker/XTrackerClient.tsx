@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { avatarFallbackStyle } from "@/lib/avatar";
 import { AvatarFallback } from "@/app/components/FallbackImg";
 import type { XTrackerAccount } from "@/lib/types";
 
