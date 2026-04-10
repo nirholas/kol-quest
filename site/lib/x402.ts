@@ -52,6 +52,7 @@ export const X402_FREE_PREFIXES: string[] = [
   "/api/cron",
   "/api/cache",
   "/api/trades/ingest",
+  "/api/discovery", // x402scan discovery — must be freely accessible
 ];
 
 /** Returns true if the given pathname should be gated by x402. */

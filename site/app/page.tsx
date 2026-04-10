@@ -125,7 +125,7 @@ function Avatar({ src, name }: { src?: string | null; name: string }) {
       // eslint-disable-next-line @next/next/no-img-element
       <img
         src={src}
-        alt={name}
+        alt=""
         width={20}
         height={20}
         className="w-5 h-5 rounded-full shrink-0 object-cover"
