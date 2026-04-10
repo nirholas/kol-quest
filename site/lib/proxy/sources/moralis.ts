@@ -1,4 +1,4 @@
-import { CACHE_TTL, CACHE_STALE } from "../types";
+import { CACHE_TTL } from "../types";
 
 const BASE_URL = "https://deep-index.moralis.io/api/v2.2";
 

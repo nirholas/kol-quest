@@ -15,7 +15,7 @@ interface RiskScore {
   };
 }
 
-export const calculateRiskScore = (tokenData: any): RiskScore => {
+export const calculateRiskScore = (_tokenData: any): RiskScore => {
   // Placeholder implementation
   const score: RiskScore = {
     overall: 85,

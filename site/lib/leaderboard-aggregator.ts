@@ -238,7 +238,7 @@ async function _buildEntries(): Promise<LeaderboardEntry[]> {
     .filter((e) => e.timeframe === 30)
     .sort((a, b) => b.profit - a.profit);
   const kolRank7d = new Map(kols7d.map((e, i) => [e.wallet_address, i + 1]));
-  const kolRank30d = new Map(kols30d.map((e, i) => [e.wallet_address, i + 1]));
+  const _kolRank30d = new Map(kols30d.map((e, i) => [e.wallet_address, i + 1]));
 
   for (const [addr, list] of kolsByAddress) {
     const d7 = list.find((e) => e.timeframe === 7);

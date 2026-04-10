@@ -21,9 +21,9 @@
  * ```
  */
 
-import { generateCacheKey, generateTagKey, parseCacheKey } from "./keys";
-import { getFromMemory, setInMemory, deleteFromMemory, clearMemoryCache, getMemoryStats } from "./memory";
-import { getFromRedis, setInRedis, deleteFromRedis, invalidatePattern, getRedisStats, isRedisAvailable } from "./redis";
+import { generateCacheKey, parseCacheKey } from "./keys";
+import { setInMemory, deleteFromMemory, clearMemoryCache, getMemoryStats } from "./memory";
+import { setInRedis, deleteFromRedis, invalidatePattern, getRedisStats, isRedisAvailable } from "./redis";
 import { getWithSWR, forceRefresh } from "./stale";
 import { getCacheConfig, getAllSourceConfigs, DEFAULT_CACHE_OPTIONS } from "./config";
 import { getCacheMetrics, getHitRate, formatMetrics } from "./metrics";

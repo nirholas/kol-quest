@@ -90,11 +90,11 @@ export async function getSmartMoneyFeed(options: ActivityFeedOptions = {}): Prom
   return {
     activities: data.map((row) => ({
       ...row,
-      amount: row.amount ?? undefined,
-      usdValue: row.usdValue ?? undefined,
-      priceUsd: row.priceUsd ?? undefined,
-      realizedPnl: row.realizedPnl ?? undefined,
-      realizedPnlPercent: row.realizedPnlPercent ?? undefined,
+      amount: row.amount ?? null,
+      usdValue: row.usdValue ?? null,
+      priceUsd: row.priceUsd ?? null,
+      realizedPnl: row.realizedPnl ?? null,
+      realizedPnlPercent: row.realizedPnlPercent ?? null,
     })),
     nextCursor,
   };
@@ -116,9 +116,9 @@ export async function getAccumulationSignals(options: AccumulationOptions = {}):
   return rows.map((row) => ({
     ...row,
     topWallets: row.topWallets ? JSON.parse(row.topWallets) : null,
-    totalBuyUsd: row.totalBuyUsd ?? undefined,
-    totalSellUsd: row.totalSellUsd ?? undefined,
-    netFlowUsd: row.netFlowUsd ?? undefined,
+    totalBuyUsd: row.totalBuyUsd ?? null,
+    totalSellUsd: row.totalSellUsd ?? null,
+    netFlowUsd: row.netFlowUsd ?? null,
   }));
 }
 

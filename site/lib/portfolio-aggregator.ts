@@ -343,11 +343,6 @@ interface DeBankProtocol {
   }[];
 }
 
-interface DeBankTotalBalance {
-  total_usd_value: number;
-  chain_list: { id: string; usd_value: number }[];
-}
-
 async function debankFetch<T>(path: string, apiKey: string): Promise<T> {
   return fetchWithTimeout<T>(
     `https://pro-openapi.debank.com/v1${path}`,
@@ -453,21 +448,6 @@ async function getDebankNfts(address: string, apiKey: string): Promise<NftItem[]
       chain: chain ?? "ethereum",
     };
   });
-}
-
-async function getDebankHistory(address: string, apiKey: string): Promise<PortfolioHistory> {
-  // Use DeBank's net_curve endpoint for historical portfolio value
-  const data = await debankFetch<{ usd_value_list: { timestamp: number; usd_value: number }[] }>(
-    `/user/total_net_curve?id=${address.toLowerCase()}&hours=720`,
-    apiKey,
-  );
-
-  const list = data?.usd_value_list ?? [];
-  return {
-    timestamps: list.map((d) => d.timestamp),
-    values: list.map((d) => d.usd_value),
-    period: "30d",
-  };
 }
 
 // ────────────────────────────────────────────────────────────
@@ -653,7 +633,7 @@ export async function getPortfolioHoldings(
         const evmAssets = await getDebankHoldings(address, debankKey);
         // Filter to only requested EVM chains
         const wanted = new Set(evmChains);
-        assets.push(...evmAssets.filter((a) => wanted.has(a.chain)));
+        assets.push(...evmAssets.filter((a) => (wanted as Set<string>).has(a.chain)));
         sources.push("debank");
       } catch (err) {
         console.error("[portfolio] DeBank holdings error:", err);
@@ -747,7 +727,7 @@ export async function getPortfolioNfts(
       try {
         const evmNfts = await getDebankNfts(address, debankKey);
         const wanted = new Set(evmChains);
-        nfts.push(...evmNfts.filter((n) => wanted.has(n.chain)));
+        nfts.push(...evmNfts.filter((n) => (wanted as Set<string>).has(n.chain)));
       } catch (err) {
         console.error("[portfolio] DeBank NFT error:", err);
       }

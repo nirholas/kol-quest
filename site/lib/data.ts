@@ -656,7 +656,7 @@ export const getAllWallets = unstable_cache(
 // Multi-Source Enrichment Functions
 // ────────────────────────────────────────────────────────────
 
-import type { EnrichedSolanaWallet, WalletEnrichment, WalletExpandData, SolanaWalletFilters } from "./types";
+import type { EnrichedSolanaWallet, WalletExpandData, SolanaWalletFilters } from "./types";
 
 const HELIUS_API = "https://api.helius.xyz";
 const BIRDEYE_API = "https://public-api.birdeye.so";
@@ -864,7 +864,7 @@ export async function enrichWallet(wallet: UnifiedWallet): Promise<EnrichedSolan
   // Apply Birdeye portfolio
   if (birdeyeData.status === "fulfilled" && birdeyeData.value) {
     enriched.portfolio_value_usd = birdeyeData.value.portfolioValue;
-    enriched.active_positions = birdeyeData.value.holdings.filter(h => h.valueUsd > 0).length;
+    enriched.active_positions = birdeyeData.value.holdings?.filter(h => h.valueUsd > 0).length ?? 0;
     enriched.sources!.birdeye = true;
   }
   

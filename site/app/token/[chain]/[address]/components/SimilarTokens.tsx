@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import NextImage from "next/image";
 
 interface SimilarToken {
   address: string;

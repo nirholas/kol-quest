@@ -190,7 +190,7 @@ export async function getWalletDetail(addressRaw: string): Promise<WalletDetailR
   };
 
   const chain: WalletChain =
-    wallet?.chain ||
+    (wallet?.chain as WalletChain | undefined) ||
     (recentTradesRows[0]?.chain as WalletChain | undefined) ||
     (submission?.chain as WalletChain | undefined) ||
     inferredChain;
