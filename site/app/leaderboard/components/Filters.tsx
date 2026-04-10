@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
-import type { LeaderboardQuery, LeaderboardChain, LeaderboardCategory } from "@/lib/types";
+import type { LeaderboardQuery, LeaderboardChain } from "@/lib/types";
 
 type Timeframe = NonNullable<LeaderboardQuery["timeframe"]>;
 type Category = NonNullable<LeaderboardQuery["category"]>;

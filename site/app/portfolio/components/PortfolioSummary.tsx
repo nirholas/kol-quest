@@ -76,7 +76,7 @@ interface Props {
   address: string;
 }
 
-export default function PortfolioSummaryCard({ summary, address }: Props) {
+export default function PortfolioSummaryCard({ summary, address: _address }: Props) {
   const isPositive = summary.change24h >= 0;
 
   return (

@@ -17,21 +17,3 @@ export async function GET(
     cache: { ttl: 30 },
   }, request);
 }
-
-export async function GET(
-  request: NextRequest,
-  context: { params: Promise<{ address: string }> }
-) {
-  const params = await context.params;
-  const params = await context.params;
-  return proxyHandler({
-    source: 'birdeye',
-    endpoint: `/v1/wallet/tx_list`,
-    params: {
-      wallet: params.address,
-      limit: request.nextUrl.searchParams.get('limit') || '50',
-      before: request.nextUrl.searchParams.get('before') || undefined,
-    },
-    cache: { ttl: 30 },
-  }, request);
-}

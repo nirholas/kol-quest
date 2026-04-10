@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useTransition } from "react";
+import { Suspense } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import LeaderboardTable from "./components/LeaderboardTable";
 import Filters from "./components/Filters";

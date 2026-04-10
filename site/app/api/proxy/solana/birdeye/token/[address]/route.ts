@@ -13,17 +13,3 @@ export async function GET(
     cache: { ttl: 60 },
   }, request);
 }
-
-export async function GET(
-  request: NextRequest,
-  context: { params: Promise<{ address: string }> }
-) {
-  const params = await context.params;
-  const params = await context.params;
-  return proxyHandler({
-    source: 'birdeye',
-    endpoint: `/defi/token_overview`,
-    params: { address: params.address },
-    cache: { ttl: 60 },
-  }, request);
-}

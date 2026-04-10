@@ -102,54 +102,6 @@ function ErrorCodeTable() {
   );
 }
 
-function Endpoint({
-  method,
-  path,
-  desc,
-  params,
-}: {
-  method: string;
-  path: string;
-  desc: string;
-  params?: { name: string; type: string; desc: string; default?: string }[];
-}) {
-  return (
-    <div className="bg-bg-card rounded-xl border border-border p-4 sm:p-5">
-      <div className="flex items-center gap-2 mb-2">
-        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-400 ring-1 ring-inset ring-emerald-500/20 uppercase tracking-wider">
-          {method}
-        </span>
-        <code className="text-sm text-white font-mono">{path}</code>
-      </div>
-      <p className="text-zinc-400 text-sm mb-3">{desc}</p>
-      {params && params.length > 0 && (
-        <div className="overflow-x-auto">
-          <table className="w-full text-xs">
-            <thead>
-              <tr className="text-left border-b border-border">
-                <th className="pb-2 pr-4 text-zinc-500 font-medium">Param</th>
-                <th className="pb-2 pr-4 text-zinc-500 font-medium">Type</th>
-                <th className="pb-2 pr-4 text-zinc-500 font-medium">Description</th>
-                <th className="pb-2 text-zinc-500 font-medium">Default</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {params.map((p) => (
-                <tr key={p.name}>
-                  <td className="py-2 pr-4 text-buy font-mono">{p.name}</td>
-                  <td className="py-2 pr-4 text-zinc-500 font-mono">{p.type}</td>
-                  <td className="py-2 pr-4 text-zinc-400">{p.desc}</td>
-                  <td className="py-2 text-zinc-500 font-mono">{p.default || "—"}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-    </div>
-  );
-}
-
 function McpTool({
   name,
   desc,

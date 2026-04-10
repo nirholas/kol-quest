@@ -7,7 +7,7 @@ type ExportFormat = "json" | "csv" | "txt" | "gmgn" | "padre" | "axiom";
 interface WalletExportData {
   wallet_address: string;
   name: string;
-  chain?: "sol" | "bsc";
+  chain?: "sol" | "bsc" | "polygon";
 }
 
 function formatLabel(name: string, address: string): string {

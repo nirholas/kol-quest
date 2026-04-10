@@ -1,12 +1,10 @@
 import { NextResponse } from 'next/server';
 
 export async function GET(
-  request: Request,
+  _request: Request,
   context: { params: Promise<{ address: string }> }
 ) {
   const params = await context.params;
-  const { searchParams } = new URL(request.url);
-  const _chain = searchParams.get('chain');
   const address = params.address;
 
   if (!address) {

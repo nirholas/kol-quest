@@ -173,8 +173,6 @@ function UnifiedTableInner({
 
   const thClass =
     "px-3 py-2 text-left font-mono text-zinc-600 cursor-pointer hover:text-zinc-300 select-none whitespace-nowrap text-[10px] uppercase tracking-wider transition-colors";
-  const explorer =
-    chain === "bsc" ? "https://bscscan.com/address" : "https://solscan.io/account";
 
   function walletExplorer(w: UnifiedWallet) {
     if (w.chain === "bsc") return "https://bscscan.com/address";

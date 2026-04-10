@@ -2,7 +2,6 @@
 
 import { Suspense, useMemo, useState } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
-import Link from "next/link";
 import type { PolymarketTrader, PolymarketMarket } from "@/lib/types";
 import ExportButton from "@/app/components/ExportButton";
 import ShareButtons from "@/app/components/ShareButtons";
@@ -96,9 +95,8 @@ function PolymarketLeaderboardInner({
           </div>
           <div className="flex items-center gap-2">
             <ExportButton
-              data={filtered}
+              wallets={filtered.map((t) => ({ wallet_address: t.wallet_address, name: t.display_name || t.username || t.wallet_address }))}
               filename="polymarket-leaderboard"
-              fields={["rank", "wallet_address", "username", "pnl_total", "pnl_7d", "pnl_30d", "volume_total", "winrate", "trades_count"]}
             />
             <ShareButtons title="Polymarket Leaderboard | KolQuest" />
           </div>
@@ -217,8 +215,9 @@ function PolymarketLeaderboardInner({
                     <div className="flex items-center gap-3">
                       <AvatarFallback
                         src={t.profile_image}
-                        name={t.display_name || t.username || t.wallet_address}
-                        size={32}
+                        seed={t.wallet_address}
+                        label={t.display_name || t.username || t.wallet_address}
+                        size="w-8 h-8"
                       />
                       <div>
                         <div className="flex items-center gap-2">
@@ -238,7 +237,7 @@ function PolymarketLeaderboardInner({
                         </div>
                         <div className="flex items-center gap-2 mt-0.5">
                           <span className="text-zinc-600 text-xs font-mono">{truncateAddr(t.wallet_address)}</span>
-                          <CopyButton text={t.wallet_address} size="xs" />
+                          <CopyButton text={t.wallet_address} />
                           <a
                             href={`https://polygonscan.com/address/${t.wallet_address}`}
                             target="_blank"
