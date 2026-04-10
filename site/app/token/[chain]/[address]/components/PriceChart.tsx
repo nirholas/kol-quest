@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { createChart, IChartApi, ISeriesApi, CandlestickData, HistogramData, CrosshairMode } from "lightweight-charts";
+import { createChart, IChartApi, ISeriesApi, CandlestickData, HistogramData, CrosshairMode, UTCTimestamp } from "lightweight-charts";
 
 type Resolution = "5m" | "15m" | "1H" | "4H" | "1D";
 
@@ -55,7 +55,6 @@ export default function PriceChart({
       },
       timeScale: {
         borderColor: "#27272a",
-        textColor: "#71717a",
         timeVisible: true,
         secondsVisible: false,
       },
@@ -109,7 +108,7 @@ export default function PriceChart({
       }
 
       const candles: CandlestickData[] = items.map((d: any) => ({
-        time: d.unixTime as number,
+        time: d.unixTime as UTCTimestamp,
         open: d.o,
         high: d.h,
         low: d.l,
@@ -117,7 +116,7 @@ export default function PriceChart({
       }));
 
       const volumes: HistogramData[] = items.map((d: any) => ({
-        time: d.unixTime as number,
+        time: d.unixTime as UTCTimestamp,
         value: d.v ?? 0,
         color: d.c >= d.o ? "rgba(34,197,94,0.35)" : "rgba(239,68,68,0.35)",
       }));
