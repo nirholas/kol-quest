@@ -16,28 +16,6 @@ interface SimilarToken {
   poolAddress: string;
 }
 
-function TokenImg({ src, symbol }: { src: string; symbol: string }) {
-  const [failed, setFailed] = useState(false);
-  if (failed) {
-    return (
-      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center text-xs font-bold text-white flex-shrink-0">
-        {symbol.charAt(0).toUpperCase()}
-      </div>
-    );
-  }
-  return (
-    <NextImage
-      src={src}
-      alt=""
-      width={32}
-      height={32}
-      className="w-8 h-8 rounded-full flex-shrink-0"
-      onError={() => setFailed(true)}
-      unoptimized
-    />
-  );
-}
-
 function fmtUsd(v: string | null): string {
   if (!v) return "—";
   const n = parseFloat(v);
