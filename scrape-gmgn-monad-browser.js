@@ -407,63 +407,7 @@
   ].join('\n'));
 })();
 
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        const arr = JSON.parse(saved);
-        return new Map(arr.map(w => [w.wallet_address, w]));
-      }
-    } catch (e) {}
-    return new Map();
-  }
 
-  function saveToStorage(wallets) {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(Array.from(wallets.values())));
-    } catch (e) {
-      console.warn('localStorage save failed (quota?):', e.message);
-    }
-  }
-
-  // ── Global state ───────────────────────────────────────────────────────────
-
-  window.__monadScraper = window.__monadScraper || {
-    wallets: loadFromStorage(),
-    isPaused: false,
-    _fetching: false,
-  };
-
-  const loaded = window.__monadScraper.wallets.size;
-  if (loaded > 0) {
-    console.log(`📂 Restored ${loaded} wallets from localStorage.`);
-  }
-
-  // ── Wallet extraction ──────────────────────────────────────────────────────
-
-  function extractWallets(data, category, timeframe) {
-    if (!data || typeof data !== 'object') return 0;
-
-    // GMGN rank API: data.data.rank
-    const rank = data?.data?.rank ?? data?.rank;
-    const details = data?.data?.walletDetails ?? data?.walletDetails ?? {};
-
-    if (!Array.isArray(rank) || rank.length === 0) return 0;
-
-    let newCount = 0;
-    for (const w of rank) {
-      const addr = w.wallet_address || w.address;
-      if (!addr) continue;
-
-      const existing = window.__monadScraper.wallets.get(addr) || {};
-      const merged = {
-        ...existing,
-        ...w,
-        wallet_address: addr,
-        chain: CHAIN,
-        // Tag with which category/timeframe sourced this
-        _categories: Array.from(new Set([...(existing._categories || []), category])),
-        _timeframes: Array.from(new Set([...(existing._timeframes || []), timeframe])),
-      };
 
       // Attach per-timeframe stats under namespaced keys
       if (timeframe === '1d') {
