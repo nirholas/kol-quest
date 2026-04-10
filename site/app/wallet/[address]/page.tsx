@@ -283,6 +283,7 @@ export default async function WalletPage({ params: rawParams }: { params: Promis
           )}
         </div>
       </div>
+      )}
 
       {detail.xProfile && (
         <div className="bg-bg-card border border-border rounded-xl p-4 mt-4">
