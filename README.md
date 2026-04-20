@@ -1,4 +1,4 @@
-<div align="center">
+<div align="center"> 
 
 <img src="assets/hero-banner.svg" alt="KolQuest — Smart Wallet Intelligence" width="100%"/>
 
