@@ -39,7 +39,7 @@
     "smart-money",
     "mcp"
   ],
-  "license": "MIT",
+  "license": "SEE LICENSE IN LICENSE",
   "dependencies": {
     "@radix-ui/react-select": "^2.2.6",
     "lightweight-charts": "^5.1.0",

@@ -10,7 +10,6 @@ Track the best traders. Monitor smart money moves in real time. Discover new tok
 <br/>
 
 [![Live](https://img.shields.io/badge/Live-kol.quest-1D9BF0?style=for-the-badge&logo=vercel&logoColor=white)](https://kol.quest)
-[![License](https://img.shields.io/badge/License-MIT-22c55e?style=for-the-badge)](LICENSE)
 [![Next.js](https://img.shields.io/badge/Next.js_14-black?style=for-the-badge&logo=next.js&logoColor=white)](https://nextjs.org)
 [![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://typescriptlang.org)
 
