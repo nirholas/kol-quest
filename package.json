@@ -4,6 +4,15 @@
   "type": "module",
   "description": "Scrape all KOL wallet data from kolscan.io leaderboard + GMGN smart money",
   "main": "scrape.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nirholas/kol-quest.git"
+  },
+  "homepage": "https://kol.quest",
+  "bugs": {
+    "url": "https://github.com/nirholas/kol-quest/issues"
+  },
+  "author": "nirholas",
   "scripts": {
     "scrape": "node scrape.js",
     "scrape:axiom": "node scrape-axiom.js",
