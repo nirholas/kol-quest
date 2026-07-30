@@ -1,6 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  // The repo root also carries a package-lock.json (for the scrapers), so Next
+  // otherwise infers the wrong workspace root for this app and warns on build.
+  turbopack: { root: __dirname },
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "pbs.twimg.com" },

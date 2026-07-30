@@ -7,10 +7,12 @@
 
 Track the best traders. Monitor smart money moves in real time. Discover new tokens before they run.
 
+The hosted site at kol.quest is offline while hosting is being migrated. Run it locally with the Quick Start below.
+
 <br/>
 
-[![Live](https://img.shields.io/badge/Live-kol.quest-1D9BF0?style=for-the-badge&logo=vercel&logoColor=white)](https://kol.quest)
-[![Next.js](https://img.shields.io/badge/Next.js_14-black?style=for-the-badge&logo=next.js&logoColor=white)](https://nextjs.org)
+[![Repo](https://img.shields.io/badge/GitHub-kol--quest-1D9BF0?style=for-the-badge&logo=github&logoColor=white)](https://github.com/nirholas/kol-quest)
+[![Next.js](https://img.shields.io/badge/Next.js_16-black?style=for-the-badge&logo=next.js&logoColor=white)](https://nextjs.org)
 [![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://typescriptlang.org)
 
 </div>
@@ -778,7 +780,7 @@ For deeper dives, see the [docs/](docs/) folder:
 
 <div align="center">
 
-MIT License
+Proprietary. Copyright 2026 nirholas. All rights reserved. See [LICENSE](LICENSE).
 
 Built with data from [KolScan](https://kolscan.io) and [GMGN](https://gmgn.ai)
 
