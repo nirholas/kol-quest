@@ -785,3 +785,7 @@ Proprietary. Copyright 2026 nirholas. All rights reserved. See [LICENSE](LICENSE
 Built with data from [KolScan](https://kolscan.io) and [GMGN](https://gmgn.ai)
 
 </div>
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=nirholas/kol-quest&type=Date)](https://www.star-history.com/#nirholas/kol-quest&Date)
