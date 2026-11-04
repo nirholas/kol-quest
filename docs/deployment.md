@@ -50,6 +50,10 @@ npm run db:push
 
 ## Hosting Options
 
+### Cloud Run + Cloudflare (production)
+
+kol.quest runs this way. Cloud Run builds `site/` from source, and the Cloudflare Worker in `deploy/cloudflare-proxy/` serves `kol.quest` and `www.kol.quest` by forwarding to the `run.app` URL. Secrets come from Secret Manager. Vercel crons don't run on Cloud Run, so the Cloud Scheduler job `kol-quest-analytics-refresh` calls `/api/cron/analytics-refresh` every 15 minutes with the `CRON_SECRET` bearer token. For commands, see [deploy-cloudflare.md](deploy-cloudflare.md).
+
 ### Vercel
 
 The Next.js app deploys directly to Vercel:

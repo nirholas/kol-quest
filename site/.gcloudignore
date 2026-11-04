@@ -1,0 +1,7 @@
+.gcloudignore
+.git
+node_modules/
+.next/
+.vercel/
+.env*
+tsconfig.tsbuildinfo

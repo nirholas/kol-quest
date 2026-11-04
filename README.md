@@ -7,7 +7,7 @@
 
 Track the best traders. Monitor smart money moves in real time. Discover new tokens before they run.
 
-The hosted site at kol.quest is offline while hosting is being migrated. Run it locally with the Quick Start below.
+**Live:** [kol.quest](https://kol.quest) · **Docs:** [docs.kol.quest](https://docs.kol.quest)
 
 <br/>
 
@@ -604,6 +604,7 @@ kol-quest/
 │   ├── authentication.md     # Auth flows & session management
 │   ├── database.md           # Schema, tables, indexes
 │   ├── deployment.md         # Production hosting guide
+│   ├── deploy-cloudflare.md  # Live kol.quest hosting (Cloud Run + Cloudflare)
 │   ├── features.md           # Every page and feature
 │   ├── mcp-server.md         # MCP server setup & tools
 │   ├── scrapers.md           # Scraper details & output formats
@@ -667,6 +668,10 @@ kol-quest/
 <br/>
 
 ## Deployment
+
+### Production (Cloud Run + Cloudflare)
+
+[kol.quest](https://kol.quest) runs the `site/` app on Google Cloud Run, fronted by the Cloudflare Worker in [`deploy/cloudflare-proxy/`](deploy/cloudflare-proxy/). [docs.kol.quest](https://docs.kol.quest) is the `docs/` folder on Cloudflare Pages. Cloud Scheduler calls `/api/cron/analytics-refresh` every 15 minutes. Redeploy commands, secrets, and rollback steps are in [docs/deploy-cloudflare.md](docs/deploy-cloudflare.md).
 
 ### Vercel
 
@@ -767,6 +772,7 @@ For deeper dives, see the [docs/](docs/) folder:
 | [Authentication](docs/authentication.md) | Email, Solana (ed25519), Ethereum (SIWE) auth flows with sequence diagrams |
 | [Database](docs/database.md) | Complete schema with all columns, types, indexes, and entity relationships |
 | [Deployment](docs/deployment.md) | Production build, Vercel, self-hosted, Docker, cron pipeline |
+| [Cloud Run + Cloudflare](docs/deploy-cloudflare.md) | How kol.quest and docs.kol.quest are hosted, redeployed, and rolled back |
 | [Features](docs/features.md) | Every page and feature in the app |
 | [MCP Server](docs/mcp-server.md) | Full MCP tool reference with parameters and example conversations |
 | [Scrapers](docs/scrapers.md) | Scraper internals, output formats, resumption, rate limiting |
