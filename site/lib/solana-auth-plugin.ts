@@ -92,7 +92,7 @@ export function solanaWallet(): BetterAuthPlugin {
               name: shortAddr,
               email,
               emailVerified: true,
-            });
+            }, { method: "solana-wallet" });
             if (!created) {
               console.error("[solana-auth] createUser returned null for wallet:", walletAddress);
               throw new APIError("INTERNAL_SERVER_ERROR", {

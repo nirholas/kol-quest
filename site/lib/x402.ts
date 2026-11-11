@@ -20,6 +20,12 @@
  *
  * To change the payment address set X402_PAYMENT_ADDRESS in the environment.
  * To disable x402 entirely set X402_ENABLED=false.
+ *
+ * FACILITATOR: payments are verified and settled by the facilitator at
+ * X402_FACILITATOR_URL (default https://x402.org/facilitator, which only
+ * settles testnets). Base mainnet needs a facilitator that lists
+ * "exact" on eip155:8453 in its /supported response; until one is set,
+ * gated requests get a 503 and the facilitator is re-checked every minute.
  */
 
 export const X402_ENABLED = process.env.X402_ENABLED !== "false";
@@ -29,13 +35,29 @@ export const X402_PAYMENT_ADDRESS =
   (process.env.X402_PAYMENT_ADDRESS as `0x${string}`) ||
   "0x40252CFDF8B20Ed757D61ff157719F33Ec332402";
 
+/** Facilitator that verifies and settles payments (x402 v2 HTTP API). */
+export const X402_FACILITATOR_URL =
+  process.env.X402_FACILITATOR_URL || "https://x402.org/facilitator";
+
+/** Base mainnet as a CAIP-2 network id (x402 v2). */
+export const X402_NETWORK = "eip155:8453" as const;
+
 /**
  * Single wildcard route that covers every /api/* path.
  * New routes are gated automatically — no changes needed here.
  */
 export const X402_ROUTES = {
-  "/api/*": { price: "$0.01" as const, network: "base" as const },
-} as const;
+  "/api/*": {
+    accepts: {
+      scheme: "exact",
+      price: "$0.01",
+      network: X402_NETWORK,
+      payTo: X402_PAYMENT_ADDRESS,
+    },
+    description: "KolQuest wallet intelligence API",
+    mimeType: "application/json",
+  },
+};
 
 /**
  * Route prefixes that are explicitly exempt from x402 gating.

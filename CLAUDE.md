@@ -78,6 +78,7 @@ npm run mcp               # MCP stdio server for AI assistants
 | `GMGN_TOKEN` | Optional | Bearer token for GMGN API (reduces rate-limit hits) |
 | `X402_ENABLED` | Optional | Set to `false` to disable x402 payment gating (default: enabled) |
 | `X402_PAYMENT_ADDRESS` | Optional | Override the USDC recipient address on Base mainnet for x402 payments |
+| `X402_FACILITATOR_URL` | Optional | x402 v2 facilitator that verifies and settles payments (default: `https://x402.org/facilitator`, testnets only). Set a facilitator that supports `exact` on `eip155:8453` for Base mainnet |
 
 ---
 
