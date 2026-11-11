@@ -53,6 +53,9 @@
     "@radix-ui/react-select": "^2.2.6",
     "lightweight-charts": "^5.1.0",
     "playwright": "^1.50.0",
-    "xactions": "^3.0.44"
+    "xactions": "^4.0.1"
+  },
+  "overrides": {
+    "zod": "^4.6.7"
   }
 }
